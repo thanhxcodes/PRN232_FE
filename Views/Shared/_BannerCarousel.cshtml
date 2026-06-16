@@ -1,0 +1,135 @@
+@model List<REVORA_MVC_FE.Models.ProductResponseDto>
+
+@{
+    var banners = Model?.Where(p => p.IsPremium).Select(p => (dynamic)new {
+        id = p.ProductId,
+        title = p.Title,
+        subtitle = "Sản phẩm nổi bật",
+        image = string.IsNullOrEmpty(p.ImageUrl) ? "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200" : p.ImageUrl,
+        color = "from-transparent via-black/40 to-black/80",
+        link = $"/Products/Details/{p.ProductId}"
+    }).ToList();
+
+    if (banners == null || !banners.Any())
+    {
+        banners = new List<dynamic> {
+            new {
+                id = -1,
+                title = "Chào mừng đến với REVORA",
+                subtitle = "Khám phá những sản phẩm tuyệt vời nhất",
+                image = "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200",
+                color = "from-transparent via-black/40 to-black/80",
+                link = "/Products"
+            }
+        };
+    }
+}
+
+<div class="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl group" id="banner-carousel">
+    <!-- Banner Slides -->
+    <div class="relative h-full" id="banner-slides-container">
+        @for (int i = 0; i < banners.Count; i++)
+        {
+            var banner = banners[i];
+            <div class="absolute inset-0 transition-opacity duration-700 ease-in-out banner-slide @(i == 0 ? "opacity-100 z-10" : "opacity-0 z-0")" data-index="@i">
+                <img src="@banner.image" alt="@banner.title" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-gradient-to-l @banner.color"></div>
+                <div class="absolute inset-0 flex flex-col items-end justify-center text-white text-right px-12 md:px-24">
+                    <style>
+                        @@keyframes float {
+                            0%, 100% { transform: translateY(0); }
+                            50% { transform: translateY(-8px); }
+                        }
+                        .animate-float {
+                            animation: float 4s ease-in-out infinite;
+                        }
+                    </style>
+                    <div class="max-w-xl transition-transform duration-700 banner-content animate-float">
+                        <h2 class="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)] tracking-tight text-white">@banner.title</h2>
+                        <p class="text-xl md:text-2xl drop-shadow-md opacity-95 mb-8 font-medium text-gray-100">@banner.subtitle</p>
+                        <a href="@banner.link" class="inline-flex items-center justify-center bg-white/20 backdrop-blur-md border border-white/30 text-white px-10 py-3.5 rounded-full font-bold hover:bg-white/30 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)]">
+                            Xem Ngay
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (banners.Count > 1)
+    {
+        <!-- Previous Button -->
+        <button id="banner-prev" class="absolute z-20 left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100">
+            <i data-lucide="chevron-left" class="w-6 h-6 text-white hover:scale-110 transition-transform"></i>
+        </button>
+
+        <!-- Next Button -->
+        <button id="banner-next" class="absolute z-20 right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/20 backdrop-blur-sm hover:bg-white/30 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100">
+            <i data-lucide="chevron-right" class="w-6 h-6 text-white hover:scale-110 transition-transform"></i>
+        </button>
+
+        <!-- Dots Indicator -->
+        <div class="absolute z-20 bottom-6 left-1/2 -translate-x-1/2 flex space-x-3" id="banner-dots">
+            @for (int i = 0; i < banners.Count; i++)
+            {
+                <button data-index="@i" class="banner-dot transition-all duration-300 @(i == 0 ? "w-8 h-3 bg-white rounded-full" : "w-3 h-3 bg-white/50 rounded-full hover:bg-white/80")"></button>
+            }
+        </div>
+    }
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const carousel = document.getElementById('banner-carousel');
+        if (!carousel) return;
+
+        const slides = carousel.querySelectorAll('.banner-slide');
+        const dots = carousel.querySelectorAll('.banner-dot');
+        const prevBtn = document.getElementById('banner-prev');
+        const nextBtn = document.getElementById('banner-next');
+        
+        let currentIndex = 0;
+        const totalSlides = slides.length;
+        if (totalSlides <= 1) return;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.replace('opacity-0', 'opacity-100');
+                    slide.classList.replace('z-0', 'z-10');
+                } else {
+                    slide.classList.replace('opacity-100', 'opacity-0');
+                    slide.classList.replace('z-10', 'z-0');
+                }
+            });
+
+            dots.forEach((dot, i) => {
+                if (i === index) {
+                    dot.className = 'banner-dot transition-all duration-300 w-8 h-3 bg-white rounded-full';
+                } else {
+                    dot.className = 'banner-dot transition-all duration-300 w-3 h-3 bg-white/50 rounded-full hover:bg-white/80';
+                }
+            });
+            currentIndex = index;
+        }
+
+        function nextSlide() {
+            showSlide((currentIndex + 1) % totalSlides);
+        }
+
+        function prevSlide() {
+            showSlide((currentIndex - 1 + totalSlides) % totalSlides);
+        }
+
+        if (nextBtn) nextBtn.addEventListener('click', nextSlide);
+        if (prevBtn) prevBtn.addEventListener('click', prevSlide);
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                showSlide(parseInt(dot.getAttribute('data-index')));
+            });
+        });
+
+        setInterval(nextSlide, 4000);
+    });
+</script>

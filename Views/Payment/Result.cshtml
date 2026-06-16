@@ -1,0 +1,132 @@
+@{
+    ViewData["Title"] = "Kết Quả Thanh Toán";
+    var orderCode = ViewData["OrderCode"]?.ToString();
+}
+
+<div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-xl border border-gray-100 p-8 text-center" id="payment-result-container">
+        
+        <!-- State: Resolving -->
+        <div id="state-resolving" class="flex flex-col items-center justify-center py-8">
+            <i data-lucide="loader-2" class="w-12 h-12 text-gray-300 animate-spin mb-6"></i>
+            <h2 class="text-xl font-semibold text-gray-800">Đang khởi tạo...</h2>
+            <p class="text-gray-500 mt-2">Vui lòng đợi trong giây lát.</p>
+        </div>
+
+        <!-- State: Polling -->
+        <div id="state-polling" class="flex-col items-center justify-center py-6 hidden">
+            <div class="relative mb-8 flex justify-center">
+                <div class="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-75"></div>
+                <div class="relative bg-white rounded-full p-4 shadow-sm border border-blue-50">
+                    <i data-lucide="loader-2" class="w-12 h-12 text-blue-600 animate-spin"></i>
+                </div>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-800">Đang chờ xác nhận thanh toán</h2>
+            <p class="text-gray-500 mt-2 text-sm leading-relaxed px-4">
+                Hệ thống đang xử lý giao dịch. Quá trình này có thể mất vài phút. Vui lòng không đóng trang này.
+            </p>
+            
+            <div class="w-full bg-gray-100 rounded-full h-2 mt-8 overflow-hidden">
+                <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-1000 ease-linear" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- State: Success -->
+        <div id="state-success" class="flex-col items-center py-4 hidden">
+            <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="check-circle-2" class="w-12 h-12 text-green-500"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Thanh toán thành công!</h2>
+            <p class="text-gray-500 mb-8">Cảm ơn bạn đã nâng cấp dịch vụ.</p>
+
+            <div class="w-full bg-gray-50 rounded-2xl p-4 mb-8 text-left space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500 text-sm">Gói dịch vụ</span>
+                    <span id="success-package-name" class="font-semibold text-gray-900">Gói Credit</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500 text-sm">Số tiền</span>
+                    <span id="success-amount" class="font-bold text-blue-600 text-lg">0</span>
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                    <span class="text-gray-500 text-sm">Mã đơn</span>
+                    <span id="success-order-code" class="text-gray-900 text-sm font-mono">...</span>
+                </div>
+            </div>
+
+            <div class="w-full space-y-3">
+                <button onclick="window.location.href='/Products/Create'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                    Đăng tin ngay
+                </button>
+                <button onclick="window.location.href='/'" class="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl border border-gray-200 transition-colors">
+                    Trở về trang chủ
+                </button>
+            </div>
+        </div>
+
+        <!-- State: Error -->
+        <div id="state-error" class="flex-col items-center py-4 hidden">
+            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="x-circle" class="w-12 h-12 text-red-500"></i>
+            </div>
+            <h2 id="error-title" class="text-2xl font-bold text-gray-900 mb-2">Giao dịch thất bại</h2>
+            <p id="error-desc" class="text-gray-500 mb-8 px-4">Có lỗi xảy ra trong quá trình thanh toán.</p>
+
+            <div class="w-full bg-gray-50 rounded-2xl p-4 mb-8 text-left">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-500 text-sm">Mã đơn</span>
+                    <span id="error-order-code" class="text-gray-900 text-sm font-mono">...</span>
+                </div>
+            </div>
+
+            <button onclick="window.location.href='/Plans'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                Thử lại
+            </button>
+        </div>
+
+        <!-- State: Interrupted -->
+        <div id="state-interrupted" class="flex-col items-center py-4 hidden">
+            <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="alert-triangle" class="w-12 h-12 text-amber-500"></i>
+            </div>
+            <h2 id="interrupted-title" class="text-2xl font-bold text-gray-900 mb-2">Gián đoạn kết nối</h2>
+            <p id="interrupted-desc" class="text-gray-500 mb-8 px-2 text-sm leading-relaxed">
+                Hệ thống đang gặp sự cố kết nối tạm thời.
+            </p>
+
+            <div id="interrupted-order-box" class="w-full bg-amber-50/50 rounded-2xl p-4 mb-8 border border-amber-100 text-left hidden">
+                <p class="text-amber-800 text-sm mb-1">Mã tra cứu của bạn:</p>
+                <p id="interrupted-order-code" class="font-mono text-lg font-bold text-amber-900">...</p>
+            </div>
+
+            <div class="w-full space-y-3">
+                <button onclick="window.location.href='/Plans?tab=history'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                    Kiểm tra lịch sử
+                </button>
+                <button onclick="window.location.href='/'" class="w-full bg-white hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl border border-gray-200 transition-colors">
+                    Về trang chủ
+                </button>
+            </div>
+        </div>
+
+        <!-- State: Not Found -->
+        <div id="state-not-found" class="flex-col items-center py-8 hidden">
+            <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                <i data-lucide="search" class="w-10 h-10 text-gray-400"></i>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 mb-2">Không tìm thấy giao dịch</h2>
+            <p class="text-gray-500 mb-8">Phiên thanh toán đã hết hạn hoặc mã giao dịch không hợp lệ.</p>
+
+            <button onclick="window.location.href='/Plans'" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+                Về trang Gói Credit
+            </button>
+        </div>
+
+    </div>
+</div>
+
+<input type="hidden" id="initial-order-code" value="@orderCode" />
+
+@section Scripts {
+    <script src="~/js/payment-result.js"></script>
+}

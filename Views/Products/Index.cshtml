@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = "Tất Cả Sản Phẩm";
+    var locations = new[] { "Hà Nội", "Hồ Chí Minh", "Đà Nẵng" };
+    var brands = new[] { "Gucci", "Chanel", "Apple", "Samsung", "5TheWay", "First News", "Logitech", "No Brand" };
+    var conditions = new[] { "Mới 100%", "Như Mới", "Tuyệt Vời", "Tốt", "Khá" };
+    
+    var categories = ViewBag.Categories as List<REVORA_MVC_FE.Models.CategoryDto> ?? new List<REVORA_MVC_FE.Models.CategoryDto>();
+    var products = ViewBag.Products as List<REVORA_MVC_FE.Models.ProductResponseDto> ?? new List<REVORA_MVC_FE.Models.ProductResponseDto>();
+    
+    var totalCount = ViewBag.TotalCount ?? 0;
+    var totalPages = ViewBag.TotalPages ?? 1;
+    var currentPage = ViewBag.CurrentPage ?? 1;
+    
+    var searchKeyword = ViewBag.Search as string;
+    var selectedCategory = ViewBag.CategoryId;
+    var selectedLocation = ViewBag.City as string ?? "Tất Cả";
+    var selectedBrand = ViewBag.Brand as string ?? "Tất Cả";
+    var selectedCondition = ViewBag.Condition as string ?? "Tất Cả";
+    var minPrice = ViewBag.MinPrice ?? 0m;
+    var maxPrice = ViewBag.MaxPrice ?? 1000000000m;
+    var sortBy = ViewBag.SortBy as string ?? "newest";
+}
+
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-4xl text-gray-900 mb-2 font-bold">
+                @(string.IsNullOrEmpty(searchKeyword) ? "Tất Cả Sản Phẩm" : $"Kết quả tìm kiếm cho: \"{searchKeyword}\"")
+            </h1>
+            <p class="text-gray-600">Tìm thấy <span class="font-semibold text-[#2D5A3D]">@totalCount</span> sản phẩm phù hợp</p>
+        </div>
+
+        <form method="get" action="/Products" id="filterForm">
+            @if(!string.IsNullOrEmpty(searchKeyword)) {
+                <input type="hidden" name="search" value="@searchKeyword" />
+            }
+            <input type="hidden" name="pageNumber" id="pageNumber" value="@currentPage" />
+            <input type="hidden" name="minPrice" id="minPrice" value="@minPrice" />
+            <input type="hidden" name="maxPrice" id="maxPrice" value="@maxPrice" />
+            <input type="hidden" id="viewMode" value="grid" />
+
+            <div class="flex flex-col md:flex-row gap-8 relative items-start">
+                
+                <!-- Main Content (TRÁI) -->
+                <div class="flex-1 w-full order-2 md:order-1">
+                    
+                    <!-- Toolbar -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button type="button" onclick="toggleFilters()" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors text-sm font-medium text-gray-700">
+                                <i data-lucide="filter" class="w-4 h-4 text-[#2D5A3D]"></i> <span id="filterBtnText">Hiện Bộ Lọc</span>
+                            </button>
+                            
+                            <div class="hidden sm:flex items-center gap-2 border-l border-gray-200 pl-4">
+                                <button type="button" onclick="setViewMode('grid')" id="btnGridMode" class="p-2 rounded-lg transition-colors bg-[#2D5A3D]/10 text-[#2D5A3D]">
+                                    <i data-lucide="grid-3x3" class="w-5 h-5"></i>
+                                </button>
+                                <button type="button" onclick="setViewMode('list')" id="btnListMode" class="p-2 rounded-lg transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50">
+                                    <i data-lucide="list" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <label class="text-sm font-medium text-gray-600 hidden sm:block">Sắp xếp:</label>
+                            <select name="sortBy" onchange="resetPageAndSubmit()" class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] text-sm font-medium text-gray-700 cursor-pointer">
+                                <!option value="newest" @(sortBy == "newest" ? "selected" : "")>Mới nhất</!option>
+                                <!option value="featured" @(sortBy == "featured" ? "selected" : "")>Sản phẩm nổi bật</!option>
+                                <!option value="loved" @(sortBy == "loved" ? "selected" : "")>Được yêu thích nhất</!option>
+                                <!option value="priceAsc" @(sortBy == "priceAsc" ? "selected" : "")>Giá: Thấp đến Cao</!option>
+                                <!option value="priceDesc" @(sortBy == "priceDesc" ? "selected" : "")>Giá: Cao đến Thấp</!option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Product Grid -->
+                    @if (products.Count > 0)
+                    {
+                        <div id="productContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            @foreach(var item in products)
+                            {
+                                @await Html.PartialAsync("_ProductCard", item)
+                            }
+                        </div>
+
+                        <!-- Pagination -->
+                        @if (totalPages > 1)
+                        {
+                            <div class="mt-12 flex items-center justify-center gap-2">
+                                <button type="button" onclick="changePage(@(currentPage - 1))" disabled="@(currentPage == 1)" class="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    <i data-lucide="chevron-left" class="w-5 h-5"></i>
+                                </button>
+                                
+                                <div class="flex gap-1.5">
+                                    @for(int i = 1; i <= totalPages; i++)
+                                    {
+                                        if (i == 1 || i == totalPages || (i >= currentPage - 1 && i <= currentPage + 1))
+                                        {
+                                            <button type="button" onclick="changePage(@i)" class="min-w-[40px] h-10 rounded-lg font-medium transition-all @(currentPage == i ? "bg-[#2D5A3D] text-white shadow-md" : "border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300")">
+                                                @i
+                                            </button>
+                                        }
+                                        else if (i == currentPage - 2 || i == currentPage + 2)
+                                        {
+                                            <span class="flex items-center justify-center w-8 text-gray-400">...</span>
+                                        }
+                                    }
+                                </div>
+
+                                <button type="button" onclick="changePage(@(currentPage + 1))" disabled="@(currentPage == totalPages)" class="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+                                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center bg-white rounded-3xl p-16 shadow-sm border border-gray-100">
+                            <div class="text-6xl mb-6 opacity-30">🔍</div>
+                            <h3 class="text-xl text-gray-900 mb-2 font-bold">Không tìm thấy sản phẩm</h3>
+                            <p class="text-gray-500 mb-8 max-w-md mx-auto">Rất tiếc, không có sản phẩm nào phù hợp với các tiêu chí lọc hiện tại. Thử điều chỉnh lại khoảng giá hoặc xóa bộ lọc.</p>
+                            <a href="/Products" class="px-8 py-3 bg-[#2D5A3D] text-white font-medium rounded-full hover:bg-[#234830] transition-colors shadow-md hover:shadow-lg inline-block">
+                                Xóa tất cả bộ lọc
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                <!-- Filters Sidebar (PHẢI) -->
+                <aside id="filtersSidebar" class="w-full md:w-72 flex-shrink-0 sticky top-24 order-1 md:order-2 transition-all">
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+                            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <i data-lucide="filter" class="w-5 h-5 text-[#2D5A3D]"></i> Lọc Sản Phẩm
+                            </h2>
+                            <a href="/Products" class="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors bg-orange-50 px-3 py-1.5 rounded-lg">
+                                Đặt lại
+                            </a>
+                        </div>
+
+                        <div class="space-y-6">
+                            <!-- Danh Mục -->
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 mb-3">Danh Mục</label>
+                                <select name="categoryId" onchange="resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                                    <!option value="0">Tất Cả Danh Mục</!option>
+                                    @foreach(var cat in categories) {
+                                        <!option value="@cat.CategoryId" @(selectedCategory == cat.CategoryId ? "selected" : "")>@cat.Name</!option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Khoảng giá -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <label class="block text-sm font-bold text-gray-900 mb-4">Khoảng Giá</label>
+                                <div class="space-y-3">
+                                    @{
+                                        var priceRanges = new[] {
+                                            new { label = "Tất cả mức giá", min = 0m, max = 1000000000m },
+                                            new { label = "Dưới 500.000₫", min = 0m, max = 500000m },
+                                            new { label = "500.000₫ - 1.000.000₫", min = 500000m, max = 1000000m },
+                                            new { label = "1.000.000₫ - 3.000.000₫", min = 1000000m, max = 3000000m },
+                                            new { label = "3.000.000₫ - 5.000.000₫", min = 3000000m, max = 5000000m },
+                                            new { label = "5.000.000₫ - 10.000.000₫", min = 5000000m, max = 10000000m },
+                                            new { label = "Trên 10.000.000₫", min = 10000000m, max = 1000000000m }
+                                        };
+                                    }
+                                    @for(int i = 0; i < priceRanges.Length; i++)
+                                    {
+                                        var range = priceRanges[i];
+                                        var isChecked = minPrice == range.min && maxPrice == range.max;
+                                        <label class="flex items-center gap-3 cursor-pointer group" onclick="setPriceRange(@range.min, @range.max)">
+                                            @if(isChecked) {
+                                                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors border-[#2D5A3D]">
+                                                    <div class="w-2.5 h-2.5 rounded-full bg-[#2D5A3D]"></div>
+                                                </div>
+                                                <span class="text-sm transition-colors text-[#2D5A3D] font-bold">@range.label</span>
+                                            } else {
+                                                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors border-gray-300 group-hover:border-[#2D5A3D]/50"></div>
+                                                <span class="text-sm transition-colors text-gray-600 group-hover:text-gray-900 font-medium">@range.label</span>
+                                            }
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Khu Vực -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <label class="block text-sm font-bold text-gray-900 mb-3">Khu Vực</label>
+                                <select name="city" onchange="resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                                    <!option value="Tất Cả" @(selectedLocation == "Tất Cả" ? "selected" : "")>Toàn Quốc</!option>
+                                    @foreach(var loc in locations) {
+                                        <!option value="@loc" @(selectedLocation == loc ? "selected" : "")>@loc</!option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Thương Hiệu -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <label class="block text-sm font-bold text-gray-900 mb-3">Thương Hiệu</label>
+                                <select name="brand" onchange="resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                                    <!option value="Tất Cả" @(selectedBrand == "Tất Cả" ? "selected" : "")>Tất Cả Thương Hiệu</!option>
+                                    @foreach(var brand in brands) {
+                                        <!option value="@brand" @(selectedBrand == brand ? "selected" : "")>@brand</!option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Tình Trạng -->
+                            <div class="pt-4 border-t border-gray-100">
+                                <label class="block text-sm font-bold text-gray-900 mb-3">Tình Trạng</label>
+                                <select name="condition" onchange="resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                                    <!option value="Tất Cả" @(selectedCondition == "Tất Cả" ? "selected" : "")>Mọi Tình Trạng</!option>
+                                    @foreach(var cond in conditions) {
+                                        <!option value="@cond" @(selectedCondition == cond ? "selected" : "")>@cond</!option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Toggle list and grid mode elements */
+    #productContainer.view-grid .product-card-list { display: none; }
+    #productContainer.view-grid .product-card-grid { display: flex; }
+
+    #productContainer.view-list .product-card-grid { display: none; }
+    #productContainer.view-list .product-card-list { display: block; }
+</style>
+
+<script>
+    function resetPageAndSubmit() {
+        document.getElementById('pageNumber').value = 1;
+        document.getElementById('filterForm').submit();
+    }
+
+    function changePage(page) {
+        document.getElementById('pageNumber').value = page;
+        document.getElementById('filterForm').submit();
+    }
+
+    function setPriceRange(min, max) {
+        document.getElementById('minPrice').value = min;
+        document.getElementById('maxPrice').value = max;
+        resetPageAndSubmit();
+    }
+
+    function toggleFilters() {
+        const sidebar = document.getElementById('filtersSidebar');
+        const btnText = document.getElementById('filterBtnText');
+        if (sidebar.classList.contains('hidden')) {
+            sidebar.classList.remove('hidden');
+            btnText.innerText = 'Ẩn Bộ Lọc';
+        } else {
+            sidebar.classList.add('hidden');
+            btnText.innerText = 'Hiện Bộ Lọc';
+        }
+    }
+
+    function setViewMode(mode) {
+        document.getElementById('viewMode').value = mode;
+        const container = document.getElementById('productContainer');
+        const btnGrid = document.getElementById('btnGridMode');
+        const btnList = document.getElementById('btnListMode');
+        
+        if (mode === 'grid') {
+            container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 view-grid';
+            btnGrid.className = 'p-2 rounded-lg transition-colors bg-[#2D5A3D]/10 text-[#2D5A3D]';
+            btnList.className = 'p-2 rounded-lg transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50';
+        } else {
+            container.className = 'space-y-4 view-list';
+            btnGrid.className = 'p-2 rounded-lg transition-colors text-gray-400 hover:text-gray-600 hover:bg-gray-50';
+            btnList.className = 'p-2 rounded-lg transition-colors bg-[#2D5A3D]/10 text-[#2D5A3D]';
+        }
+    }
+    
+    // Initialize view mode
+    document.addEventListener("DOMContentLoaded", () => {
+        setViewMode('grid');
+    });
+</script>

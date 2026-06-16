@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Tin Nhắn";
+    Layout = "_Layout";
+}
+
+<div class="flex h-[calc(100vh-64px)] w-full flex-col overflow-hidden bg-white">
+    <div class="grid flex-1 min-h-0 grid-cols-1 overflow-hidden md:grid-cols-[400px_1fr]">
+        
+        <!-- LETS SIDEBAR: Conversations List -->
+        <aside class="flex min-h-0 h-full w-full flex-col border-r border-gray-200 bg-gray-50/50">
+            <div class="px-6 pb-5 pt-6">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900">Chat</h2>
+            </div>
+
+            <!-- Search -->
+            <div class="px-6 pb-4 flex items-center gap-3">
+                <div class="group relative flex-1 flex items-center gap-3 rounded-2xl border-2 border-gray-200 hover:border-gray-400 focus-within:!border-gray-900 bg-white px-4 h-[58px] focus-within:shadow-sm transition-colors duration-200">
+                    <i data-lucide="search" class="h-[22px] w-[22px] text-gray-500 group-focus-within:text-gray-900 shrink-0 transition-colors"></i>
+                    <div class="relative flex-1 h-full">
+                        <label class="absolute left-0 top-0 transition-all duration-300 ease-out pointer-events-none select-none translate-y-[17px] text-[15px] text-gray-500 group-focus-within:translate-y-[6px] group-focus-within:text-[11px] group-focus-within:font-bold group-focus-within:text-gray-900">
+                            Nhập để bắt đầu tìm kiếm
+                        </label>
+                        <input id="search-input" type="search" class="absolute bottom-1.5 left-0 w-full h-[24px] bg-transparent text-[15px] font-medium text-gray-900 outline-none pr-8 [&::-webkit-search-cancel-button]:hidden" autocomplete="off" />
+                    </div>
+                </div>
+                <button class="shrink-0 p-1.5 text-gray-900 hover:bg-gray-200 rounded-full transition-colors">
+                    <i data-lucide="more-vertical" class="h-6 w-6"></i>
+                </button>
+            </div>
+
+            <!-- List -->
+            <nav id="conversation-list" class="flex-1 space-y-3 overflow-y-auto px-4 pb-6">
+                <div class="p-8 text-center text-gray-400">
+                    <p>Đang tải dữ liệu...</p>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- RIGHT AREA: Active Chat Window -->
+        <section class="flex min-h-0 h-full flex-col bg-white hidden md:flex" id="chat-window">
+            <!-- Placeholder state (hidden by default when chat is active) -->
+            <div id="chat-placeholder" class="flex-1 flex flex-col items-center justify-center text-center px-6">
+                <div class="w-24 h-24 bg-gray-50 shadow-sm rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="message-circle" class="w-10 h-10 text-[#2D5A3D]"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Tin nhắn của bạn</h2>
+                <p class="text-gray-500 max-w-sm mx-auto">Chọn một cuộc trò chuyện hoặc bắt đầu gửi tin nhắn để thương lượng, trao đổi dễ dàng.</p>
+            </div>
+
+            <!-- Active Chat Interface -->
+            <div id="chat-active" class="hidden flex-col h-full w-full">
+                <!-- Header -->
+                <header class="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+                    <div class="flex items-center gap-3.5">
+                        <button class="md:hidden p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+                            <i data-lucide="chevron-left" class="w-6 h-6"></i>
+                        </button>
+                        <div class="relative">
+                            <div id="chat-header-avatar" class="h-12 w-12 overflow-hidden rounded-full font-bold flex items-center justify-center bg-gray-200 text-gray-600">
+                                U
+                            </div>
+                            <span class="absolute bottom-0 right-0 h-3.5 w-3.5 animate-pulse rounded-full border-2 border-white bg-emerald-400"></span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold leading-tight text-gray-900" id="chat-header-name">Tên Người Dùng</h3>
+                            <p class="text-sm text-[#2D5A3D]">Online</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" class="flex h-11 w-11 items-center justify-center rounded-full bg-[#2D5A3D] text-white transition-colors hover:bg-[#2D5A3D]/90 shadow-sm">
+                            <i data-lucide="phone" class="h-5 w-5"></i>
+                        </button>
+                        <button type="button" class="flex h-11 w-11 items-center justify-center rounded-full bg-[#2D5A3D] text-white transition-colors hover:bg-[#2D5A3D]/90 shadow-sm">
+                            <i data-lucide="video" class="h-5 w-5"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- Messages -->
+                <div id="chat-messages" class="flex-1 space-y-4 overflow-y-auto px-6 py-6">
+                    <div class="flex justify-center mb-6">
+                        <span class="rounded-full bg-gray-200/50 px-3 py-1 text-xs font-medium text-gray-500 backdrop-blur-sm">Hôm nay</span>
+                    </div>
+                    <!-- Messages will be injected here -->
+                </div>
+
+                <!-- Composer -->
+                <div class="border-t border-gray-200 bg-white px-6 py-4">
+                    <div class="flex items-end gap-2.5 rounded-3xl border border-gray-200 bg-white px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-[#2D5A3D]/20 transition-all">
+                        <button class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900">
+                            <i data-lucide="image-plus" class="h-5 w-5"></i>
+                        </button>
+                        
+                        <textarea id="chat-input-textarea" placeholder="Nhập tin nhắn..." class="w-full bg-transparent text-[15px] text-gray-900 outline-none placeholder:text-gray-400 resize-none min-h-[40px] max-h-32 py-2.5" rows="1"></textarea>
+                        
+                        <button id="btn-send-message" class="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full bg-[#2D5A3D] text-white transition-colors hover:bg-[#2D5A3D]/90">
+                            <i data-lucide="send" class="h-5 w-5 ml-0.5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    // Pass server side values to JS
+    window.chatConfig = {
+        accessToken: '@Html.Raw(ViewBag.AccessToken)',
+        currentUserId: parseInt('@Html.Raw(ViewBag.CurrentUserId)' || '0'),
+        apiBaseUrl: 'https://localhost:7015/api/v1',
+        hubUrl: 'https://localhost:7015/chathub'
+    };
+</script>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/chat.js"></script>
+}

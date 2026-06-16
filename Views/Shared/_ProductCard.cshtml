@@ -1,0 +1,147 @@
+@model REVORA_MVC_FE.Models.ProductResponseDto
+
+@{
+    var finalImageUrl = string.IsNullOrEmpty(Model.ImageUrl) ? "https://via.placeholder.com/400" : Model.ImageUrl;
+    var priceStr = Model.Price.ToString("N0") + "₫";
+    var sellerName = string.IsNullOrEmpty(Model.SellerName) ? "Admin" : Model.SellerName;
+    var condition = string.IsNullOrEmpty(Model.Condition) ? "Mới" : Model.Condition;
+    var viewCount = Model.ViewCount ?? 0;
+    var isPremium = Model.IsPremium;
+    var location = string.IsNullOrEmpty(Model.Location) ? "Hà Nội" : Model.Location;
+    var createdAt = Model.CreatedAt.HasValue ? Model.CreatedAt.Value.ToString("dd/MM/yyyy") : DateTime.Now.ToString("dd/MM/yyyy");
+
+    var premiumClass = isPremium ? "ring-2 ring-[#C4603A] shadow-[0_0_20px_rgba(196,96,58,0.3)] hover:shadow-[0_0_30px_rgba(196,96,58,0.5)]" : "";
+
+    string badgeIcon = null;
+    string badgeGradient = null;
+    if (sellerName.ToLower() == "admin") { badgeIcon = "⭐"; badgeGradient = "from-[#2D5A3D] to-[#3D7054]"; }
+    else if (sellerName.ToLower() == "user1") { badgeIcon = "💎"; badgeGradient = "from-purple-500 to-pink-500"; }
+}
+
+<a href="/Products/Details/@Model.ProductId" class="block h-full">
+    <!-- GRID MODE -->
+    <div class="product-card-grid group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 h-full flex flex-col @premiumClass">
+        @if (isPremium)
+        {
+            <div class="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-[#C4603A]/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"
+                     style="background-size: 200% 100%;"></div>
+            </div>
+        }
+
+        <div class="relative aspect-[3/4] overflow-hidden bg-gray-100">
+            <img src="@finalImageUrl"
+                 alt="@Model.Title"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            
+            @if (isPremium)
+            {
+                <div class="absolute top-2 left-2 bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white text-xs px-3 py-1.5 rounded-full shadow-lg font-semibold flex items-center gap-1.5 animate-pulse">
+                    <span class="text-sm">✨</span>
+                    <span>Premium</span>
+                </div>
+            }
+
+            <button onclick="window.toggleGlobalWishlist(event, @Model.ProductId)" data-wishlist-btn="@Model.ProductId" class="absolute top-2 right-2 p-2 rounded-full transition-all bg-white/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 hover:bg-white z-10">
+                <i data-lucide="heart" class="w-4 h-4 transition-colors"></i>
+            </button>
+        </div>
+
+        <div class="p-4 flex-1 flex flex-col justify-between">
+            <div>
+                <h3 class="font-medium text-gray-900 line-clamp-2 mb-1">@Model.Title</h3>
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-lg text-[#2D5A3D] font-semibold">@priceStr</span>
+                    <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">@condition</span>
+                </div>
+                <div class="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                    <i data-lucide="map-pin" class="w-3 h-3"></i>
+                    <span class="truncate">@location</span>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between text-sm text-gray-500 mt-auto pt-2">
+                <div class="flex flex-col gap-0.5 min-w-0">
+                    <div class="flex items-center gap-1.5">
+                        <span class="truncate">@sellerName</span>
+                        @if (badgeIcon != null)
+                        {
+                            <div class="w-4 h-4 bg-gradient-to-r @badgeGradient rounded-full flex items-center justify-center text-white text-[8px] flex-shrink-0" title="Badge">
+                                @badgeIcon
+                            </div>
+                        }
+                    </div>
+                    <span class="text-[10px] text-gray-400">Ngày đăng: @createdAt</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                    <i data-lucide="heart" class="w-3 h-3 text-[#C4603A]"></i>
+                    <span class="text-xs">@viewCount</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIST MODE -->
+    <div class="product-card-list hidden group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 @premiumClass">
+        @if (isPremium)
+        {
+            <div class="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-[#C4603A]/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite]"
+                     style="background-size: 200% 100%;"></div>
+            </div>
+        }
+
+        <div class="flex gap-4 p-4">
+            <div class="relative w-40 h-40 flex-shrink-0 overflow-hidden bg-gray-100 rounded-xl">
+                <img src="@finalImageUrl"
+                     alt="@Model.Title"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                @if (isPremium)
+                {
+                    <div class="absolute top-2 left-2 bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white text-xs px-3 py-1.5 rounded-full shadow-lg font-semibold flex items-center gap-1.5 animate-pulse">
+                        <span class="text-sm">✨</span>
+                        <span>Premium</span>
+                    </div>
+                }
+            </div>
+
+            <div class="flex-1 flex flex-col justify-between">
+                <div>
+                    <h3 class="font-semibold text-gray-900 line-clamp-2 mb-2 text-lg">@Model.Title</h3>
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="text-2xl text-[#2D5A3D] font-semibold">@priceStr</span>
+                        <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">@condition</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-sm text-gray-500 mb-2">
+                        <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                        <span>@location</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex flex-col gap-1 min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <span class="truncate">@sellerName</span>
+                        @if (badgeIcon != null)
+                        {
+                            <div class="w-4 h-4 bg-gradient-to-r @badgeGradient rounded-full flex items-center justify-center text-white text-[8px] flex-shrink-0" title="Badge">
+                                @badgeIcon
+                            </div>
+                        }
+                        </div>
+                        <span class="text-xs text-gray-400">Đăng ngày @createdAt</span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <i data-lucide="heart" class="w-4 h-4 text-[#C4603A]"></i>
+                        <span>@viewCount lượt thích</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center">
+                <button onclick="window.toggleGlobalWishlist(event, @Model.ProductId)" data-wishlist-btn="@Model.ProductId" class="p-3 rounded-full border transition-all bg-white/90 backdrop-blur-sm border-gray-200 opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-500 hover:border-red-500 hover:bg-red-50 z-10">
+                    <i data-lucide="heart" class="w-5 h-5 transition-colors"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</a>

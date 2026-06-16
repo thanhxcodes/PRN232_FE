@@ -1,0 +1,1081 @@
+@{
+    ViewData["Title"] = "Shorts";
+    Layout = "_ShortsLayout";
+}
+
+<div id="shorts-app"
+     data-token="@ViewBag.AccessToken"
+     data-is-auth="@ViewBag.IsAuthenticated.ToString().ToLower()"
+     data-current-user-name="@ViewBag.CurrentUserFullName"
+     data-current-user-avatar="@ViewBag.CurrentUserAvatar"
+     data-current-user-id="@ViewBag.CurrentUserId"
+     class="shorts-app-container">
+
+    <!-- Loading State -->
+    <div id="loading-state" class="flex items-center justify-center w-full h-full">
+        <div class="w-10 h-10 border-4 border-[#2D5A3D] border-t-transparent rounded-full animate-spin"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden flex-col items-center justify-center text-white text-center w-full h-full">
+        <h2 class="text-xl font-bold">Chưa có video nào</h2>
+        <p class="text-gray-400 mt-2">Vui lòng quay lại sau.</p>
+    </div>
+
+    <!-- Desktop: Info Overlay -->
+    <div id="info-overlay-desktop" class="info-overlay-desktop">
+        <!-- Injected by JS -->
+    </div>
+
+    <!-- Main Content (Videos + UI) -->
+    <div id="shorts-content" class="hidden w-full h-full flex items-center justify-center relative">
+        <!-- Video Frame -->
+        <div id="video-frame" class="video-wrapper relative cursor-pointer">
+            <!-- Video overflow clip -->
+            <div class="absolute inset-0 overflow-hidden video-wrapper-inner">
+                <div id="video-stack" class="absolute inset-0 transition-transform duration-500 ease-in-out">
+                    <!-- Videos injected by JS -->
+                </div>
+                
+                <!-- Center Play/Pause Icon -->
+                <div id="center-play-icon" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none transition-opacity duration-200" style="opacity: 0;">
+                    <div id="center-icon-wrapper" class="w-20 h-20 bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center">
+                        <i data-lucide="play" class="w-10 h-10 text-white fill-white ml-1"></i>
+                    </div>
+                </div>
+
+                <!-- Volume Control -->
+                <div class="absolute top-4 left-4 z-20 pointer-events-auto flex items-center group">
+                    <button id="btn-volume" class="w-10 h-10 bg-black/20 hover:bg-black/40 backdrop-blur-sm rounded-full flex items-center justify-center transition-all">
+                        <div id="volume-icon-wrapper">
+                            <i data-lucide="volume-2" class="w-5 h-5 text-white"></i>
+                        </div>
+                    </button>
+                    <div class="ml-2 w-0 overflow-hidden group-hover:w-24 transition-all duration-300 flex items-center bg-black/20 backdrop-blur-sm h-10 rounded-full px-0 group-hover:px-3">
+                        <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="1" class="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overlay UI on video -->
+            <div class="absolute inset-0 pointer-events-none">
+                <!-- Mobile: Info Overlay -->
+                <div id="info-overlay-mobile" class="info-overlay-mobile">
+                    <!-- Injected by JS -->
+                </div>
+
+                <!-- Action Buttons: Like, Comment, Share -->
+                <div class="action-buttons">
+                    <!-- Prev/Next arrows (Desktop only) -->
+                    <div class="action-arrows mb-2">
+                        <button id="btn-prev" class="w-10 h-10 bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-all" disabled>
+                            <i data-lucide="chevron-up" class="w-6 h-6 text-white"></i>
+                        </button>
+                        <button id="btn-next" class="w-10 h-10 bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed rounded-full flex items-center justify-center transition-all">
+                            <i data-lucide="chevron-down" class="w-6 h-6 text-white"></i>
+                        </button>
+                    </div>
+
+                    <!-- Like -->
+                    <button id="btn-like" class="flex flex-col items-center gap-1">
+                        <div id="like-icon-wrapper" class="w-12 h-12 action-icon-sm rounded-full flex items-center justify-center transition-all duration-200 bg-white/10 hover:bg-white/20">
+                            <i data-lucide="heart" id="like-icon" class="w-7 h-7 action-svg-sm text-white transition-all"></i>
+                        </div>
+                        <span id="like-count" class="text-white action-text-sm font-semibold drop-shadow">0</span>
+                    </button>
+
+                    <!-- Comment -->
+                    <button id="btn-comment" class="flex flex-col items-center gap-1">
+                        <div class="w-12 h-12 action-icon-sm bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors">
+                            <i data-lucide="message-circle" class="w-7 h-7 action-svg-sm text-white"></i>
+                        </div>
+                        <span id="comment-count" class="text-white action-text-sm font-semibold drop-shadow">0</span>
+                    </button>
+
+                    <!-- Share -->
+                    <button id="btn-share" class="flex flex-col items-center gap-1">
+                        <div class="w-12 h-12 action-icon-sm bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 action-svg-sm text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                        </div>
+                        <span class="text-white action-text-sm font-semibold drop-shadow">Chia sẻ</span>
+                    </button>
+
+                    <!-- Spinning Disc (Mobile only) -->
+                    <div class="mt-2 action-disc-mobile">
+                        <div class="w-10 h-10 rounded-full border-[3px] border-white/30 overflow-hidden animate-spin" style="animation-duration: 3s">
+                            <div class="w-full h-full bg-gradient-to-br from-[#2D5A3D] to-[#2a0a16] flex items-center justify-center">
+                                <div class="w-3 h-3 bg-white/80 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Comment Panel -->
+    <div id="comment-panel" class="comment-modal hidden" style="transform: translateX(100%); transition: transform 0.3s ease-out;">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+            <h3 id="comment-count-header" class="font-semibold text-gray-900 text-sm">Bình luận (0)</h3>
+            <button id="btn-close-comments" class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        
+        <!-- List -->
+        <div id="comment-list" class="flex-1 overflow-y-auto px-5 py-4 bg-gray-50">
+            <!-- comments injected by JS -->
+        </div>
+        
+        <!-- Main Input -->
+        <div id="main-comment-input-area" class="main-comment-input">
+            <div class="flex-1 flex items-center bg-gray-100 rounded-full px-4 py-2 gap-2">
+                <input id="main-comment-input" type="text" placeholder="Thêm bình luận..." class="flex-1 bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none" />
+                <button id="btn-send-main" class="text-[#2D5A3D] disabled:text-gray-300 transition-colors" disabled>
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mobile overlay for comments -->
+    <div id="comment-overlay" class="comment-overlay hidden" style="z-index: 40;"></div>
+
+</div>
+
+@section Scripts {
+<style>
+    /* Reset layout for container to match React ShortsPage */
+    .shorts-app-container {
+        position: relative;
+        background-color: #0F0F0F;
+        user-select: none;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: calc(100vh - 64px);
+        transition: padding-right 0.5s ease-in-out;
+    }
+
+    /* Video wrapper */
+    .video-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background-color: black;
+        transition: all 0.5s ease-in-out;
+        flex-shrink: 0;
+    }
+    .video-wrapper-inner {
+        border-radius: 0;
+    }
+
+    /* Interaction buttons on right */
+    .action-buttons {
+        position: absolute;
+        right: 0.75rem;
+        bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        pointer-events: auto;
+    }
+    
+    /* Info Overlay Mobile */
+    .info-overlay-mobile {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 4rem;
+        padding: 1rem;
+        pointer-events: auto;
+    }
+    
+    /* Info Overlay Desktop */
+    .info-overlay-desktop {
+        display: none;
+    }
+    
+    .action-arrows { display: none; }
+    .action-icon-sm { width: 3rem; height: 3rem; }
+    .action-svg-sm { width: 1.75rem; height: 1.75rem; }
+    .action-text-sm { color: white; }
+
+    /* Comment Modal */
+    .comment-modal {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 60vh;
+        background-color: white;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        box-shadow: -20px 0 40px rgba(0,0,0,0.1);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 50;
+    }
+    .comment-modal.flex { display: flex; }
+    
+    .comment-overlay {
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0,0,0,0.4);
+        cursor: pointer;
+    }
+
+    .main-comment-input {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-top: 1px solid #f3f4f6;
+        flex-shrink: 0;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    @@media (min-width: 640px) {
+        .shorts-app-container { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        .video-wrapper { width: 350px; border-radius: 1rem; }
+        .video-wrapper-inner { border-radius: 1rem; }
+        .action-buttons { right: -4rem; bottom: 1rem; gap: 1.25rem; }
+        .action-arrows { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+        .action-icon-sm { width: 2.5rem; height: 2.5rem; background-color: rgba(255,255,255,0.1); }
+        .action-svg-sm { width: 1.25rem; height: 1.25rem; }
+        .action-text-sm { color: rgba(255,255,255,0.8); }
+        .action-disc-mobile { display: none; }
+        
+        .info-overlay-mobile { display: none; }
+        .info-overlay-desktop {
+            display: block;
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            width: 300px;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .comment-modal {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: auto;
+            width: 350px;
+            height: 100%;
+            border-radius: 0;
+            border-left: 1px solid #f3f4f6;
+            z-index: 10;
+        }
+        .main-comment-input {
+            padding-right: 90px;
+        }
+        .comment-overlay { display: none !important; }
+    }
+
+    @@media (min-width: 768px) {
+        .video-wrapper { width: 400px; }
+        .info-overlay-desktop { width: 350px; }
+        .comment-modal { width: 400px; }
+    }
+
+    @@media (min-width: 1024px) {
+        .video-wrapper { width: 420px; }
+        .comment-modal { width: 420px; }
+    }
+
+    .short-gradient { background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%, rgba(0,0,0,0.2) 100%); }
+    @@keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    .animate-marquee { animation: marquee 8s linear infinite; }
+</style>
+<script>
+(function() {
+    const APP_EL = document.getElementById('shorts-app');
+    const BASE_URL = 'https://localhost:7015/api/v1';
+    const TOKEN = APP_EL.dataset.token || '';
+    const IS_AUTH = APP_EL.dataset.isAuth === 'true';
+    const CURRENT_USER_NAME = APP_EL.dataset.currentUserName || '';
+    const CURRENT_USER_AVATAR = APP_EL.dataset.currentUserAvatar || '';
+    const CURRENT_USER_ID = APP_EL.dataset.currentUserId || '';
+
+    let shorts = [];
+    let currentIndex = 0;
+    let isTransitioning = false;
+    let activeCommentsShortId = null;
+    let commentsCache = {}; 
+    let replyingTo = null;   
+    let editingComment = null; 
+    let touchStartY = null;
+    let isSwiping = false;
+
+    // Volume & Playback state
+    let globalVolume = 1;
+    let isMuted = false;
+    let playIconTimeout = null;
+
+    const authHeaders = TOKEN ? { 'Authorization': `Bearer ${TOKEN}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+
+    async function fetchShorts() {
+        try {
+            const res = await fetch(`${BASE_URL}/Shorts`, { headers: authHeaders });
+            const json = await res.json();
+            if (json.success && json.data && json.data.length > 0) {
+                shorts = json.data;
+                initUI();
+            } else {
+                showEmpty();
+            }
+        } catch (e) {
+            showEmpty();
+        }
+    }
+
+    function showEmpty() {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('empty-state').classList.remove('hidden');
+        document.getElementById('empty-state').classList.add('flex');
+    }
+
+    function initUI() {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('shorts-content').classList.remove('hidden');
+        document.getElementById('shorts-content').classList.add('flex');
+        buildVideoStack();
+        renderCurrentVideo();
+        bindEvents();
+        lucide.createIcons();
+    }
+
+    function buildVideoStack() {
+        const stack = document.getElementById('video-stack');
+        stack.innerHTML = '';
+        stack.style.height = `${shorts.length * 100}%`;
+
+        shorts.forEach((v, i) => {
+            const slot = document.createElement('div');
+            slot.className = 'relative w-full';
+            slot.style.height = `${100 / shorts.length}%`;
+            slot.id = `video-slot-${i}`;
+
+            const gradientDiv = document.createElement('div');
+            gradientDiv.className = 'absolute inset-0 short-gradient pointer-events-none z-10';
+
+            slot.appendChild(gradientDiv);
+            stack.appendChild(slot);
+        });
+
+        updateVideoSlots();
+    }
+
+    function updateVideoSlots() {
+        shorts.forEach((v, i) => {
+            const slot = document.getElementById(`video-slot-${i}`);
+            if (!slot) return;
+
+            const shouldRender = Math.abs(currentIndex - i) <= 2;
+
+            let videoEl = slot.querySelector('video');
+            if (shouldRender && !videoEl) {
+                videoEl = document.createElement('video');
+                videoEl.className = 'absolute inset-0 w-full h-full object-contain';
+                videoEl.style.cssText = 'opacity: 1; transform: translateZ(0); will-change: transform;';
+                videoEl.loop = true;
+                videoEl.playsInline = true;
+                videoEl.preload = 'auto'; // preload adjacent videos to prevent jerky playback
+                videoEl.src = v.videoUrl;
+                slot.insertBefore(videoEl, slot.firstChild);
+            }
+
+            if (videoEl) {
+                if (i === currentIndex) {
+                    videoEl.volume = isMuted ? 0 : globalVolume;
+                    videoEl.muted = isMuted || globalVolume === 0;
+                    videoEl.preload = 'auto';
+                    const centerIcon = document.getElementById('center-play-icon');
+                    if (centerIcon) centerIcon.style.opacity = '0';
+                    const playPromise = videoEl.play();
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            // playback started
+                        }).catch((error) => {
+                            if (error.name === 'NotAllowedError') {
+                                videoEl.muted = true;
+                                isMuted = true;
+                                updateVolumeUI();
+                                videoEl.play().catch(() => {});
+                            }
+                        });
+                    }
+                } else {
+                    videoEl.pause();
+                }
+            }
+        });
+    }
+
+    function renderCurrentVideo() {
+        const v = shorts[currentIndex];
+        if (!v) return;
+
+        const stack = document.getElementById('video-stack');
+        stack.style.transform = `translateY(-${(currentIndex * 100) / shorts.length}%)`;
+
+        updateLikeUI(v);
+        document.getElementById('comment-count').textContent = v.commentCount ?? 0;
+
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        btnPrev.disabled = currentIndex === 0;
+        btnNext.disabled = currentIndex === shorts.length - 1;
+
+        const infoHtml = buildInfoHtml(v);
+        document.getElementById('info-overlay-desktop').innerHTML = infoHtml;
+        document.getElementById('info-overlay-mobile').innerHTML = infoHtml;
+
+        if (activeCommentsShortId !== null) {
+            activeCommentsShortId = v.shortId;
+            loadComments(v.shortId);
+        }
+
+        lucide.createIcons();
+    }
+
+    function buildInfoHtml(v) {
+        const avatarContent = (v.sellerAvatar && v.sellerAvatar.length > 1)
+            ? `<img src="${v.sellerAvatar}" alt="avatar" class="w-full h-full object-cover" />`
+            : `<span class="text-white font-bold text-base">${(v.sellerName || 'U').charAt(0).toUpperCase()}</span>`;
+
+        const followBtn = (IS_AUTH && CURRENT_USER_ID && CURRENT_USER_ID != String(v.sellerId))
+            ? `<button class="follow-btn ml-2 text-xs border rounded-full px-2 py-0.5 transition-colors ${v.isFollowingSeller ? 'text-white border-white/50 bg-white/20 hover:bg-white/30' : 'text-[#C4603A] border-[#C4603A]/60 bg-black/20 hover:bg-[#C4603A]/10'}" data-seller-id="${v.sellerId}" data-short-index="${currentIndex}">
+                ${v.isFollowingSeller ? 'Đang theo dõi' : '+ Follow'}
+            </button>` : '';
+
+        const priceBtn = (v.productId && v.productPrice)
+            ? `<a href="/Products/Details/${v.productId}" class="inline-flex items-center gap-1.5 bg-[#2D5A3D]/90 backdrop-blur-sm rounded-full px-4 py-1.5 mb-3 cursor-pointer hover:bg-[#2D5A3D] transition-colors pointer-events-auto">
+                <i data-lucide="shopping-bag" class="w-4 h-4 text-white"></i>
+                <span class="text-white font-bold text-sm">Đang bán: ${Number(v.productPrice).toLocaleString('vi-VN')}đ</span>
+               </a>` : '';
+
+        return `
+            <div class="flex items-center gap-2 mb-3">
+                <a href="/Profile/${v.sellerId}" class="w-10 h-10 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full flex items-center justify-center text-white font-bold text-base border-2 border-white/30 shadow-lg overflow-hidden flex-shrink-0 cursor-pointer">${avatarContent}</a>
+                <div>
+                    <a href="/Profile/${v.sellerId}" class="text-white font-semibold text-sm drop-shadow-md cursor-pointer hover:underline">${v.sellerName}</a>
+                    ${followBtn}
+                </div>
+            </div>
+            <p class="text-white text-sm font-medium leading-relaxed mb-2 drop-shadow-md max-w-xs">${v.caption || ''}</p>
+            ${priceBtn}
+            <div class="flex items-center gap-2">
+                <i data-lucide="music-2" class="w-4 h-4 text-white flex-shrink-0 drop-shadow-md"></i>
+                <div class="overflow-hidden flex-1 max-w-[200px]">
+                    <p class="text-white text-xs whitespace-nowrap animate-marquee drop-shadow-md">Nhạc nền gốc - @@${v.sellerName}</p>
+                </div>
+            </div>`;
+    }
+
+    function updateLikeUI(v) {
+        const icon = document.getElementById('like-icon');
+        const wrapper = document.getElementById('like-icon-wrapper');
+        const count = document.getElementById('like-count');
+        if (v.isLikedByCurrentUser) {
+            icon.setAttribute('data-lucide', 'heart');
+            icon.style.fill = '#ef4444';
+            icon.style.color = '#ef4444';
+            wrapper.classList.add('scale-110');
+            if(window.innerWidth >= 640) {
+                wrapper.classList.remove('bg-white/10');
+                wrapper.classList.add('bg-white/10');
+            } else {
+                wrapper.classList.add('bg-red-500/20');
+                wrapper.classList.remove('bg-white/10');
+            }
+        } else {
+            icon.setAttribute('data-lucide', 'heart');
+            icon.style.fill = 'none';
+            icon.style.color = 'white';
+            wrapper.classList.remove('scale-110');
+            wrapper.classList.remove('bg-red-500/20');
+            wrapper.classList.add('bg-white/10');
+        }
+        count.textContent = v.likeCount ?? 0;
+    }
+
+    function goTo(index) {
+        if (isTransitioning || shorts.length === 0) return;
+        const clamped = Math.max(0, Math.min(shorts.length - 1, index));
+        if (clamped === currentIndex) return;
+
+        isTransitioning = true;
+        currentIndex = clamped;
+        updateVideoSlots();
+        renderCurrentVideo();
+        setTimeout(() => { isTransitioning = false; }, 500);
+    }
+
+    async function toggleLike() {
+        if (!IS_AUTH) { alert('Vui lòng đăng nhập để thả tim.'); return; }
+        const v = shorts[currentIndex];
+        v.isLikedByCurrentUser = !v.isLikedByCurrentUser;
+        v.likeCount = v.isLikedByCurrentUser ? v.likeCount + 1 : v.likeCount - 1;
+        updateLikeUI(v);
+
+        try {
+            await fetch(`${BASE_URL}/Shorts/${v.shortId}/like`, { method: 'POST', headers: authHeaders });
+        } catch {
+            v.isLikedByCurrentUser = !v.isLikedByCurrentUser;
+            v.likeCount = v.isLikedByCurrentUser ? v.likeCount + 1 : v.likeCount - 1;
+            updateLikeUI(v);
+        }
+    }
+
+    async function likeComment(shortId, commentId) {
+        if (!IS_AUTH) { alert('Vui lòng đăng nhập để thả tim.'); return; }
+        const comments = commentsCache[shortId] || [];
+        const comment = comments.find(c => c.commentId === commentId);
+        if (!comment) return;
+
+        comment.isLikedByCurrentUser = !comment.isLikedByCurrentUser;
+        comment.likeCount = comment.isLikedByCurrentUser ? comment.likeCount + 1 : comment.likeCount - 1;
+
+        const countEl = document.getElementById(`comment-like-count-${commentId}`);
+        const iconEl = document.getElementById(`comment-like-icon-${commentId}`);
+        if (countEl) countEl.textContent = comment.likeCount;
+        if (iconEl) {
+            iconEl.style.fill = comment.isLikedByCurrentUser ? '#ef4444' : 'none';
+            iconEl.style.color = comment.isLikedByCurrentUser ? '#ef4444' : '#9ca3af';
+        }
+
+        try {
+            await fetch(`${BASE_URL}/Shorts/${shortId}/comments/${commentId}/like`, { method: 'POST', headers: authHeaders });
+        } catch {
+            comment.isLikedByCurrentUser = !comment.isLikedByCurrentUser;
+            comment.likeCount = comment.isLikedByCurrentUser ? comment.likeCount + 1 : comment.likeCount - 1;
+            if (countEl) countEl.textContent = comment.likeCount;
+            if (iconEl) {
+                iconEl.style.fill = comment.isLikedByCurrentUser ? '#ef4444' : 'none';
+                iconEl.style.color = comment.isLikedByCurrentUser ? '#ef4444' : '#9ca3af';
+            }
+        }
+    }
+
+    async function deleteComment(shortId, commentId) {
+        if (!confirm('Chắc chắn xóa bình luận này?')) return;
+        try {
+            const res = await fetch(`${BASE_URL}/Shorts/${shortId}/comments/${commentId}`, { method: 'DELETE', headers: authHeaders });
+            const json = await res.json();
+            if (json.success) {
+                const getIds = (id) => {
+                    const children = (commentsCache[shortId] || []).filter(c => c.parentId === id).map(c => c.commentId);
+                    return [id, ...children.flatMap(cid => getIds(cid))];
+                };
+                const toRemove = getIds(commentId);
+                commentsCache[shortId] = commentsCache[shortId].filter(c => !toRemove.includes(c.commentId));
+                renderComments(shortId);
+            }
+        } catch {}
+    }
+
+    async function loadComments(shortId) {
+        document.getElementById('comment-list').innerHTML = '<div class="flex justify-center py-10"><div class="w-6 h-6 border-2 border-[#2D5A3D] border-t-transparent rounded-full animate-spin"></div></div>';
+        updateCommentHeader(0);
+        try {
+            const res = await fetch(`${BASE_URL}/Shorts/${shortId}/comments`, { headers: authHeaders });
+            const json = await res.json();
+            if (json.success) {
+                commentsCache[shortId] = json.data || [];
+                renderComments(shortId);
+            }
+        } catch {
+            document.getElementById('comment-list').innerHTML = '<p class="text-center text-gray-400 text-sm py-10">Không thể tải bình luận.</p>';
+        }
+    }
+
+    function updateCommentHeader(count) {
+        document.getElementById('comment-count-header').textContent = `Bình luận (${count})`;
+    }
+
+    function renderComments(shortId) {
+        const comments = commentsCache[shortId] || [];
+        updateCommentHeader(comments.length);
+        const listEl = document.getElementById('comment-list');
+
+        if (comments.length === 0) {
+            listEl.innerHTML = '<p class="text-center text-gray-400 text-sm py-10">Chưa có bình luận nào.</p>';
+            return;
+        }
+
+        const rootComments = comments.filter(c => !c.parentId);
+        listEl.innerHTML = rootComments.map(root => buildCommentThread(root, comments, shortId)).join('');
+        lucide.createIcons();
+    }
+
+    function timeAgo(dateStr) {
+        const diff = new Date().getTime() - new Date(dateStr).getTime();
+        const minutes = Math.floor(diff / 60000);
+        if (minutes < 1) return 'Vừa xong';
+        if (minutes < 60) return `${minutes} phút trước`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} giờ trước`;
+        return `${Math.floor(hours / 24)} ngày trước`;
+    }
+
+    function buildCommentHtml(comment, isReply, parentComment, shortId) {
+        const isOwner = IS_AUTH && CURRENT_USER_ID && String(comment.userId) === CURRENT_USER_ID;
+        const avatarContent = (comment.avatarUrl && comment.avatarUrl.length > 1)
+            ? `<img src="${comment.avatarUrl}" alt="avatar" class="w-full h-full object-cover rounded-full" />`
+            : comment.fullName.charAt(0).toUpperCase();
+
+        const ownerMenu = isOwner ? `
+            <div class="absolute top-2 right-2">
+                <button class="comment-menu-btn p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors" data-comment-id="${comment.commentId}">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                </button>
+                <div id="dropdown-${comment.commentId}" class="hidden absolute right-0 mt-1 w-44 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden z-50 py-1">
+                    <button class="edit-comment-btn w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2" data-comment-id="${comment.commentId}" data-content="${comment.content.replace(/"/g, '&quot;')}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Sửa
+                    </button>
+                    <button class="delete-comment-btn w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2" data-comment-id="${comment.commentId}" data-short-id="${shortId}">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Xóa
+                    </button>
+                </div>
+            </div>` : '';
+
+        const likedClass = comment.isLikedByCurrentUser ? 'text-red-500 fill-red-500' : 'text-gray-400 hover:text-red-400';
+        const parentArrow = (isReply && parentComment) ? `<span class="text-gray-400 font-normal mx-1.5 text-xs">▶</span><span class="text-xs font-medium text-gray-600">${parentComment.fullName}</span>` : '';
+
+        let inlineInputHtml = '';
+        if ((replyingTo && replyingTo.id === comment.commentId) || (editingComment && editingComment.id === comment.commentId)) {
+            const isEditing = editingComment && editingComment.id === comment.commentId;
+            const name = isEditing ? '' : replyingTo.name;
+            const bannerText = isEditing ? `<i data-lucide="edit-2" class="w-3 h-3"></i> Đang sửa bình luận` : `<i data-lucide="message-circle" class="w-3 h-3"></i> Đang trả lời ${name}`;
+            const placeholder = isEditing ? 'Sửa bình luận...' : `Trả lời ${name}...`;
+            const buttonText = isEditing ? 'Cập nhật' : 'Gửi';
+            const value = isEditing ? editingComment.content : '';
+            const initial = CURRENT_USER_NAME ? CURRENT_USER_NAME.charAt(0).toUpperCase() : 'U';
+            
+            inlineInputHtml = `
+            <div class="mt-3 flex gap-3 w-full" id="inline-comment-input-container">
+                <div class="w-8 h-8 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                    ${initial}
+                </div>
+                <div class="flex-1 bg-white border border-gray-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-[#2D5A3D]/30 focus-within:border-transparent transition-all">
+                    <div class="bg-gray-50 px-4 py-2 border-b border-gray-100 flex items-center justify-between">
+                        <span class="text-xs font-medium text-gray-600 flex items-center gap-2">
+                            ${bannerText}
+                        </span>
+                        <button onclick="window.cancelInlineInput()" class="p-1 hover:bg-gray-200 rounded-full text-gray-500 transition-colors"><i data-lucide="x" class="w-3 h-3"></i></button>
+                    </div>
+                    <textarea id="inline-comment-input" rows="2" placeholder="${placeholder}" class="w-full px-4 py-2.5 focus:outline-none resize-none bg-transparent text-sm text-gray-800 placeholder-gray-400">${value}</textarea>
+                    <div class="flex justify-end px-3 pb-2.5">
+                        <button id="btn-send-inline" class="flex items-center gap-1.5 bg-[#2D5A3D] text-white px-4 py-1.5 rounded-xl hover:bg-[#234830] transition-all disabled:opacity-50 font-medium text-xs shadow-sm" ${!value ? 'disabled' : ''}>
+                            <i data-lucide="send" class="w-3 h-3 text-white"></i>
+                            <span>${buttonText}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        return `
+            <div class="flex gap-3 ${isReply ? 'mt-3' : 'mt-5'}" id="comment-item-${comment.commentId}">
+                <div class="${isReply ? 'w-7 h-7' : 'w-9 h-9'} bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">${avatarContent}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1 bg-white p-3 rounded-2xl shadow-sm border border-gray-100 relative group">
+                            <div class="flex items-baseline gap-2 mb-1">
+                                <span class="text-sm font-bold text-gray-900">${comment.fullName}${parentArrow}</span>
+                                <span class="text-[10px] text-gray-400">${timeAgo(comment.createdAt)}</span>
+                            </div>
+                            <p class="text-sm text-gray-700 leading-relaxed break-words">${comment.content}</p>
+                            ${ownerMenu}
+                        </div>
+                        <div class="flex flex-col items-center ml-3 pt-2">
+                            <button class="like-comment-btn" data-comment-id="${comment.commentId}" data-short-id="${shortId}">
+                                <svg id="comment-like-icon-${comment.commentId}" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 ${likedClass}" fill="${comment.isLikedByCurrentUser ? '#ef4444' : 'none'}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                            </button>
+                            <span id="comment-like-count-${comment.commentId}" class="text-xs text-gray-500 mt-1">${comment.likeCount || 0}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-1.5 ml-2">
+                        <button class="reply-btn text-xs font-medium text-gray-500 hover:text-gray-800" data-comment-id="${comment.commentId}" data-full-name="${comment.fullName}">Trả lời</button>
+                    </div>
+                    ${inlineInputHtml}
+                </div>
+            </div>`;
+    }
+
+    function buildCommentThread(root, allComments, shortId) {
+        const descendants = allComments.filter(c => c.parentId === root.commentId)
+            .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+        let html = buildCommentHtml(root, false, null, shortId);
+        if (descendants.length > 0) {
+            html += `<div class="ml-[44px]">`;
+            descendants.forEach(reply => {
+                const parent = allComments.find(c => c.commentId === reply.parentId);
+                html += buildCommentHtml(reply, true, parent, shortId);
+            });
+            html += `</div>`;
+        }
+        return html;
+    }
+
+    function getPanelWidth() {
+        if (window.innerWidth >= 1024) return 420;
+        if (window.innerWidth >= 768) return 400;
+        if (window.innerWidth >= 640) return 350;
+        return 0;
+    }
+
+    function openComments() {
+        const v = shorts[currentIndex];
+        activeCommentsShortId = v.shortId;
+        const panel = document.getElementById('comment-panel');
+        panel.classList.remove('hidden');
+        panel.classList.add('flex');
+        requestAnimationFrame(() => { panel.style.transform = 'translateX(0)'; });
+        
+        if (window.innerWidth >= 640) {
+            document.getElementById('shorts-app').style.paddingRight = getPanelWidth() + 'px';
+        } else {
+            document.getElementById('comment-overlay').classList.remove('hidden');
+        }
+        loadComments(v.shortId);
+        updateMainInputVisibility();
+    }
+
+    function closeComments() {
+        activeCommentsShortId = null;
+        const panel = document.getElementById('comment-panel');
+        panel.style.transform = 'translateX(100%)';
+        setTimeout(() => { panel.classList.add('hidden'); panel.classList.remove('flex'); }, 300);
+        document.getElementById('comment-overlay').classList.add('hidden');
+        document.getElementById('shorts-app').style.paddingRight = '';
+        window.cancelInlineInput();
+    }
+
+    window.cancelInlineInput = function() {
+        replyingTo = null; 
+        editingComment = null;
+        document.getElementById('main-comment-input').value = '';
+        updateMainInputVisibility();
+        if (activeCommentsShortId) renderComments(activeCommentsShortId);
+    };
+
+    function updateMainInputVisibility() {
+        const mainInput = document.getElementById('main-comment-input-area');
+        if (replyingTo || editingComment) {
+            mainInput.classList.add('hidden');
+            mainInput.classList.remove('flex');
+        } else {
+            mainInput.classList.remove('hidden');
+            mainInput.classList.add('flex');
+        }
+    }
+
+    async function sendComment(isInline = false) {
+        if (!IS_AUTH) { alert('Vui lòng đăng nhập.'); return; }
+        const inputId = isInline ? 'inline-comment-input' : 'main-comment-input';
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        const content = input.value.trim();
+        if (!content) return;
+        
+        const btnId = isInline ? 'btn-send-inline' : 'btn-send-main';
+        const btn = document.getElementById(btnId);
+        btn.disabled = true;
+        const shortId = activeCommentsShortId;
+        
+        try {
+            if (editingComment) {
+                const res = await fetch(`${BASE_URL}/Shorts/${shortId}/comments/${editingComment.id}`, { method: 'PUT', headers: authHeaders, body: JSON.stringify({ content }) });
+                const json = await res.json();
+                if (json.success) { 
+                    if (commentsCache[shortId]) {
+                        commentsCache[shortId] = commentsCache[shortId].map(c => c.commentId === editingComment.id ? json.data : c);
+                    }
+                    editingComment = null; 
+                    renderComments(shortId); 
+                    updateMainInputVisibility(); 
+                }
+            } else {
+                const body = { content };
+                if (replyingTo) body.parentId = replyingTo.id;
+                const res = await fetch(`${BASE_URL}/Shorts/${shortId}/comments`, { method: 'POST', headers: authHeaders, body: JSON.stringify(body) });
+                const json = await res.json();
+                if (json.success) { 
+                    if (!commentsCache[shortId]) commentsCache[shortId] = [];
+                    commentsCache[shortId].push(json.data);
+                    replyingTo = null; 
+                    renderComments(shortId); 
+                    updateMainInputVisibility(); 
+                }
+            }
+            input.value = ''; 
+        } catch (error) {
+            console.error("Error saving comment", error);
+        } finally {
+            if (document.body.contains(btn)) {
+                btn.disabled = !input.value.trim();
+            }
+        }
+    }
+
+    function updateVolumeUI() {
+        const wrapper = document.getElementById('volume-icon-wrapper');
+        const slider = document.getElementById('volume-slider');
+        if (!wrapper || !slider) return;
+        if (isMuted || globalVolume === 0) {
+            wrapper.innerHTML = '<i data-lucide="volume-x" class="w-5 h-5 text-white"></i>';
+        } else {
+            wrapper.innerHTML = '<i data-lucide="volume-2" class="w-5 h-5 text-white"></i>';
+        }
+        lucide.createIcons();
+        slider.value = isMuted ? 0 : globalVolume;
+    }
+
+    function togglePlayPause() {
+        const slot = document.getElementById(`video-slot-${currentIndex}`);
+        if (!slot) return;
+        const videoEl = slot.querySelector('video');
+        if (!videoEl) return;
+        
+        const centerIcon = document.getElementById('center-play-icon');
+        const wrapper = document.getElementById('center-icon-wrapper');
+        if (!centerIcon || !wrapper) return;
+        
+        if (videoEl.paused) {
+            videoEl.play();
+            wrapper.innerHTML = '<i data-lucide="play" class="w-10 h-10 text-white fill-white ml-1"></i>';
+            lucide.createIcons();
+            centerIcon.style.opacity = '1';
+            if (playIconTimeout) clearTimeout(playIconTimeout);
+            playIconTimeout = setTimeout(() => { centerIcon.style.opacity = '0'; }, 500);
+        } else {
+            videoEl.pause();
+            wrapper.innerHTML = '<i data-lucide="pause" class="w-10 h-10 text-white fill-white"></i>';
+            lucide.createIcons();
+            centerIcon.style.opacity = '1';
+            if (playIconTimeout) clearTimeout(playIconTimeout);
+        }
+    }
+
+    function bindEvents() {
+        document.getElementById('video-frame').addEventListener('click', (e) => {
+            if (isSwiping) return;
+            if (e.target.closest('.action-buttons') || e.target.closest('#btn-volume') || e.target.closest('#volume-slider') || e.target.closest('.info-overlay-desktop') || e.target.closest('.info-overlay-mobile') || e.target.closest('.follow-btn') || e.target.closest('a')) {
+                return;
+            }
+            togglePlayPause();
+        });
+
+        const volumeSlider = document.getElementById('volume-slider');
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                globalVolume = val;
+                isMuted = val === 0;
+                updateVolumeUI();
+                const slot = document.getElementById(`video-slot-${currentIndex}`);
+                if (slot) {
+                    const videoEl = slot.querySelector('video');
+                    if (videoEl) {
+                        videoEl.volume = globalVolume;
+                        videoEl.muted = isMuted;
+                    }
+                }
+            });
+            volumeSlider.addEventListener('click', (e) => e.stopPropagation());
+        }
+
+        const btnVolume = document.getElementById('btn-volume');
+        if (btnVolume) {
+            btnVolume.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isMuted = !isMuted;
+                if (!isMuted && globalVolume === 0) globalVolume = 1;
+                updateVolumeUI();
+                const slot = document.getElementById(`video-slot-${currentIndex}`);
+                if (slot) {
+                    const videoEl = slot.querySelector('video');
+                    if (videoEl) {
+                        videoEl.volume = isMuted ? 0 : globalVolume;
+                        videoEl.muted = isMuted;
+                    }
+                }
+            });
+        }
+
+        document.getElementById('btn-prev').addEventListener('click', (e) => { e.stopPropagation(); goTo(currentIndex - 1); });
+        document.getElementById('btn-next').addEventListener('click', (e) => { e.stopPropagation(); goTo(currentIndex + 1); });
+
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowDown', 'ArrowRight'].includes(e.key)) { e.preventDefault(); goTo(currentIndex + 1); }
+            if (['ArrowUp', 'ArrowLeft'].includes(e.key)) { e.preventDefault(); goTo(currentIndex - 1); }
+        });
+
+        const appEl = document.getElementById('shorts-app');
+        let lastWheel = 0;
+        appEl.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const now = Date.now();
+            if (now - lastWheel < 600) return;
+            lastWheel = now;
+            if (e.deltaY > 0) goTo(currentIndex + 1);
+            else goTo(currentIndex - 1);
+        }, { passive: false });
+
+        appEl.addEventListener('touchstart', (e) => { touchStartY = e.touches[0].clientY; }, { passive: true });
+        appEl.addEventListener('touchmove', (e) => {
+            if (touchStartY !== null) {
+                const delta = touchStartY - e.touches[0].clientY;
+                if (Math.abs(delta) > 10) isSwiping = true;
+            }
+        }, { passive: true });
+        appEl.addEventListener('touchend', (e) => {
+            if (touchStartY === null) return;
+            const delta = touchStartY - e.changedTouches[0].clientY;
+            if (Math.abs(delta) > 50) {
+                if (delta > 0) goTo(currentIndex + 1);
+                else goTo(currentIndex - 1);
+            }
+            touchStartY = null;
+            setTimeout(() => { isSwiping = false; }, 100);
+        });
+
+        document.getElementById('btn-like').addEventListener('click', toggleLike);
+        document.getElementById('btn-comment').addEventListener('click', () => { if (activeCommentsShortId) closeComments(); else openComments(); });
+        document.getElementById('btn-close-comments').addEventListener('click', closeComments);
+        document.getElementById('comment-overlay').addEventListener('click', closeComments);
+        
+        document.getElementById('main-comment-input').addEventListener('input', (e) => {
+            const btn = document.getElementById('btn-send-main');
+            btn.disabled = !e.target.value.trim();
+        });
+
+        document.getElementById('main-comment-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendComment(false);
+            }
+        });
+
+        document.getElementById('btn-send-main').addEventListener('click', () => sendComment(false));
+
+        document.getElementById('comment-list').addEventListener('click', async (e) => {
+            const likeBtn = e.target.closest('.like-comment-btn');
+            if (likeBtn) {
+                await likeComment(Number(likeBtn.dataset.shortId), Number(likeBtn.dataset.commentId));
+                return;
+            }
+            const menuBtn = e.target.closest('.comment-menu-btn');
+            if (menuBtn) {
+                const commentId = menuBtn.dataset.commentId;
+                const dropdown = document.getElementById(`dropdown-${commentId}`);
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => { if (d !== dropdown) d.classList.add('hidden'); });
+                dropdown.classList.toggle('hidden');
+                return;
+            }
+            const replyBtn = e.target.closest('.reply-btn');
+            if (replyBtn) {
+                replyingTo = { id: parseInt(replyBtn.dataset.commentId), name: replyBtn.dataset.fullName };
+                editingComment = null;
+                updateMainInputVisibility();
+                if (activeCommentsShortId) renderComments(activeCommentsShortId);
+                setTimeout(() => {
+                    const inlineInput = document.getElementById('inline-comment-input');
+                    if (inlineInput) inlineInput.focus();
+                }, 50);
+                return;
+            }
+            const editBtn = e.target.closest('.edit-comment-btn');
+            if (editBtn) {
+                editingComment = { id: parseInt(editBtn.dataset.commentId), content: editBtn.dataset.content };
+                replyingTo = null;
+                updateMainInputVisibility();
+                if (activeCommentsShortId) renderComments(activeCommentsShortId);
+                setTimeout(() => {
+                    const inlineInput = document.getElementById('inline-comment-input');
+                    if (inlineInput) {
+                        inlineInput.focus();
+                        inlineInput.setSelectionRange(inlineInput.value.length, inlineInput.value.length);
+                    }
+                }, 50);
+                return;
+            }
+
+            const deleteBtn = e.target.closest('.delete-comment-btn');
+            if (deleteBtn) {
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
+                await deleteComment(Number(deleteBtn.dataset.shortId), Number(deleteBtn.dataset.commentId));
+                return;
+            }
+
+            // Xử lý nút send inline
+            const inlineSendBtn = e.target.closest('#btn-send-inline');
+            if (inlineSendBtn) {
+                sendComment(true);
+                return;
+            }
+        });
+
+        // Lắng nghe sự kiện gõ phím của inline input để enable/disable nút gửi
+        document.getElementById('comment-list').addEventListener('input', (e) => {
+            if (e.target.id === 'inline-comment-input') {
+                const btn = document.getElementById('btn-send-inline');
+                if (btn) btn.disabled = !e.target.value.trim();
+            }
+        });
+        document.getElementById('comment-list').addEventListener('keydown', (e) => {
+            if (e.target.id === 'inline-comment-input' && e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendComment(true);
+            }
+        });
+
+        document.getElementById('shorts-content').addEventListener('click', async (e) => {
+            const followBtn = e.target.closest('.follow-btn');
+            if (!followBtn) return;
+            if (!IS_AUTH) { alert('Vui lòng đăng nhập để theo dõi.'); return; }
+            e.stopPropagation();
+            const sellerId = Number(followBtn.dataset.sellerId);
+            const shortIdx = Number(followBtn.dataset.shortIndex);
+            try {
+                const res = await fetch(`${BASE_URL}/users/${sellerId}/toggle-follow`, { method: 'POST', headers: authHeaders });
+                const json = await res.json();
+                if (json.success && json.data) {
+                    shorts[shortIdx].isFollowingSeller = json.data.IsFollowing;
+                    renderCurrentVideo();
+                }
+            } catch {}
+        });
+
+        document.getElementById('btn-share').addEventListener('click', () => {
+            const v = shorts[currentIndex];
+            if (navigator.share) {
+                navigator.share({ title: v.caption || 'REVORA Short', url: window.location.href });
+            } else {
+                navigator.clipboard.writeText(window.location.href);
+                alert('Đã sao chép đường dẫn!');
+            }
+        });
+    }
+
+    fetchShorts();
+})();
+</script>
+}

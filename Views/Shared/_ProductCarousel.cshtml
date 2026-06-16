@@ -1,0 +1,69 @@
+@model List<REVORA_MVC_FE.Models.ProductResponseDto>
+
+@{
+    var id = "carousel-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+    var itemsToShow = 5;
+}
+
+<div class="relative group" id="@id">
+    <!-- Prev Button -->
+    <button class="carousel-prev hidden absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100">
+        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-700"></i>
+    </button>
+
+    <!-- Scroll Container -->
+    <div class="carousel-container flex gap-6 overflow-x-auto scroll-smooth hide-scrollbar pb-4 snap-x snap-mandatory">
+        @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                <div class="flex-shrink-0 snap-start" style="width: calc((100% - @((itemsToShow - 1) * 24)px) / @itemsToShow)">
+                    @await Html.PartialAsync("_ProductCard", item)
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Next Button -->
+    <button class="carousel-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100">
+        <i data-lucide="chevron-right" class="w-6 h-6 text-gray-700"></i>
+    </button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const wrapper = document.getElementById('@id');
+        if (!wrapper) return;
+
+        const container = wrapper.querySelector('.carousel-container');
+        const prevBtn = wrapper.querySelector('.carousel-prev');
+        const nextBtn = wrapper.querySelector('.carousel-next');
+
+        function updateButtons() {
+            if (container.scrollLeft > 0) {
+                prevBtn.classList.remove('hidden');
+            } else {
+                prevBtn.classList.add('hidden');
+            }
+
+            if (container.scrollLeft < container.scrollWidth - container.clientWidth - 10) {
+                nextBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.add('hidden');
+            }
+        }
+
+        container.addEventListener('scroll', updateButtons);
+        updateButtons();
+
+        prevBtn.addEventListener('click', () => {
+            const cardWidth = container.scrollWidth / container.children.length;
+            container.scrollBy({ left: -cardWidth * 2, behavior: 'smooth' });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            const cardWidth = container.scrollWidth / container.children.length;
+            container.scrollBy({ left: cardWidth * 2, behavior: 'smooth' });
+        });
+    });
+</script>

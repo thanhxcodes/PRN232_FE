@@ -1,0 +1,310 @@
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 lg:hidden hidden"></div>
+
+<!-- Sidebar -->
+<!-- Note: We use data attributes to manage state via JS -->
+<aside id="main-sidebar"
+       class="fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white z-50 transition-all duration-300 shadow-lg overflow-y-auto w-64">
+    <div class="flex flex-col">
+        <!-- Group 1 -->
+        <nav class="py-4 border-b border-gray-200">
+            <a href="/"
+                   class="flex items-center space-x-4 px-6 py-3 transition-colors relative border-l-4 border-transparent text-gray-700 hover:bg-gray-100">
+                <i data-lucide="home" class="w-6 h-6 flex-shrink-0"></i>
+                <span class="sidebar-text">Trang Chủ</span>
+            </a>
+
+            <a href="/Products"
+                   class="flex items-center space-x-4 px-6 py-3 transition-colors relative border-l-4 border-transparent text-gray-700 hover:bg-gray-100">
+                <i data-lucide="grid" class="w-6 h-6 flex-shrink-0"></i>
+                <span class="sidebar-text">Sản Phẩm</span>
+            </a>
+
+            <a href="/Shorts"
+                   class="flex items-center space-x-4 px-6 py-3 transition-colors relative border-l-4 border-transparent text-gray-700 hover:bg-gray-100">
+                <i data-lucide="video" class="w-6 h-6 flex-shrink-0"></i>
+                <span class="sidebar-text">Shorts</span>
+            </a>
+
+            <a href="/ranking"
+                   class="flex items-center space-x-4 px-6 py-3 transition-colors relative border-l-4 border-transparent group text-gray-700 hover:bg-gradient-to-r hover:from-[#C4603A]/5 hover:to-[#2D5A3D]/5">
+                <i data-lucide="trophy" class="w-6 h-6 flex-shrink-0 group-hover:text-[#C4603A]"></i>
+                <span class="sidebar-text">BXH Tuần</span>
+                <span
+                class="sidebar-text text-[10px] font-bold bg-gradient-to-r from-[#C4603A] to-[#2D5A3D] text-white px-1.5 py-0.5 rounded-full animate-pulse">NEW</span>
+            </a>
+
+            <a href="/match"
+                   class="flex items-start space-x-4 px-6 py-3 transition-colors relative border-l-4 border-transparent group text-gray-700 hover:bg-gradient-to-r hover:from-orange-500/5 hover:to-red-500/5">
+                <i data-lucide="flame" class="w-6 h-6 flex-shrink-0 group-hover:text-orange-500"></i>
+                <div class="flex flex-col w-full sidebar-text">
+                    <div class="flex items-center justify-between w-full">
+                        <span class="font-semibold">REVORA MATCH</span>
+                        <span
+                        class="text-[10px] font-bold bg-gradient-to-r from-orange-400 to-red-500 text-white px-1.5 py-0.5 rounded-full animate-pulse">HOT</span>
+                    </div>
+                </div>
+            </a>
+        </nav>
+
+        @{
+            var userIdString = Context.User.Claims.FirstOrDefault(c => c.Type ==
+        System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            bool isLoggedIn = !string.IsNullOrEmpty(userIdString);
+        }
+        @if (isLoggedIn)
+        {
+            <!-- Group 2: Following -->
+            <div id="sidebar-following-group" class="py-4 border-b border-gray-200 hidden">
+                <div class="px-6 mb-2">
+                    <h3 class="text-xs text-gray-500 uppercase tracking-wider sidebar-text">Đang Theo Dõi</h3>
+                </div>
+                <div id="sidebar-following-list">
+                    <!-- Rendered via JS -->
+                </div>
+                <button id="btn-sidebar-view-all"
+                        class="hidden items-center space-x-3 w-full px-6 py-3 text-sm text-gray-700 hover:bg-gray-100 transition-colors group">
+                    <div class="relative">
+                        <div
+                            class="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center bg-gray-50 group-hover:bg-white transition-colors">
+                            <i data-lucide="list" class="w-4 h-4 text-gray-500"></i>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-1 min-w-0">
+                        <span class="font-medium text-[13px] tracking-wide sidebar-text">Xem tất cả</span>
+                    </div>
+                </button>
+            </div>
+        }
+    </div>
+</aside>
+
+<!-- Spacer for content -->
+<div id="sidebar-spacer" class="transition-all duration-300 w-64 hidden lg:block"></div>
+
+<!-- FOUC Prevention: Khôi phục trạng thái Sidebar ngay khi render -->
+<script>
+    if (localStorage.getItem('sidebar_isOpen') === 'false') {
+        const _sidebar = document.getElementById('main-sidebar');
+        const _spacer = document.getElementById('sidebar-spacer');
+        if (_sidebar) {
+            _sidebar.classList.remove('w-64');
+            _sidebar.classList.add('w-20');
+            _sidebar.querySelectorAll('.sidebar-text').forEach(el => el.classList.add('hidden'));
+        }
+        if (_spacer) {
+            _spacer.classList.remove('w-64');
+            _spacer.classList.add('w-20');
+        }
+    }
+</script>
+
+@if (isLoggedIn)
+{
+    <!-- Offcanvas Follow Modal -->
+    <div id="global-follow-modal" class="fixed inset-0 z-40 hidden pointer-events-none">
+        <div id="global-follow-backdrop"
+             class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-300 pointer-events-auto"></div>
+        <div id="global-follow-panel"
+             class="absolute top-16 left-64 h-[calc(100vh-4rem)] w-[320px] bg-white shadow-2xl transform -translate-x-full transition-all duration-300 flex flex-col pointer-events-auto border-r border-gray-100">
+            <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                <h3 class="text-base font-bold text-gray-900">Đang Follow (<span id="global-follow-count">0</span>)</h3>
+                <button id="btn-close-global-follow"
+                        class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-2 custom-scrollbar" id="global-follow-list">
+                <!-- Rendered via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const currentUserId = '@userIdString';
+            let followingData = [];
+
+            async function loadSidebarFollowing() {
+                try {
+                    const res = await fetch(`/Profile/GetFollowing?userId=${currentUserId}`);
+                    const data = await res.json();
+                    if (data && data.success) {
+                        followingData = data.data?.items || data.data || [];
+                        renderSidebarFollowing();
+                        renderGlobalFollowModal(); // Cập nhật luôn panel nếu đang mở
+                    }
+                } catch (e) {
+                    console.error('Error loading sidebar following', e);
+                }
+            }
+
+            function renderSidebarFollowing() {
+                const group = document.getElementById('sidebar-following-group');
+                const listContainer = document.getElementById('sidebar-following-list');
+                const btnViewAll = document.getElementById('btn-sidebar-view-all');
+
+                if (followingData.length === 0) {
+                    group.classList.add('hidden');
+                    return;
+                }
+
+                group.classList.remove('hidden');
+                listContainer.innerHTML = '';
+
+                const visibleUsers = followingData.slice(0, 5);
+                visibleUsers.forEach(u => {
+                    const avatarSrc = u.avatarUrl ? `url('${u.avatarUrl}')` : '';
+                    const avatarInitial = !u.avatarUrl ? (u.fullName || u.username || 'U')[0].toUpperCase() : '';
+
+                    const a = document.createElement('a');
+                    a.href = `/Profile?id=${u.userId}`;
+                    a.className = 'flex items-center space-x-3 px-6 py-2 text-gray-700 hover:bg-gray-100 transition-colors group';
+                    a.innerHTML = `
+                            <div class="relative">
+                                <div class="w-8 h-8 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full flex items-center justify-center text-white text-xs overflow-hidden bg-cover bg-center" style="background-image: ${avatarSrc}">
+                                    ${avatarInitial}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 flex-1 min-w-0 sidebar-text">
+                                <span class="text-sm font-semibold truncate group-hover:text-[#2D5A3D] transition-colors">${u.fullName || u.username}</span>
+                            </div>
+                        `;
+                    listContainer.appendChild(a);
+                });
+
+                if (followingData.length > 5) {
+                    btnViewAll.classList.remove('hidden');
+                    btnViewAll.classList.add('flex');
+                } else {
+                    btnViewAll.classList.add('hidden');
+                    btnViewAll.classList.remove('flex');
+                }
+                document.getElementById('global-follow-count').innerText = followingData.length;
+            }
+
+            function renderGlobalFollowModal() {
+                const list = document.getElementById('global-follow-list');
+                if (!list || document.getElementById('global-follow-modal').classList.contains('hidden')) return;
+
+                list.innerHTML = '';
+                followingData.forEach(u => {
+                    const avatarSrc = u.avatarUrl ? `url('${u.avatarUrl}')` : '';
+                    const avatarInitial = !u.avatarUrl ? (u.fullName || u.username || 'U')[0].toUpperCase() : '';
+
+                    const a = document.createElement('a');
+                    a.href = `/Profile?id=${u.userId}`;
+                    a.className = 'flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors mb-1 group';
+                    a.innerHTML = `
+                            <div class="flex items-center gap-3 flex-1 min-w-0">
+                                <div class="w-10 h-10 rounded-full bg-[#2D5A3D] flex items-center justify-center text-white font-bold flex-shrink-0 bg-cover bg-center" style="background-image: ${avatarSrc}">
+                                    ${avatarInitial}
+                                </div>
+                                <div class="flex-1 min-w-0 pr-2">
+                                    <h4 class="text-sm font-bold text-gray-900 truncate group-hover:text-[#2D5A3D] transition-colors">${u.fullName || u.username}</h4>
+                                    <p class="text-xs text-gray-500 truncate">@@${u.username}</p>
+                                </div>
+                            </div>
+                        `;
+                    list.appendChild(a);
+                });
+            }
+
+            function openGlobalFollowModal() {
+                const modal = document.getElementById('global-follow-modal');
+                const backdrop = document.getElementById('global-follow-backdrop');
+                const panel = document.getElementById('global-follow-panel');
+
+                modal.classList.remove('hidden');
+                renderGlobalFollowModal();
+
+                // Animate
+                setTimeout(() => {
+                    backdrop.classList.remove('opacity-0');
+                    panel.classList.remove('-translate-x-full');
+                }, 10);
+            }
+
+            function closeGlobalFollowModal() {
+                const modal = document.getElementById('global-follow-modal');
+                const backdrop = document.getElementById('global-follow-backdrop');
+                const panel = document.getElementById('global-follow-panel');
+
+                backdrop.classList.add('opacity-0');
+                panel.classList.add('-translate-x-full');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            function toggleGlobalFollowModal() {
+                const modal = document.getElementById('global-follow-modal');
+                if (modal.classList.contains('hidden')) {
+                    openGlobalFollowModal();
+                } else {
+                    closeGlobalFollowModal();
+                }
+            }
+
+            document.getElementById('btn-sidebar-view-all')?.addEventListener('click', toggleGlobalFollowModal);
+            document.getElementById('btn-close-global-follow')?.addEventListener('click', closeGlobalFollowModal);
+            document.getElementById('global-follow-backdrop')?.addEventListener('click', closeGlobalFollowModal);
+
+            loadSidebarFollowing();
+
+            // Lắng nghe sự thay đổi của Sidebar (mở/thu gọn)
+            const mainSidebar = document.getElementById('main-sidebar');
+            const followPanel = document.getElementById('global-follow-panel');
+            if (mainSidebar && followPanel) {
+                const observer = new MutationObserver(() => {
+                    if (mainSidebar.classList.contains('w-20')) {
+                        followPanel.classList.remove('left-64');
+                        followPanel.classList.add('left-20');
+                    } else {
+                        followPanel.classList.remove('left-20');
+                        followPanel.classList.add('left-64');
+                    }
+                });
+                observer.observe(mainSidebar, { attributes: true, attributeFilter: ['class'] });
+                // Trigger once on load
+                if (mainSidebar.classList.contains('w-20')) {
+                    followPanel.classList.remove('left-64');
+                    followPanel.classList.add('left-20');
+                }
+            }
+
+            // Listen for realtime follow updates from other parts of the app
+            window.addEventListener('followStatusChanged', (e) => {
+                // Reload the sidebar data whenever a follow/unfollow happens
+                loadSidebarFollowing();
+            });
+        });
+    </script>
+}
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Highlight Active Tab (Works for both guests and logged in users)
+        const currentPath = window.location.pathname.toLowerCase();
+        const navLinks = document.querySelectorAll('#main-sidebar nav a');
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href')?.toLowerCase();
+            if (!href) return;
+
+            const isActive = (href === '/' && (currentPath === '/' || currentPath === '')) ||
+                (href !== '/' && currentPath.startsWith(href));
+
+            if (isActive) {
+                link.classList.add('bg-[#2D5A3D]/5', 'text-[#2D5A3D]', 'border-[#2D5A3D]');
+                link.classList.remove('text-gray-700', 'border-transparent');
+                
+                // Update icon color if possible
+                const icon = link.querySelector('i');
+                if (icon) {
+                    icon.classList.add('text-[#2D5A3D]');
+                }
+            }
+        });
+    });
+</script>

@@ -1,0 +1,126 @@
+@{
+    ViewData["Title"] = "Trang Chủ";
+    
+    var categories = new[] {
+        new { name = "Quần Áo", image = "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?w=400" },
+        new { name = "Giày Dép", image = "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400" },
+        new { name = "Túi Xách", image = "https://images.unsplash.com/photo-1705909237050-7a7625b47fac?w=400" },
+        new { name = "Phụ Kiện", image = "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400" },
+        new { name = "Đồng Hồ", image = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400" },
+        new { name = "Kính Mắt", image = "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400" }
+    };
+}
+
+<div class="min-h-screen bg-[#fafaf7]">
+    
+    <!-- Banner Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 mb-8">
+        @await Html.PartialAsync("_BannerCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.FeaturedProducts)
+    </section>
+
+    <!-- Categories Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <div class="bg-white rounded-3xl shadow-lg p-8">
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-6">
+                @foreach(var cat in categories)
+                {
+                    <a href="/Products" class="flex flex-col items-center space-y-3 group">
+                        <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all group-hover:scale-105">
+                            <img src="@cat.image" alt="@cat.name" class="w-full h-full object-cover" />
+                        </div>
+                        <span class="text-sm text-gray-700 font-medium group-hover:text-[#2D5A3D] transition-colors">@cat.name</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    @if (ViewBag.FeaturedProducts != null && ViewBag.FeaturedProducts.Count > 0)
+    {
+        <!-- Featured Products Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-xl">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl text-gray-900 font-bold">Sản Phẩm Nổi Bật</h2>
+                        <p class="text-sm text-gray-600">Các sản phẩm được ưu tiên hiển thị</p>
+                    </div>
+                </div>
+                <a href="/Products?sort=featured" class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] text-white rounded-full hover:shadow-lg hover:scale-105 transition-all font-semibold">
+                    <span>Tất Cả Sản Phẩm</span>
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                </a>
+            </div>
+            
+            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.FeaturedProducts)
+        </section>
+    }
+
+    @if (ViewBag.LovedProducts != null && ViewBag.LovedProducts.Count > 0)
+    {
+        <!-- Best Sellers Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl text-gray-900 font-bold">Được yêu thích nhất</h2>
+                        <p class="text-sm text-gray-600">Top sản phẩm được quan tâm nhiều nhất</p>
+                    </div>
+                </div>
+                <a href="/Products?sort=loved" class="flex items-center space-x-2 px-6 py-3 bg-white text-orange-600 rounded-full hover:shadow-lg transition-all font-semibold border-2 border-orange-500">
+                    <span>Tất Cả Sản Phẩm</span>
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                </a>
+            </div>
+            
+            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.LovedProducts)
+        </section>
+    }
+
+    @if (ViewBag.NewestProducts != null && ViewBag.NewestProducts.Count > 0)
+    {
+        <!-- Newest Products Section -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl">
+                        <i data-lucide="clock" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl text-gray-900 font-bold">Mới Nhất</h2>
+                        <p class="text-sm text-gray-600">Sản phẩm vừa được đăng lên</p>
+                    </div>
+                </div>
+                <a href="/Products?sort=newest" class="flex items-center space-x-2 px-6 py-3 bg-white text-blue-600 rounded-full hover:shadow-lg transition-all font-semibold border-2 border-blue-500">
+                    <span>Tất Cả Sản Phẩm</span>
+                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                </a>
+            </div>
+            
+            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.NewestProducts)
+        </section>
+    }
+
+    <!-- Premium CTA Section -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div class="bg-gradient-to-r from-[#2D5A3D] via-[#3D7054] to-[#2D5A3D] rounded-3xl p-12 text-center text-white relative overflow-hidden">
+            <div class="absolute inset-0 bg-black/10"></div>
+            <div class="relative z-10">
+                <i data-lucide="sparkles" class="w-16 h-16 mx-auto mb-6 text-[#C4603A] animate-pulse"></i>
+                <h2 class="text-4xl md:text-5xl mb-4 font-bold">Nâng Cấp Tài Khoản Premium</h2>
+                <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                    Tăng độ hiển thị, ưu tiên trong tìm kiếm và nhiều tính năng độc quyền dành riêng cho bạn
+                </p>
+                <a href="/plans" class="inline-block bg-white text-[#2D5A3D] px-10 py-4 rounded-full hover:shadow-2xl hover:scale-105 transition-all font-bold text-lg">
+                    Xem Gói Dịch Vụ Ngay
+                </a>
+            </div>
+        </div>
+    </section>
+</div>

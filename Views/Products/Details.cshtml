@@ -1,0 +1,242 @@
+@model REVORA_MVC_FE.Models.ProductDetailResponseDto
+
+@{
+    ViewData["Title"] = Model != null ? Model.Title : "Chi tiết sản phẩm";
+    var images = Model?.ImageUrls != null && Model.ImageUrls.Count > 0 ? Model.ImageUrls : new List<string> { "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800" };
+    var mainImage = images[0];
+}
+
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        @if (Model == null)
+        {
+            <div class="flex flex-col items-center justify-center py-32">
+                <div class="text-6xl mb-4 opacity-50">📦</div>
+                <h2 class="text-2xl text-gray-900 font-bold mb-2">Sản phẩm không tồn tại</h2>
+                <p class="text-gray-500 mb-6">Sản phẩm này có thể đã bị xóa hoặc không còn trên hệ thống.</p>
+                <a href="/Products" class="px-6 py-2 bg-[#2D5A3D] text-white rounded-full">Quay lại danh sách</a>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+                <!-- CỘT TRÁI: HÌNH ẢNH & VIDEO -->
+                <div>
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-lg mb-4 border border-gray-100">
+                        <div class="aspect-[4/5] bg-gray-100 relative">
+                            <img src="@mainImage" alt="Product" class="w-full h-full object-cover" id="main-product-image" />
+                            @if (Model.IsPremium)
+                            {
+                                <div class="absolute top-4 left-4 bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white text-sm px-4 py-2 rounded-full shadow-lg font-semibold flex items-center gap-1.5 animate-pulse">
+                                    <span>✨ Premium</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    
+                    @if (images.Count > 1)
+                    {
+                        <div class="grid grid-cols-5 gap-3">
+                            @for(int i = 0; i < images.Count; i++)
+                            {
+                                <button onclick="document.getElementById('main-product-image').src='@images[i]'" class="aspect-square rounded-xl overflow-hidden border-2 transition-all hover:border-gray-300">
+                                    <img src="@images[i]" class="w-full h-full object-cover" />
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    <!-- Video Shorts -->
+                    @if (!string.IsNullOrEmpty(Model.VideoUrl))
+                    {
+                        <div class="mt-6 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] rounded-2xl p-6 text-white shadow-lg">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <i data-lucide="shield" class="w-5 h-5 text-[#C4603A]"></i>
+                                <span class="font-medium text-lg">Video Premium Shorts</span>
+                            </div>
+                            <video src="@Model.VideoUrl" controls class="w-full rounded-xl aspect-video object-contain bg-black mb-4 shadow-md"></video>
+                        </div>
+                    }
+                </div>
+
+                <!-- CỘT PHẢI: THÔNG TIN SP & NGƯỜI BÁN -->
+                <div>
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
+                        <div class="flex items-start justify-between mb-6">
+                            <div class="pr-4">
+                                <h1 class="text-3xl text-gray-900 font-bold mb-3">@Model.Title</h1>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="text-xs font-semibold bg-green-100 text-green-800 px-3 py-1.5 rounded-full">@Model.Condition</span>
+                                    <span class="text-xs font-semibold bg-gray-100 text-gray-800 px-3 py-1.5 rounded-full">@Model.CategoryName</span>
+                                </div>
+                            </div>
+                            <button onclick="window.toggleGlobalWishlist(event, @Model.ProductId)" data-wishlist-btn="@Model.ProductId" class="p-3 rounded-full transition-colors flex-shrink-0 text-gray-400 hover:text-red-500 hover:bg-red-50 z-10">
+                                <i data-lucide="heart" class="w-6 h-6 transition-colors"></i>
+                            </button>
+                        </div>
+
+                        <div class="text-4xl font-bold text-[#2D5A3D] mb-8">@string.Format("{0:#,##0}đ", Model.Price)</div>
+
+                        <!-- Chi tiết kĩ thuật -->
+                        <div class="space-y-4 mb-8 pb-8 border-b border-gray-100">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500 font-medium">Thương Hiệu</span>
+                                <span class="text-gray-900 font-semibold">@(string.IsNullOrEmpty(Model.Brand) ? "Chưa cập nhật" : Model.Brand)</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500 font-medium">Đăng ngày</span>
+                                <span class="text-gray-900">@(Model.CreatedAt != default ? Model.CreatedAt.ToString("dd/MM/yyyy") : "Không rõ")</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-500 font-medium">Lượt xem</span>
+                                <span class="text-gray-900">@Model.ViewCount lượt</span>
+                            </div>
+                        </div>
+
+                        <!-- Box Người bán -->
+                        <div class="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+                            <div class="flex items-center space-x-4 mb-4">
+                                <a href="/Profile?id=@Model.SellerId" class="w-16 h-16 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full flex items-center justify-center text-white font-bold text-xl overflow-hidden shadow-sm hover:ring-2 hover:ring-[#2D5A3D]/50 transition-all">
+                                    @if (!string.IsNullOrEmpty(Model.SellerAvatar) && Model.SellerAvatar.Length > 1)
+                                    {
+                                        <img src="@Model.SellerAvatar" alt="Avatar" class="w-full h-full object-cover" />
+                                    }
+                                    else
+                                    {
+                                        @(string.IsNullOrEmpty(Model.SellerName) ? "U" : Model.SellerName.Substring(0, 1).ToUpper())
+                                    }
+                                </a>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <a href="/Profile?id=@Model.SellerId" class="font-bold text-gray-900 text-lg hover:underline hover:text-blue-600 transition-colors">@Model.SellerName</a>
+                                        <div class="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-[10px]">✓</div>
+                                    </div>
+                                    <a href="/Profile?id=@Model.SellerId" class="block text-sm text-gray-500 mb-2 hover:underline">@@@Model.SellerUsername</a>
+                                </div>
+                                
+                                <button id="btn-seller-follow" data-target="@Model.SellerId" class="flex-shrink-0 flex items-center justify-center px-4 py-2 rounded-full text-xs font-semibold transition-all min-w-[110px] shadow-sm @(Model.IsFollowingSeller ? "bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600" : "bg-[#2D5A3D] text-white hover:bg-[#234830]")">
+                                    @(Model.IsFollowingSeller ? "Đang theo dõi" : "Theo dõi")
+                                </button>
+                            </div>
+
+                            <!-- Các nút liên hệ -->
+                            <div class="mt-6">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button class="w-full bg-[#0068FF] text-white py-3.5 rounded-xl hover:bg-[#0055D4] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
+                                        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Zalo
+                                    </button>
+                                    <button class="w-full bg-[#2D5A3D] text-white py-3.5 rounded-xl hover:bg-[#234830] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
+                                        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Nội Bộ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trust Indicators -->
+                        <div class="grid grid-cols-3 gap-4 pt-6 border-t border-gray-100">
+                            <div class="text-center">
+                                <i data-lucide="shield" class="w-6 h-6 text-[#2D5A3D] mx-auto mb-2 opacity-80"></i>
+                                <div class="text-xs text-gray-600 font-medium">Bảo Vệ Người Mua</div>
+                            </div>
+                            <div class="text-center">
+                                <i data-lucide="package" class="w-6 h-6 text-[#2D5A3D] mx-auto mb-2 opacity-80"></i>
+                                <div class="text-xs text-gray-600 font-medium">Giao Dịch An Toàn</div>
+                            </div>
+                            <div class="text-center">
+                                <i data-lucide="flag" class="w-6 h-6 text-gray-400 hover:text-red-500 transition-colors cursor-pointer mx-auto mb-2"></i>
+                                <div class="text-xs text-gray-600 font-medium">Báo Cáo Vi Phạm</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÔ TẢ CHI TIẾT -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-8">
+                <h2 class="text-xl font-bold text-gray-900 mb-6">Mô Tả Sản Phẩm</h2>
+                <div class="text-gray-700 leading-relaxed whitespace-pre-wrap">@Model.Description</div>
+            </div>
+
+            <!-- BÌNH LUẬN (UI Mock matching React) -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 mb-16">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                        <i data-lucide="message-circle" class="w-6 h-6 text-[#2D5A3D]"></i>
+                        Hỏi Đáp & Đánh Giá (0)
+                    </h2>
+                </div>
+
+                <!-- Input Bình Luận -->
+                <div class="mb-8 flex gap-3 w-full">
+                    <div class="w-8 h-8 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                        U
+                    </div>
+                    <div class="flex-1 bg-white border border-gray-200 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-[#2D5A3D]/30 transition-all">
+                        <textarea placeholder="Bạn có thắc mắc gì về sản phẩm này?" class="w-full px-4 py-2.5 focus:outline-none resize-none bg-transparent text-sm" rows="2"></textarea>
+                        <div class="flex justify-end px-3 pb-2.5">
+                            <button class="flex items-center gap-1.5 bg-[#2D5A3D] text-white px-4 py-1.5 rounded-xl hover:bg-[#234830] transition-all font-medium text-xs shadow-sm">
+                                <i data-lucide="send" class="w-3 h-3"></i>
+                                <span>Gửi</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Danh sách Bình Luận -->
+                <div class="space-y-6">
+                    <div class="text-center py-12">
+                        <i data-lucide="message-circle" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
+                        <p class="text-gray-500">Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('btn-seller-follow')?.addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const targetId = btn.getAttribute('data-target');
+            if (!targetId) return;
+
+            const originalHtml = btn.innerHTML;
+            const originalClass = btn.className;
+            
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.disabled = true;
+            if (window.lucide) window.lucide.createIcons();
+
+            try {
+                const res = await fetch(`/Profile/ToggleFollow?targetUserId=${targetId}`, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    const isFollowingNow = data.data.isFollowing;
+                    if (isFollowingNow) {
+                        btn.className = 'flex-shrink-0 flex items-center justify-center px-4 py-2 rounded-full text-xs font-semibold transition-all min-w-[110px] shadow-sm bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600';
+                        btn.innerHTML = 'Đang theo dõi';
+                        if (typeof showToast === 'function') showToast('Đã theo dõi người dùng', 'success');
+                        window.dispatchEvent(new CustomEvent('followStatusChanged', { detail: { targetId, isFollowing: true } }));
+                    } else {
+                        btn.className = 'flex-shrink-0 flex items-center justify-center px-4 py-2 rounded-full text-xs font-semibold transition-all min-w-[110px] shadow-sm bg-[#2D5A3D] text-white hover:bg-[#234830]';
+                        btn.innerHTML = 'Theo dõi';
+                        if (typeof showToast === 'function') showToast('Đã bỏ theo dõi người dùng', 'success');
+                        window.dispatchEvent(new CustomEvent('followStatusChanged', { detail: { targetId, isFollowing: false } }));
+                    }
+                } else {
+                    if (typeof showToast === 'function') showToast(data.message || 'Lỗi thao tác', 'error');
+                    btn.innerHTML = originalHtml;
+                    btn.className = originalClass;
+                }
+            } catch {
+                if (typeof showToast === 'function') showToast('Lỗi kết nối máy chủ', 'error');
+                btn.innerHTML = originalHtml;
+                btn.className = originalClass;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+}

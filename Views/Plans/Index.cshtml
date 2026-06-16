@@ -1,0 +1,188 @@
+@{
+    ViewData["Title"] = "Nạp Credits";
+}
+
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-5xl text-gray-900 mb-4">Nâng Cấp Sức Mạnh Đăng Tin</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                Chọn gói phù hợp để tăng khả năng hiển thị, đăng sản phẩm và nổi bật trong cộng đồng thời trang REVORA
+            </p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex items-center justify-center space-x-2 mb-8">
+            <button id="tab-packages-btn" class="flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-[#2D5A3D] text-white shadow-lg">
+                <i data-lucide="sparkles" class="w-5 h-5"></i>
+                <span>Gói Credits</span>
+            </button>
+            <button id="tab-history-btn" class="flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-white text-gray-600 hover:bg-gray-50">
+                <i data-lucide="history" class="w-5 h-5"></i>
+                <span>Lịch Sử Giao Dịch</span>
+            </button>
+        </div>
+
+        <!-- Tab Content: Packages -->
+        <div id="tab-packages-content">
+            <!-- Current Credits Dashboard -->
+            <div class="bg-white rounded-3xl shadow-lg p-8 mb-16">
+                <div class="mb-6">
+                    <h2 class="text-2xl text-gray-900 mb-2">Credits Hiện Tại</h2>
+                    <p id="credit-error-msg" class="text-sm text-amber-600 hidden"></p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Posting Credit Display -->
+                    <div id="posting-credit-display" class="relative">
+                        <div class="flex items-center justify-center py-4 text-gray-500">Đang tải...</div>
+                    </div>
+                    <!-- Featured Credit Display -->
+                    <div id="featured-credit-display" class="relative">
+                        <div class="flex items-center justify-center py-4 text-gray-500">Đang tải...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Posting Packages Section -->
+            <div class="mb-16">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="p-2 bg-blue-100 rounded-xl">
+                        <i data-lucide="image" class="w-6 h-6 text-blue-600"></i>
+                    </div>
+                    <h2 class="text-3xl text-gray-900">Gói Credits Đăng Tin</h2>
+                </div>
+                <div id="posting-package-error" class="hidden mb-4 text-sm text-amber-600"></div>
+                <div id="posting-purchase-block" class="hidden mb-8 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-800">Thông báo</h4>
+                        <p id="posting-block-reason" class="text-sm text-amber-700 mt-0.5"></p>
+                    </div>
+                </div>
+                <!-- Error checkout -->
+                <div id="checkout-error-msg" class="hidden mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                        <span class="text-red-600 font-bold">!</span>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-semibold text-red-800">Thanh toán không thành công</h4>
+                        <p id="checkout-error-text" class="text-sm text-red-600 mt-0.5"></p>
+                    </div>
+                </div>
+
+                <div id="posting-packages-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-3 bg-white rounded-3xl border border-dashed border-gray-300 p-10 text-center text-gray-500">Đang tải danh sách gói credits...</div>
+                </div>
+            </div>
+
+            <!-- Featured Packages Section -->
+            <div class="mb-16">
+                <div class="flex items-center space-x-3 mb-8">
+                    <div class="p-2 bg-[#C4603A]/10 rounded-xl">
+                        <i data-lucide="sparkles" class="w-6 h-6 text-[#C4603A]"></i>
+                    </div>
+                    <h2 class="text-3xl text-gray-900">Gói Credits Nổi Bật</h2>
+                </div>
+                <div id="featured-purchase-block" class="hidden mb-8 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-800">Thông báo</h4>
+                        <p id="featured-block-reason" class="text-sm text-amber-700 mt-0.5"></p>
+                    </div>
+                </div>
+                <div id="featured-packages-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="md:col-span-3 bg-white rounded-3xl border border-dashed border-gray-300 p-10 text-center text-gray-500">Đang tải danh sách gói credits...</div>
+                </div>
+            </div>
+
+            <!-- FAQ Section -->
+            <div class="bg-white rounded-3xl shadow-lg p-8">
+               <h2 class="text-2xl text-gray-900 mb-6 text-center">Câu Hỏi Thường Gặp</h2>
+               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                   <h3 class="font-bold text-gray-900 mb-2">Credits có hết hạn không?</h3>
+                   <p class="text-sm text-gray-600">Có, credits sẽ hết hạn theo thời gian của gói bạn đã mua (1/7/30 ngày). Hãy sử dụng trước khi hết hạn.</p>
+                 </div>
+                 <div>
+                   <h3 class="font-bold text-gray-900 mb-2">Tôi có thể mua nhiều gói cùng lúc?</h3>
+                   <p class="text-sm text-gray-600">Bạn chỉ có thể mua tối đa 1 gói Đăng Tin và 1 gói Nổi Bật (paid) cùng lúc. Khi credits paid của loại đó về 0, bạn có thể mua gói mới cùng loại. Credits free không chặn mua gói mới nếu paid đã hết; nếu còn cả free và paid thì các gói paid khác sẽ bị khóa cho đến khi paid hết.</p>
+                 </div>
+                 <div>
+                   <h3 class="font-bold text-gray-900 mb-2">Phương thức thanh toán nào được hỗ trợ?</h3>
+                   <p class="text-sm text-gray-600">Hiện tại chúng tôi hỗ trợ thanh toán qua PayOS (chuyển khoản, QR Code và các phương thức liên kết).</p>
+                 </div>
+                 <div>
+                   <h3 class="font-bold text-gray-900 mb-2">Thanh toán thành công thì credits được cộng thế nào?</h3>
+                   <p class="text-sm text-gray-600">Hệ thống đối chiếu số tiền thực nhận với giá gói: chuyển đủ thì cộng credits ngay; chuyển thừa thì vẫn cộng credits (phần thừa không hoàn lại); chuyển thiếu thì không cộng credits và số tiền đã chuyển cũng không được hoàn. REVORA hiện không hỗ trợ hoàn tiền cho các giao dịch mua gói credits.</p>
+                 </div>
+               </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Transaction History -->
+        <div id="tab-history-content" class="hidden">
+            <div class="bg-white rounded-3xl shadow-lg overflow-hidden">
+                <!-- Header -->
+                <div class="px-8 py-6 border-b border-gray-100">
+                    <h2 class="text-2xl text-gray-900 font-bold flex items-center gap-2">
+                        <i data-lucide="history" class="w-6 h-6 text-[#2D5A3D]"></i>
+                        Lịch Sử Giao Dịch
+                    </h2>
+                    <p class="text-gray-600 text-sm mt-1">Danh sách các giao dịch mua gói credits</p>
+                    <p id="transactions-error" class="text-sm text-amber-600 mt-2 hidden"></p>
+                </div>
+
+                <!-- Transaction List -->
+                <div id="transactions-container" class="divide-y divide-gray-50">
+                    <div class="text-center py-16 text-gray-500">Đang tải lịch sử giao dịch...</div>
+                </div>
+
+                <!-- Summary -->
+                <div id="transactions-summary" class="hidden px-8 py-6 bg-gray-50 border-t border-gray-100">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Tổng số giao dịch:</span>
+                        <span id="summary-total" class="font-bold text-gray-900">0</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-gray-600">Giao dịch thành công:</span>
+                        <span id="summary-success" class="font-bold text-green-700">0</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-gray-600">Tổng chi tiêu:</span>
+                        <span id="summary-spent" class="font-bold text-red-600">0đ</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-gray-600">Tổng credits đã cộng:</span>
+                        <span id="summary-credits" class="font-bold text-[#2D5A3D]">0 credits</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Global Checkout Loading Overlay -->
+    <div id="global-checkout-loading" class="fixed inset-0 z-[100] items-center justify-center hidden">
+        <div class="absolute inset-0 bg-white/60 backdrop-blur-md transition-opacity duration-300"></div>
+        <div class="relative bg-white p-8 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 border border-gray-100 animate-in fade-in zoom-in duration-300">
+            <div class="relative w-16 h-16 mb-6">
+                <div class="absolute inset-0 border-4 border-gray-100 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-[#2D5A3D] rounded-full border-t-transparent animate-spin"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-2 h-2 bg-[#2D5A3D] rounded-full animate-pulse"></div>
+                </div>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 text-center">Đang xử lý</h3>
+            <p class="text-sm text-gray-500 text-center">Đang kết nối an toàn đến cổng thanh toán PayOS...</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/plans.js"></script>
+}

@@ -1,0 +1,69 @@
+@model REVORA_MVC_FE.Models.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Đăng nhập";
+    Layout = "_AuthLayout";
+}
+
+<div class="w-full">
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Chào mừng trở lại</h2>
+        <p class="text-gray-500 font-medium">Vui lòng đăng nhập để tiếp tục</p>
+    </div>
+
+    <form asp-action="Login" method="post" class="space-y-5">
+        <div asp-validation-summary="ModelOnly" class="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 rounded-2xl px-5 py-3.5 flex items-center gap-2.5 shadow-sm mb-6 text-sm font-medium"></div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email</label>
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i data-lucide="mail" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                </div>
+                <input asp-for="Email" type="email" placeholder="Nhập email của bạn" class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
+            </div>
+            <span asp-validation-for="Email" class="text-red-500 text-xs mt-1 ml-1 font-medium"></span>
+        </div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Mật khẩu</label>
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i data-lucide="lock" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                </div>
+                <input asp-for="Password" type="password" placeholder="Nhập mật khẩu" class="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
+                <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                    <i data-lucide="eye" class="h-5 w-5"></i>
+                </button>
+            </div>
+            <span asp-validation-for="Password" class="text-red-500 text-xs mt-1 ml-1 font-medium"></span>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 pb-2">
+            <div class="flex items-center">
+                <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-[#2D5A3D] focus:ring-[#2D5A3D] border-gray-300 rounded cursor-pointer accent-[#2D5A3D]" />
+                <label for="remember-me" class="ml-2.5 block text-sm font-medium text-gray-600 cursor-pointer select-none">
+                    Ghi nhớ đăng nhập
+                </label>
+            </div>
+            <div class="text-sm">
+                <a href="#" class="font-semibold text-[#2D5A3D] hover:text-[#3D7054] transition-colors">
+                    Quên mật khẩu?
+                </a>
+            </div>
+        </div>
+
+        <button type="submit" class="w-full flex justify-center py-4 px-4 rounded-2xl shadow-sm text-[15px] font-bold text-white bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] hover:shadow-lg hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#2D5A3D]">
+            Đăng Nhập
+        </button>
+    </form>
+
+    <div class="mt-8 text-center">
+        <p class="text-sm text-gray-500 font-medium">
+            Chưa có tài khoản?
+            <a href="/Auth/Register" class="font-bold text-[#2D5A3D] hover:text-[#3D7054] transition-colors ml-1">
+                Đăng ký ngay
+            </a>
+        </p>
+    </div>
+</div>

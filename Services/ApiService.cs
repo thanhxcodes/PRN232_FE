@@ -1,0 +1,444 @@
+using System.Net.Http.Json;
+using REVORA_MVC_FE.Models;
+using REVORA_MVC_FE.Models.ViewModels;
+
+namespace REVORA_MVC_FE.Services
+{
+    public class ApiService
+    {
+        private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
+        public ApiService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+        {
+            _httpClient = httpClient;
+            _httpContextAccessor = httpContextAccessor;
+
+            var token = _httpContextAccessor.HttpContext?.User?.Claims?.FirstOrDefault(c => c.Type == "AccessToken")?.Value;
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
+        }
+
+        public void SetToken(string token)
+        {
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        }
+
+        public async Task<string> GetRawJsonAsync(string url)
+        {
+            var response = await _httpClient.GetAsync(url);
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> PostRawJsonAsync(string url, HttpContent content)
+        {
+            var response = await _httpClient.PostAsync(url, content);
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<ApiResponse<LoginResponseDto>?> LoginAsync(LoginViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("auth/login", new { 
+                email = model.Email, 
+                password = model.Password 
+            });
+            
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDto>>();
+            }
+
+            return new ApiResponse<LoginResponseDto> { Success = false, Message = "Đăng nhập thất bại" };
+        }
+
+        public async Task<ApiResponse<object>?> RegisterAsync(RegisterViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("auth/register", new {
+                fullName = model.FullName,
+                username = model.Username,
+                email = model.Email,
+                password = model.Password
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+            }
+
+            return new ApiResponse<object> { Success = false, Message = "Đăng ký thất bại" };
+        }
+
+        public async Task<List<CategoryDto>> GetCategoriesAsync()
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<CategoryDto>>>("categories");
+                return response?.Data ?? new List<CategoryDto>();
+            } catch { return new List<CategoryDto>(); }
+        }
+
+        public async Task<List<ProductResponseDto>> GetFeaturedProductsAsync(int limit = 10)
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/featured?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
+            } catch { return new List<ProductResponseDto>(); }
+        }
+
+        public async Task<List<ProductResponseDto>> GetLovedProductsAsync(int limit = 10)
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/loved?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
+            } catch { return new List<ProductResponseDto>(); }
+        }
+
+        public async Task<List<ProductResponseDto>> GetNewestProductsAsync(int limit = 10)
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products?sortBy=newest&limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
+            } catch { return new List<ProductResponseDto>(); }
+        }
+
+        public async Task<PaginatedList<ProductResponseDto>> GetFilteredProductsAsync(
+            string? keyword = null, int? categoryId = null, string? city = null, 
+            string? brand = null, string? condition = null, decimal? minPrice = null, 
+            decimal? maxPrice = null, string sortBy = "newest", int pageNumber = 1, int pageSize = 12)
+        {
+            try {
+                var query = new List<string>();
+                if (!string.IsNullOrEmpty(keyword)) query.Add($"keyword={Uri.EscapeDataString(keyword)}");
+                if (categoryId.HasValue && categoryId > 0) query.Add($"categoryId={categoryId.Value}");
+                if (!string.IsNullOrEmpty(city) && city != "Tất Cả") query.Add($"city={Uri.EscapeDataString(city)}");
+                if (!string.IsNullOrEmpty(brand) && brand != "Tất Cả") query.Add($"brand={Uri.EscapeDataString(brand)}");
+                if (!string.IsNullOrEmpty(condition) && condition != "Tất Cả") query.Add($"condition={Uri.EscapeDataString(condition)}");
+                if (minPrice.HasValue) query.Add($"minPrice={minPrice.Value}");
+                if (maxPrice.HasValue) query.Add($"maxPrice={maxPrice.Value}");
+                query.Add($"sortBy={Uri.EscapeDataString(sortBy)}");
+                query.Add($"pageNumber={pageNumber}");
+                query.Add($"pageSize={pageSize}");
+
+                string queryString = string.Join("&", query);
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PaginatedList<ProductResponseDto>>>($"products?{queryString}");
+                return response?.Data ?? new PaginatedList<ProductResponseDto>();
+            } catch (Exception ex) { 
+                Console.WriteLine($"API Error: {ex.Message}");
+                return new PaginatedList<ProductResponseDto>(); 
+            }
+        }
+
+        public async Task<ProductDetailResponseDto?> GetProductByIdAsync(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<ProductDetailResponseDto>>($"products/{id}");
+                return response?.Data;
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<string>> UploadImageAsync(Microsoft.AspNetCore.Http.IFormFile file)
+        {
+            try
+            {
+                using var content = new MultipartFormDataContent();
+                var fileContent = new StreamContent(file.OpenReadStream());
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                content.Add(fileContent, "files", file.FileName);
+                
+                var response = await _httpClient.PostAsync("media/upload-images", content);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                    if (result.TryGetProperty("urls", out var urlsProp) && urlsProp.GetArrayLength() > 0)
+                    {
+                        return new ApiResponse<string> { Success = true, Data = urlsProp[0].GetString() };
+                    }
+                }
+                var errorBody = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<string> { Success = false, Message = $"Lỗi upload: {response.StatusCode} - {errorBody}" };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<string> { Success = false, Message = ex.Message };
+            }
+        }
+
+        public async Task<ApiResponse<object>?> CreateProductAsync(ProductCreateViewModel model)
+        {
+            try
+            {
+                var imageUrls = new List<string>();
+                string? videoUrl = null;
+                string? bannerUrl = null;
+
+                // 1. Upload Images
+                if (model.Images != null && model.Images.Any())
+                {
+                    using var content = new MultipartFormDataContent();
+                    foreach (var file in model.Images)
+                    {
+                        var fileContent = new StreamContent(file.OpenReadStream());
+                        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                        content.Add(fileContent, "files", file.FileName);
+                    }
+                    var imgResponse = await _httpClient.PostAsync("media/upload-images", content);
+                    if (imgResponse.IsSuccessStatusCode)
+                    {
+                        var imgResult = await imgResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                        if (imgResult.TryGetProperty("urls", out var urlsProp))
+                        {
+                            foreach (var url in urlsProp.EnumerateArray())
+                            {
+                                imageUrls.Add(url.GetString() ?? "");
+                            }
+                        }
+                    }
+                    else 
+                    {
+                        var errorBody = await imgResponse.Content.ReadAsStringAsync();
+                        return new ApiResponse<object> { Success = false, Message = $"Lỗi khi upload hình ảnh: {imgResponse.StatusCode} - {errorBody}" };
+                    }
+                }
+
+                // 2. Upload Video
+                if (model.EnableVideoUpload && model.VideoFile != null)
+                {
+                    using var content = new MultipartFormDataContent();
+                    var fileContent = new StreamContent(model.VideoFile.OpenReadStream());
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(model.VideoFile.ContentType);
+                    content.Add(fileContent, "file", model.VideoFile.FileName);
+                    
+                    var vidResponse = await _httpClient.PostAsync("media/upload-video", content);
+                    if (vidResponse.IsSuccessStatusCode)
+                    {
+                        var vidResult = await vidResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                        if (vidResult.TryGetProperty("url", out var urlProp))
+                        {
+                            videoUrl = urlProp.GetString();
+                        }
+                    }
+                }
+
+                // 3. Upload Banner
+                if (model.EnableBannerBoost && model.BannerFile != null)
+                {
+                    using var content = new MultipartFormDataContent();
+                    var fileContent = new StreamContent(model.BannerFile.OpenReadStream());
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(model.BannerFile.ContentType);
+                    content.Add(fileContent, "files", model.BannerFile.FileName); // MediaController uses List<IFormFile> files for upload-images
+                    
+                    var banResponse = await _httpClient.PostAsync("media/upload-images", content);
+                    if (banResponse.IsSuccessStatusCode)
+                    {
+                        var banResult = await banResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                        if (banResult.TryGetProperty("urls", out var urlsProp) && urlsProp.GetArrayLength() > 0)
+                        {
+                            bannerUrl = urlsProp[0].GetString();
+                        }
+                    }
+                }
+
+                // 4. Create Product
+                var response = await _httpClient.PostAsJsonAsync("products", new {
+                    title = model.Title,
+                    categoryId = model.CategoryId,
+                    price = model.Price,
+                    condition = model.Condition,
+                    description = model.Description,
+                    brand = model.Brand,
+                    imageUrls = imageUrls,
+                    enableVideoUpload = model.EnableVideoUpload,
+                    videoUrl = videoUrl,
+                    enableBannerBoost = model.EnableBannerBoost,
+                    bannerUrl = bannerUrl
+                });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                else 
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return new ApiResponse<object> { Success = false, Message = "Lỗi tạo sản phẩm: " + error };
+                }
+            } 
+            catch (Exception ex) 
+            { 
+                return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; 
+            }
+        }
+
+        public async Task<ApiResponse<UserProfileDto>?> GetUserProfileAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<UserProfileDto>>("users/me");
+                return response;
+            } catch { return new ApiResponse<UserProfileDto> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+
+        public async Task<ApiResponse<UserProfileDto>?> GetUserProfileByIdAsync(long userId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<UserProfileDto>>($"users/{userId}");
+                return response;
+            } catch { return new ApiResponse<UserProfileDto> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+
+        public async Task<ApiResponse<UserProfileDto>?> UpdateProfileAsync(object model)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync("users/me", model);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<UserProfileDto>>();
+                }
+                var error = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<UserProfileDto> { Success = false, Message = "Lỗi cập nhật: " + error };
+            } catch (Exception ex) { return new ApiResponse<UserProfileDto> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; }
+        }
+
+        public async Task<ApiResponse<object>?> ChangePasswordAsync(object model)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("auth/change-password", model);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                var errorStr = await response.Content.ReadAsStringAsync();
+                var errorMessage = "Lỗi đổi mật khẩu";
+                try
+                {
+                    using var jsonDoc = System.Text.Json.JsonDocument.Parse(errorStr);
+                    var root = jsonDoc.RootElement;
+                    if (root.TryGetProperty("detail", out var detailProp) && detailProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        errorMessage = detailProp.GetString();
+                    }
+                    else if (root.TryGetProperty("errors", out var errorsProp))
+                    {
+                        foreach (var prop in errorsProp.EnumerateObject())
+                        {
+                            if (prop.Value.ValueKind == System.Text.Json.JsonValueKind.Array && prop.Value.GetArrayLength() > 0)
+                            {
+                                errorMessage = prop.Value[0].GetString();
+                                break;
+                            }
+                        }
+                    }
+                    else if (root.TryGetProperty("message", out var msgProp) && msgProp.ValueKind == System.Text.Json.JsonValueKind.String)
+                    {
+                        errorMessage = msgProp.GetString();
+                    }
+                    else
+                    {
+                        errorMessage = errorStr;
+                    }
+                }
+                catch
+                {
+                    errorMessage = errorStr;
+                }
+                return new ApiResponse<object> { Success = false, Message = errorMessage };
+            } catch (Exception ex) { return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; }
+        }
+
+        public async Task<ApiResponse<PaginatedList<ProductResponseDto>>?> GetMyProductsAsync(int pageIndex = 1, int pageSize = 10)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PaginatedList<ProductResponseDto>>>($"products/me?pageNumber={pageIndex}&pageSize={pageSize}");
+                return response;
+            } catch { return new ApiResponse<PaginatedList<ProductResponseDto>> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+
+        public async Task<ApiResponse<PaginatedList<ProductResponseDto>>?> GetSellerProductsAsync(long sellerId, int pageIndex = 1, int pageSize = 10)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PaginatedList<ProductResponseDto>>>($"products/seller/{sellerId}?pageNumber={pageIndex}&pageSize={pageSize}");
+                return response;
+            } catch { return new ApiResponse<PaginatedList<ProductResponseDto>> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+
+        public async Task<ApiResponse<PaginatedList<ProductResponseDto>>?> GetWishlistAsync(int pageIndex = 1, int pageSize = 10)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>("wishlists/me");
+                if (response?.Success == true && response.Data != null)
+                {
+                    var paginatedData = new PaginatedList<ProductResponseDto>
+                    {
+                        TotalCount = response.Data.Count,
+                        TotalPages = (int)Math.Ceiling(response.Data.Count / (double)pageSize),
+                        Items = response.Data.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList()
+                    };
+                    return new ApiResponse<PaginatedList<ProductResponseDto>> { Success = true, Data = paginatedData, Message = response.Message };
+                }
+                return new ApiResponse<PaginatedList<ProductResponseDto>> { Success = response?.Success ?? false, Message = response?.Message ?? "Lỗi tải danh sách yêu thích" };
+            } catch { return new ApiResponse<PaginatedList<ProductResponseDto>> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+
+        public async Task<ApiResponse<List<long>>?> GetWishlistIdsAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<List<long>>>("wishlists/my-ids");
+            } catch { return new ApiResponse<List<long>> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+
+        public async Task<ApiResponse<object>?> ToggleFollowAsync(long targetUserId)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"users/{targetUserId}/toggle-follow", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                var error = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<object> { Success = false, Message = "Lỗi thao tác: " + error };
+            } catch (Exception ex) { return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; }
+        }
+
+        public async Task<ApiResponse<object>?> ToggleWishlistAsync(long productId)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync($"wishlists/toggle/{productId}", null);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                var error = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<object> { Success = false, Message = "Lỗi thao tác: " + error };
+            } catch (Exception ex) { return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; }
+        }
+
+        public async Task<ApiResponse<object>?> GetFollowersAsync(long userId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<object>>($"users/{userId}/followers?pageSize=100");
+                return response;
+            } catch { return new ApiResponse<object> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+
+        public async Task<ApiResponse<object>?> GetFollowingAsync(long userId)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<object>>($"users/{userId}/following?pageSize=100");
+                return response;
+            } catch { return new ApiResponse<object> { Success = false, Message = "Lỗi kết nối Server" }; }
+        }
+    }
+}
