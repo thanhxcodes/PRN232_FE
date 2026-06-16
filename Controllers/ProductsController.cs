@@ -59,14 +59,26 @@ namespace REVORA_MVC_FE.Controllers
                     Condition = "Như Mới",
                     CategoryName = "Đồng Hồ",
                     Brand = "Apple",
-                    Location = "Hà Nội",
-                    ViewCount = 1245,
-                    SellerName = "Trần Văn A",
+                    Location = "Quận 1, TP.HCM",
+                    ImageUrls = new List<string> { "https://images.unsplash.com/photo-1434493789847-2f02b9d28220" },
+                    SellerName = "John Doe",
+                    IsPremium = true,
+                    ViewCount = 120,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2),
                     SellerUsername = "tranvana",
                     Description = "Đồng hồ Apple Watch Series 8 size 41mm bản nhôm GPS màu Midnight.\nMáy nữ dùng rất giữ gìn, pin còn 98%.\nPhụ kiện còn đủ hộp sạc zin theo máy."
                 };
             }
             return View(product);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetDetailApi(int id)
+        {
+            var product = await _apiService.GetProductByIdAsync(id);
+            if (product != null)
+                return Json(new { success = true, data = product });
+            return Json(new { success = false });
         }
 
         [HttpGet]

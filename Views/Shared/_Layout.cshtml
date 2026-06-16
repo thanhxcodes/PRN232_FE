@@ -30,7 +30,10 @@
                 @RenderBody()
 
                 <!-- Footer (conditionally rendered in real app, but placed here for now) -->
-                @await Html.PartialAsync("_Footer")
+                @if (ViewData["HideFooter"] as bool? != true)
+                {
+                    @await Html.PartialAsync("_Footer")
+                }
             </main>
         </div>
     </div>
@@ -40,6 +43,21 @@
     <script>
         lucide.createIcons();
     </script>
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <script>
+            window.globalConfig = {
+                accessToken: '@Html.Raw(Context.User.Claims.FirstOrDefault(c => c.Type == "AccessToken")?.Value ?? "")',
+                currentUserId: parseInt('@Html.Raw(Context.User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0")'),
+                apiBaseUrl: 'https://localhost:7015/api/v1',
+                hubUrl: 'https://localhost:7015/chathub'
+            };
+        </script>
+    }
+
+    <!-- Global SignalR -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
 
     <!-- Custom JS for Sidebar/Navbar Toggles -->
     <script src="~/js/site.js" asp-append-version="true"></script>
