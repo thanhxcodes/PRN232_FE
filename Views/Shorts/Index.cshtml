@@ -336,11 +336,46 @@
                 shorts = json.data;
                 initUI();
             } else {
-                showEmpty();
+                shorts = getMockShorts();
+                initUI();
             }
         } catch (e) {
-            showEmpty();
+            shorts = getMockShorts();
+            initUI();
         }
+    }
+
+    function getMockShorts() {
+        return [
+            {
+                shortId: 101,
+                videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+                caption: "Bộ sưu tập mùa hè mới nhất của REVORA! #fashion #summer",
+                sellerId: 1,
+                sellerName: "REVORA Official",
+                sellerAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100",
+                isFollowingSeller: false,
+                likeCount: 1542,
+                commentCount: 85,
+                isLikedByCurrentUser: false,
+                productId: 1,
+                productPrice: 450000
+            },
+            {
+                shortId: 102,
+                videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+                caption: "Cách phối đồ với áo thun basic cực chất 🔥 #mixmatch",
+                sellerId: 2,
+                sellerName: "Style By Me",
+                sellerAvatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100",
+                isFollowingSeller: true,
+                likeCount: 823,
+                commentCount: 42,
+                isLikedByCurrentUser: true,
+                productId: null,
+                productPrice: null
+            }
+        ];
     }
 
     function showEmpty() {

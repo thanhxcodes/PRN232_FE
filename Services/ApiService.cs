@@ -102,6 +102,14 @@ namespace REVORA_MVC_FE.Services
             } catch { return new List<ProductResponseDto>(); }
         }
 
+        public async Task<List<ProductResponseDto>> GetMostViewedProductsAsync(int limit = 10)
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/most-viewed?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
+            } catch { return new List<ProductResponseDto>(); }
+        }
+
         public async Task<PaginatedList<ProductResponseDto>> GetFilteredProductsAsync(
             string? keyword = null, int? categoryId = null, string? city = null, 
             string? brand = null, string? condition = null, decimal? minPrice = null, 

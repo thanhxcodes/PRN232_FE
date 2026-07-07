@@ -29,6 +29,21 @@
         <div class="flex items-center space-x-3">
             @if (User.Identity != null && User.Identity.IsAuthenticated)
             {
+                <!-- Credits badges -->
+                <div class="hidden lg:flex items-center gap-1 bg-white/10 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20">
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-amber-50 rounded-full border border-amber-200" title="Credit Đăng Tin">
+                        <i data-lucide="zap" class="w-3 h-3 text-amber-500 fill-amber-500"></i>
+                        <span class="text-xs font-bold text-amber-700">199</span>
+                    </div>
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-amber-50 rounded-full border border-amber-200" title="Credit Nổi Bật">
+                        <i data-lucide="star" class="w-3 h-3 text-amber-500 fill-amber-500"></i>
+                        <span class="text-xs font-bold text-amber-700">595</span>
+                    </div>
+                    <a href="/Plans" class="w-7 h-7 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center transition-colors" title="Nạp thêm credits">
+                        <i data-lucide="plus" class="w-4 h-4 text-white"></i>
+                    </a>
+                </div>
+
                 <!-- Nút Đăng tin -->
                 <div class="hidden md:flex items-center">
                     <a href="/Products/Create" class="bg-white text-[#2D5A3D] px-5 py-2 rounded-full hover:shadow-lg transition-all text-sm font-semibold flex items-center gap-1.5">

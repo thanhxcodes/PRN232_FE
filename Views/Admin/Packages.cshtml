@@ -1,0 +1,123 @@
+@{
+    ViewData["Title"] = "Quản Lý Gói Tín Dụng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <i data-lucide="sparkles" class="w-8 h-8 text-[#2D5A3D]"></i>
+            Quản Lý Gói Tín Dụng
+        </h1>
+        <p class="text-gray-500 mt-2">Đồng bộ với giao diện hiển thị cho người dùng.</p>
+    </div>
+
+    <div class="space-y-16">
+        <!-- GÓI ĐĂNG TIN -->
+        <section>
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Gói Đăng Tin</h2>
+                <p class="text-gray-500">Giúp người bán tăng số lượng tin đăng tiêu chuẩn</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Mock Package -->
+                <div class="relative bg-white rounded-3xl shadow-lg p-8 hover:shadow-2xl transition-all border border-gray-100 flex flex-col">
+                    <div class="absolute top-6 right-6">
+                        <span class="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold">
+                            Đăng Tin
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Gói Cơ Bản</h3>
+                    <div class="flex items-baseline gap-2 mb-6">
+                        <span class="text-4xl font-black text-gray-900">50.000đ</span>
+                        <span class="text-lg text-gray-400 line-through">100.000đ</span>
+                    </div>
+
+                    <div class="bg-blue-50/50 rounded-2xl p-4 mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                                <span class="font-bold text-blue-600">+10</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Credits Đăng Tin</p>
+                                <p class="text-sm text-gray-500">HSD: Vĩnh viễn</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="space-y-4 mb-8 flex-1">
+                        <li class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                            </div>
+                            <span class="text-gray-600 leading-relaxed">Đăng 10 tin sản phẩm</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                            </div>
+                            <span class="text-gray-600 leading-relaxed">Không giới hạn thời gian sử dụng</span>
+                        </li>
+                    </ul>
+
+                    <button class="w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors mt-auto">
+                        <i data-lucide="edit-2" class="w-5 h-5"></i>
+                        <span>Chỉnh Sửa Gói</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- GÓI NỔI BẬT -->
+        <section>
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Gói Nổi Bật</h2>
+                <p class="text-gray-500">Tiếp cận hàng ngàn khách hàng tiềm năng</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Mock Featured Package -->
+                <div class="relative bg-white rounded-3xl shadow-lg p-8 hover:shadow-2xl transition-all border border-gray-100 flex flex-col">
+                    <div class="absolute top-6 right-6">
+                        <span class="bg-orange-100 text-[#C4603A] px-4 py-1.5 rounded-full text-xs font-bold">
+                            Nổi Bật
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Gói VIP</h3>
+                    <div class="flex items-baseline gap-2 mb-6">
+                        <span class="text-4xl font-black text-gray-900">200.000đ</span>
+                    </div>
+
+                    <div class="bg-orange-50/50 rounded-2xl p-4 mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                                <span class="font-bold text-[#C4603A]">+5</span>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-900">Credits Nổi Bật</p>
+                                <p class="text-sm text-gray-500">HSD: Vĩnh viễn</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ul class="space-y-4 mb-8 flex-1">
+                        <li class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                            </div>
+                            <span class="text-gray-600 leading-relaxed">Đẩy 5 sản phẩm lên đầu</span>
+                        </li>
+                    </ul>
+
+                    <button class="w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors mt-auto">
+                        <i data-lucide="edit-2" class="w-5 h-5"></i>
+                        <span>Chỉnh Sửa Gói</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

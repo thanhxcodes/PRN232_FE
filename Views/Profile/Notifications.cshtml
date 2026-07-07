@@ -1,0 +1,136 @@
+@{
+    ViewData["Title"] = "Tất Cả Thông Báo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="min-h-screen bg-gray-50 pb-20 pt-8">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 sticky top-16 z-10">
+        <div class="max-w-4xl mx-auto px-4 py-5">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-3">
+                    <a href="/" class="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors">
+                        <i data-lucide="arrow-left" class="w-5 h-5 text-gray-600"></i>
+                    </a>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                            <i data-lucide="bell" class="w-6 h-6 text-[#2D5A3D]"></i>
+                            Tất Cả Thông Báo
+                        </h1>
+                        <p class="text-gray-600 text-sm mt-0.5">
+                            <span><span class="font-semibold text-[#2D5A3D]">2</span> thông báo chưa đọc</span>
+                        </p>
+                    </div>
+                </div>
+                <button class="flex items-center space-x-2 px-4 py-2 bg-[#2D5A3D] hover:bg-green-800 text-white rounded-full transition-colors text-sm font-medium">
+                    <i data-lucide="check" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">Đọc tất cả</span>
+                </button>
+            </div>
+
+            <!-- Filters -->
+            <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-2 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+                <i data-lucide="filter" class="w-5 h-5 text-gray-400 flex-shrink-0 mr-1"></i>
+                <button class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 bg-[#2D5A3D] text-white shadow-md">
+                    Tất cả (5)
+                </button>
+                <button class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200">
+                    Chưa đọc (2)
+                </button>
+                <div class="w-px h-6 bg-gray-300 mx-2 flex-shrink-0"></div>
+                <button class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200">
+                    Đăng tin (2)
+                </button>
+                <button class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200">
+                    Nạp Credit (1)
+                </button>
+                <button class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 bg-white text-gray-600 hover:bg-gray-100 border border-gray-200">
+                    Hệ thống (2)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="max-w-4xl mx-auto px-4 py-6">
+        <div class="space-y-4">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="divide-y divide-gray-100">
+                    <!-- Mock Data Row 1 (Unread) -->
+                    <div class="p-4 sm:p-5 transition-colors cursor-pointer relative group bg-green-50/30 hover:bg-green-50/50">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-indigo-50">
+                                <i data-lucide="sparkles" class="w-5 h-5 text-indigo-600"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 pr-8">
+                                <p class="text-base font-semibold mb-0.5 text-gray-900">
+                                    Tin đăng của bạn đã được duyệt
+                                </p>
+                                <p class="text-sm leading-snug mb-1 text-gray-800">
+                                    Sản phẩm "Giày Nike Air Force 1" của bạn đã được duyệt và hiển thị công khai.
+                                </p>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+                                    <span class="text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                                        Vừa xong
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#2D5A3D] text-white uppercase tracking-wider">
+                                            Mới
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="absolute right-5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#2D5A3D] rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mock Data Row 2 (Unread) -->
+                    <div class="p-4 sm:p-5 transition-colors cursor-pointer relative group bg-green-50/30 hover:bg-green-50/50">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-amber-50">
+                                <i data-lucide="zap" class="w-5 h-5 text-amber-600"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 pr-8">
+                                <p class="text-base font-semibold mb-0.5 text-gray-900">
+                                    Nạp credit thành công
+                                </p>
+                                <p class="text-sm leading-snug mb-1 text-gray-800">
+                                    Bạn đã nạp thành công gói Posting Week.
+                                </p>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+                                    <span class="text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                                        5 phút trước
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#2D5A3D] text-white uppercase tracking-wider">
+                                            Mới
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="absolute right-5 top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-[#2D5A3D] rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- Mock Data Row 3 (Read) -->
+                    <div class="p-4 sm:p-5 transition-colors cursor-pointer relative group bg-white hover:bg-gray-50">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-50">
+                                <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                            </div>
+                            <div class="flex-1 min-w-0 pr-8">
+                                <p class="text-base font-semibold mb-0.5 text-gray-700">
+                                    Chào mừng bạn đến với REVORA
+                                </p>
+                                <p class="text-sm leading-snug mb-1 text-gray-500">
+                                    Khám phá hàng ngàn sản phẩm thời trang chất lượng trên ứng dụng của chúng tôi!
+                                </p>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2">
+                                    <span class="text-xs font-medium text-gray-500 flex items-center gap-1.5">
+                                        1 ngày trước
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

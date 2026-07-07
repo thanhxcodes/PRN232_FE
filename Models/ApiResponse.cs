@@ -53,6 +53,7 @@ namespace REVORA_MVC_FE.Models
         public int? ViewCount { get; set; }
         public string SellerName { get; set; } = string.Empty;
         public DateTime? CreatedAt { get; set; }
+        public string Brand { get; set; } = string.Empty;
     }
 
     public class ProductDetailResponseDto
