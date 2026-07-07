@@ -304,7 +304,7 @@
 <script>
 (function() {
     const APP_EL = document.getElementById('shorts-app');
-    const BASE_URL = 'https://localhost:7015/api/v1';
+    const BASE_URL = '/api-proxy';
     const TOKEN = APP_EL.dataset.token || '';
     const IS_AUTH = APP_EL.dataset.isAuth === 'true';
     const CURRENT_USER_NAME = APP_EL.dataset.currentUserName || '';
@@ -562,7 +562,7 @@
     }
 
     async function toggleLike() {
-        if (!IS_AUTH) { alert('Vui lòng đăng nhập để thả tim.'); return; }
+        if (!IS_AUTH) { Swal.fire({icon: 'info', title: 'Thông báo', text: 'Vui lòng đăng nhập để thả tim.'}); return; }
         const v = shorts[currentIndex];
         v.isLikedByCurrentUser = !v.isLikedByCurrentUser;
         v.likeCount = v.isLikedByCurrentUser ? v.likeCount + 1 : v.likeCount - 1;
@@ -578,7 +578,7 @@
     }
 
     async function likeComment(shortId, commentId) {
-        if (!IS_AUTH) { alert('Vui lòng đăng nhập để thả tim.'); return; }
+        if (!IS_AUTH) { Swal.fire({icon: 'info', title: 'Thông báo', text: 'Vui lòng đăng nhập để thả tim.'}); return; }
         const comments = commentsCache[shortId] || [];
         const comment = comments.find(c => c.commentId === commentId);
         if (!comment) return;
@@ -823,7 +823,7 @@
     }
 
     async function sendComment(isInline = false) {
-        if (!IS_AUTH) { alert('Vui lòng đăng nhập.'); return; }
+        if (!IS_AUTH) { Swal.fire({icon: 'info', title: 'Thông báo', text: 'Vui lòng đăng nhập.'}); return; }
         const inputId = isInline ? 'inline-comment-input' : 'main-comment-input';
         const input = document.getElementById(inputId);
         if (!input) return;
@@ -1085,7 +1085,7 @@
         document.getElementById('shorts-content').addEventListener('click', async (e) => {
             const followBtn = e.target.closest('.follow-btn');
             if (!followBtn) return;
-            if (!IS_AUTH) { alert('Vui lòng đăng nhập để theo dõi.'); return; }
+            if (!IS_AUTH) { Swal.fire({icon: 'info', title: 'Thông báo', text: 'Vui lòng đăng nhập để theo dõi.'}); return; }
             e.stopPropagation();
             const sellerId = Number(followBtn.dataset.sellerId);
             const shortIdx = Number(followBtn.dataset.shortIndex);
@@ -1105,7 +1105,7 @@
                 navigator.share({ title: v.caption || 'REVORA Short', url: window.location.href });
             } else {
                 navigator.clipboard.writeText(window.location.href);
-                alert('Đã sao chép đường dẫn!');
+                Swal.fire({icon: 'success', title: 'Thành công', text: 'Đã sao chép đường dẫn!', timer: 1500, showConfirmButton: false});
             }
         });
     }

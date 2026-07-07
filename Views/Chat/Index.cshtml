@@ -136,7 +136,7 @@
     window.chatConfig = {
         accessToken: '@Html.Raw(ViewBag.AccessToken)',
         currentUserId: parseInt('@Html.Raw(ViewBag.CurrentUserId)' || '0'),
-        apiBaseUrl: 'https://localhost:7015/api/v1',
+        apiBaseUrl: '/api-proxy',
         hubUrl: 'https://localhost:7015/chathub'
     };
 </script>

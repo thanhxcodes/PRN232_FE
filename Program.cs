@@ -10,6 +10,9 @@ builder.Services.AddHttpClient<REVORA_MVC_FE.Services.ApiService>(client =>
 {
     // Point this to REVORA_BE URL
     client.BaseAddress = new Uri("https://localhost:7015/api/v1/"); 
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true
 });
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

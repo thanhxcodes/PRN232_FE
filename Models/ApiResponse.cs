@@ -32,6 +32,25 @@ namespace REVORA_MVC_FE.Models
         public string AvatarUrl { get; set; } = string.Empty;
     }
 
+    public class UserCreditSummaryDto
+    {
+        public int TotalCredits { get; set; }
+        public List<CreditBatchDto> Batches { get; set; } = new();
+    }
+
+    public class CreditBatchDto
+    {
+        public int RemainingCredits { get; set; }
+        public string? ExpiresAt { get; set; }
+        public string? PackageName { get; set; }
+    }
+
+    public class MyCreditsDto
+    {
+        public int PostingCredits { get; set; }
+        public int FeaturedCredits { get; set; }
+    }
+
     public class CategoryDto
     {
         public int CategoryId { get; set; }
