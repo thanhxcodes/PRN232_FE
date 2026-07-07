@@ -4,8 +4,7 @@ namespace REVORA_MVC_FE.Models.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "Vui lòng nhập Email")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
+        [Required(ErrorMessage = "Vui lòng nhập Email hoặc Tên đăng nhập")]
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng nhập mật khẩu")]

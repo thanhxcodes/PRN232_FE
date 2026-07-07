@@ -1,0 +1,168 @@
+@{
+    ViewData["Title"] = "Quản Lí Tin Đăng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="min-h-screen bg-gray-50 pb-20">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-5">
+            <h1 class="text-2xl font-bold text-gray-900">Quản Lí Tin Đăng</h1>
+            <p class="text-gray-600 text-sm mt-0.5">Quản lý sản phẩm và theo dõi lịch sử sử dụng credit</p>
+
+            <!-- Tabs -->
+            <div class="flex items-center space-x-1 mt-4">
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#2D5A3D] text-white">
+                    <i data-lucide="package" class="w-4 h-4"></i>
+                    <span>Tin Đăng</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="video" class="w-4 h-4"></i>
+                    <span>Short Video</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                    <span>Lịch Sử Credit</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span>Thùng Rác (0)</span>
+                </button>
+                <button class="flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    <span>Vi phạm (0)</span>
+                </button>
+            </div>
+
+            <!-- Filter & Stats -->
+            <div class="mt-4 flex items-center justify-between bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+                <div class="flex items-center space-x-2 text-sm px-2">
+                    <span class="text-gray-700 font-medium">Tổng: 12 sản phẩm</span>
+                </div>
+                <div>
+                    <select class="px-3 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 cursor-pointer">
+                        <option value="all">Tất cả trạng thái</option>
+                        <option value="public">Công khai</option>
+                        <option value="private">Riêng tư</option>
+                        <option value="expired">Hết hạn</option>
+                        <option value="normal">Bài viết thường</option>
+                        <option value="premium">Bài viết nổi bật</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Tin Đăng -->
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Mock Product Card -->
+            <div class="relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400" alt="Giày Nike Air Force 1" class="w-full h-48 object-cover" />
+                    <div class="absolute top-2 right-2 flex flex-col gap-2 items-end">
+                        <div class="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 shadow-sm">
+                            <i data-lucide="eye" class="w-3 h-3"></i>
+                            <span>Công khai</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">Giày Nike Air Force 1</h3>
+                    <p class="text-[#2D5A3D] font-bold text-lg mb-2">1.500.000đ</p>
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">Mới 99%, chính hãng</p>
+                    <div class="flex flex-col gap-2 mb-4">
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span class="bg-gray-100 px-2 py-1 rounded">TP. Hồ Chí Minh</span>
+                            <span class="font-medium text-[#2D5A3D]">Ngày đăng: 01/06/2026</span>
+                        </div>
+                        <div class="mt-2 border-t border-gray-100 pt-3">
+                            <button class="flex items-center space-x-1 text-sm font-semibold text-gray-700 hover:text-[#2D5A3D] transition-colors">
+                                <span>Xem thêm</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
+                        <span class="flex items-center gap-1.5"><i data-lucide="eye" class="w-4 h-4 text-blue-500"></i> 120 lượt xem</span>
+                        <span class="flex items-center gap-1.5"><i data-lucide="heart" class="w-4 h-4 text-red-500"></i> 15 lượt thích</span>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-2">
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold transition-all bg-gray-100 text-gray-700 hover:bg-gray-200">
+                            <span class="flex items-center justify-center space-x-1">
+                                <i data-lucide="eye-off" class="w-3 h-3"></i><span>Ẩn</span>
+                            </span>
+                        </button>
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center justify-center space-x-1">
+                            <i data-lucide="edit-2" class="w-3 h-3"></i><span>Sửa</span>
+                        </button>
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 transition-all flex items-center justify-center space-x-1">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i><span>Gia hạn</span>
+                        </button>
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 transition-all flex items-center justify-center space-x-1">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i><span>Xóa</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mock Product Card 2 (Premium) -->
+            <div class="relative bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-all ring-2 ring-[#C4603A] border-transparent shadow-[0_0_20px_rgba(196,96,58,0.3)]">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1542272604-787c38355620?w=400" alt="Túi Xách Da Cao Cấp" class="w-full h-48 object-cover" />
+                    <div class="absolute top-2 left-2 bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white text-xs px-3 py-1.5 rounded-full shadow-lg font-semibold flex items-center gap-1.5 animate-pulse">
+                        <span class="text-sm">✨</span>
+                        <span>Premium</span>
+                    </div>
+                    <div class="absolute top-2 right-2 flex flex-col gap-2 items-end">
+                        <div class="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1 shadow-sm">
+                            <i data-lucide="eye" class="w-3 h-3"></i>
+                            <span>Công khai</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">Túi Xách Da Cao Cấp</h3>
+                    <p class="text-[#2D5A3D] font-bold text-lg mb-2">2.500.000đ</p>
+                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">Da thật 100%, bảo hành 1 năm</p>
+                    <div class="flex flex-col gap-2 mb-4">
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span class="bg-gray-100 px-2 py-1 rounded">Hà Nội</span>
+                            <span class="font-medium text-[#2D5A3D]">Ngày đăng: 05/06/2026</span>
+                        </div>
+                        <div class="mt-2 border-t border-gray-100 pt-3">
+                            <button class="flex items-center space-x-1 text-sm font-semibold text-gray-700 hover:text-[#2D5A3D] transition-colors">
+                                <span>Xem thêm</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
+                        <span class="flex items-center gap-1.5"><i data-lucide="eye" class="w-4 h-4 text-blue-500"></i> 450 lượt xem</span>
+                        <span class="flex items-center gap-1.5"><i data-lucide="heart" class="w-4 h-4 text-red-500"></i> 55 lượt thích</span>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-2">
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold transition-all bg-gray-100 text-gray-700 hover:bg-gray-200">
+                            <span class="flex items-center justify-center space-x-1">
+                                <i data-lucide="eye-off" class="w-3 h-3"></i><span>Ẩn</span>
+                            </span>
+                        </button>
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all flex items-center justify-center space-x-1">
+                            <i data-lucide="edit-2" class="w-3 h-3"></i><span>Sửa</span>
+                        </button>
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold bg-purple-50 text-purple-700 hover:bg-purple-100 transition-all flex items-center justify-center space-x-1">
+                            <i data-lucide="refresh-cw" class="w-3 h-3"></i><span>Gia hạn</span>
+                        </button>
+                        <button class="py-2 px-2 rounded-lg text-xs font-semibold bg-red-50 text-red-700 hover:bg-red-100 transition-all flex items-center justify-center space-x-1">
+                            <i data-lucide="trash-2" class="w-3 h-3"></i><span>Xóa</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

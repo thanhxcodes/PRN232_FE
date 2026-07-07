@@ -1,0 +1,140 @@
+@{
+    ViewData["Title"] = "Lịch Sử Giao Dịch";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="min-h-screen bg-gray-50 pb-20">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200 sticky top-16 z-10">
+        <div class="max-w-5xl mx-auto px-4 py-6">
+            <div class="flex items-center gap-3 mb-1">
+                <div class="w-10 h-10 bg-[#2D5A3D]/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="history" class="w-5 h-5 text-[#2D5A3D]"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Lịch Sử Giao Dịch</h1>
+                    <p class="text-gray-600 text-sm">Theo dõi tất cả giao dịch credits của bạn</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <!-- Summary cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-2xl border border-gray-200 p-5">
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Tổng credits đã mua</div>
+                <div class="text-2xl font-bold text-green-600 mt-1">+53</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-200 p-5">
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Tổng credits đã dùng</div>
+                <div class="text-2xl font-bold text-orange-600 mt-1">-4</div>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-200 p-5">
+                <div class="text-xs text-gray-500 uppercase tracking-wider font-semibold">Tổng giao dịch</div>
+                <div class="text-2xl font-bold text-[#2D5A3D] mt-1">8</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl border border-gray-200 p-4 flex flex-wrap items-center gap-3">
+            <div class="relative flex-1 min-w-[200px]">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                <input type="text" placeholder="Tìm theo mô tả..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/30" />
+            </div>
+            <select class="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/30 bg-white">
+                <option value="all">Tất cả loại</option>
+                <option value="buy">Mua credits</option>
+                <option value="use">Sử dụng</option>
+            </select>
+            <select class="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/30 bg-white">
+                <option value="all">Tất cả credits</option>
+                <option value="posting">Credits Đăng Tin</option>
+                <option value="featured">Credits Nổi Bật</option>
+            </select>
+        </div>
+
+        <!-- Transaction list -->
+        <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+            <div class="divide-y divide-gray-50">
+                <!-- Mock Data Row 1 (Buy) -->
+                <div class="flex items-center justify-between py-4 px-6 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-green-50">
+                            <i data-lucide="arrow-down-circle" class="w-5 h-5 text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm">Mua gói Posting Week</div>
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                25/05/2026 •
+                                <span class="text-blue-600">Credits Đăng Tin</span>
+                                • Gói 7 Ngày
+                            </div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-sm text-green-600">
+                        +30 credits
+                    </div>
+                </div>
+
+                <!-- Mock Data Row 2 (Use) -->
+                <div class="flex items-center justify-between py-4 px-6 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-orange-50">
+                            <i data-lucide="arrow-up-circle" class="w-5 h-5 text-orange-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm">Đăng tin: Áo Khoác Da Vintage</div>
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                24/05/2026 •
+                                <span class="text-blue-600">Credits Đăng Tin</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-sm text-orange-600">
+                        -1 credits
+                    </div>
+                </div>
+                
+                 <!-- Mock Data Row 3 (Buy Featured) -->
+                <div class="flex items-center justify-between py-4 px-6 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-green-50">
+                            <i data-lucide="arrow-down-circle" class="w-5 h-5 text-green-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm">Mua gói Featured Week</div>
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                23/05/2026 •
+                                <span class="text-[#C4603A]">Credits Nổi Bật</span>
+                                • Gói 7 Ngày
+                            </div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-sm text-green-600">
+                        +15 credits
+                    </div>
+                </div>
+                
+                <!-- Mock Data Row 4 (Use Featured) -->
+                <div class="flex items-center justify-between py-4 px-6 hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-orange-50">
+                            <i data-lucide="arrow-up-circle" class="w-5 h-5 text-orange-600"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 text-sm">Nổi bật: Túi Xách Designer</div>
+                            <div class="text-xs text-gray-500 mt-0.5">
+                                22/05/2026 •
+                                <span class="text-[#C4603A]">Credits Nổi Bật</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="font-bold text-sm text-orange-600">
+                        -1 credits
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

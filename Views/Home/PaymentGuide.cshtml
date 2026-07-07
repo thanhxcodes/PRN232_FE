@@ -1,0 +1,62 @@
+@{
+    ViewData["Title"] = "Hướng Dẫn Thanh Toán";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] px-8 py-10 text-white text-center">
+            <i data-lucide="credit-card" class="w-12 h-12 mx-auto mb-4 opacity-90"></i>
+            <h1 class="text-3xl font-bold mb-2">Hướng Dẫn Thanh Toán</h1>
+            <p class="text-white/80">Giải đáp các thắc mắc về quá trình mua gói Credits</p>
+        </div>
+        
+        <div class="p-8 sm:p-10 space-y-8 text-gray-700 leading-relaxed">
+            <section>
+                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#2D5A3D]"></span>
+                    Credits có hết hạn không?
+                </h3>
+                <p class="pl-4">
+                    Có, credits sẽ hết hạn theo thời gian của gói bạn đã mua (1/7/30 ngày). Hãy sử dụng trước khi hết hạn.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#2D5A3D]"></span>
+                    Tôi có thể mua nhiều gói cùng lúc?
+                </h3>
+                <p class="pl-4">
+                    Bạn chỉ có thể mua tối đa 1 gói Đăng Tin và 1 gói Nổi Bật (paid) cùng lúc. Khi credits paid của loại đó về 0, bạn có thể mua gói mới cùng loại. Credits free không chặn mua gói mới nếu paid đã hết; nếu còn cả free và paid thì các gói paid khác sẽ bị khóa cho đến khi paid hết.
+                </p>
+            </section>
+
+            <section>
+                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#2D5A3D]"></span>
+                    Phương thức thanh toán nào được hỗ trợ?
+                </h3>
+                <p class="pl-4">
+                    Hiện tại chúng tôi hỗ trợ thanh toán qua cổng PayOS (bao gồm chuyển khoản ngân hàng trực tiếp, quét mã QR Code và các phương thức liên kết thẻ tương ứng).
+                </p>
+            </section>
+
+            <section>
+                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-[#2D5A3D]"></span>
+                    Thanh toán thành công thì credits được cộng thế nào?
+                </h3>
+                <p class="pl-4">
+                    Hệ thống đối chiếu số tiền thực nhận với giá gói: chuyển đủ thì cộng credits ngay; chuyển thừa thì vẫn cộng credits (phần thừa không hoàn lại); chuyển thiếu thì không cộng credits và số tiền đã chuyển cũng không được hoàn. REVORA hiện không hỗ trợ hoàn tiền cho các giao dịch mua gói credits.
+                </p>
+            </section>
+
+            <div class="mt-8 pt-8 border-t border-gray-100">
+                <p class="text-sm text-gray-500 text-center">
+                    Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ bộ phận CSKH qua email <strong>Revora@gmail.com</strong> hoặc hotline <strong>0978900061</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

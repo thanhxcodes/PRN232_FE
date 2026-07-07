@@ -5,7 +5,7 @@
         id = p.ProductId,
         title = p.Title,
         subtitle = "Sản phẩm nổi bật",
-        image = string.IsNullOrEmpty(p.ImageUrl) ? "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200" : p.ImageUrl,
+        image = !string.IsNullOrEmpty(p.BannerUrl) ? p.BannerUrl : (!string.IsNullOrEmpty(p.ImageUrl) ? p.ImageUrl : "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200"),
         color = "from-transparent via-black/40 to-black/80",
         link = $"/Products/Details/{p.ProductId}"
     }).ToList();

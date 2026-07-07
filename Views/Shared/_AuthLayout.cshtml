@@ -4,68 +4,143 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - REVORA</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-white font-sans antialiased text-gray-900">
+<body class="bg-[#0a1a10] font-sans antialiased text-gray-900">
+    <!-- Thêm Tailwind CDN để đảm bảo các class mới hoạt động luôn mà không cần build lại CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0a1a10',
+                            primary: '#108A4D'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-<div class="min-h-screen w-full flex flex-col lg:flex-row bg-white overflow-hidden">
-    <!-- Left Panel - Brand (Hidden on Mobile) -->
-    <div class="relative hidden lg:flex flex-1 flex-col justify-between bg-[#001a11] p-12 lg:p-16 xl:p-20 text-white overflow-hidden">
-        <!-- Abstract background elements -->
-        <div class="absolute inset-0 pointer-events-none">
-            <div class="absolute -top-[20%] -left-[10%] w-[100%] h-[100%] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#2D5A3D]/30 via-[#001a11]/0 to-transparent blur-3xl opacity-70"></div>
-            <div class="absolute inset-0 opacity-[0.04] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=\'0 0 400 400\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\'/%3E%3C/svg%3E'); mix-blend-mode: overlay;"></div>
+<div class="min-h-screen relative flex items-center justify-center p-4 overflow-hidden bg-[#0a1a10]">
+    <!-- Nền chuyển sắc -->
+    <div class="absolute inset-0 bg-gradient-to-br from-[#122a1f] via-[#20422c] to-[#0a1a10]"></div>
+
+    <!-- Lớp Parallax chứa các họa tiết trôi nổi và hình ảnh -->
+    <div class="absolute inset-0 pointer-events-none z-0">
+        <!-- Vòng tròn họa tiết trang trí trôi nổi -->
+        <div class="absolute inset-0 overflow-hidden opacity-80">
+            <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-emerald-500/10 blur-3xl" style="animation: float1 10s ease-in-out infinite;"></div>
+            <div class="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-emerald-400/10 blur-3xl" style="animation: float2 12s ease-in-out infinite;"></div>
+            <div class="absolute top-1/2 left-1/4 w-[30rem] h-[30rem] rounded-full bg-white/[0.02] blur-2xl" style="animation: float3 15s ease-in-out infinite;"></div>
         </div>
 
-        <div class="relative z-10 flex items-center gap-3">
-            <a href="/" class="flex items-center gap-3 group">
-                <img src="/images/logo.png" alt="REVORA Logo" class="w-10 h-10 rounded-full" />
-                <span class="text-2xl font-black text-white" style="font-family: 'Raleway', sans-serif; letter-spacing: 0.15em;">
-                    REVORA
-                </span>
-            </a>
+        <!-- Các hình ảnh thời trang trôi nổi -->
+        <div class="rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10 absolute top-[10%] left-[8%] w-[180px] opacity-45 -rotate-6" style="animation: floatImg1 7s ease-in-out infinite;">
+            <div class="absolute inset-0 bg-emerald-900/30 mix-blend-overlay z-10"></div>
+            <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=400&auto=format&fit=crop" alt="" class="w-full h-auto object-cover filter grayscale-[30%] contrast-125 brightness-90" />
+        </div>
+        
+        <div class="rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10 absolute top-[65%] left-[12%] w-[150px] opacity-45 rotate-4" style="animation: floatImg2 8s ease-in-out infinite;">
+            <div class="absolute inset-0 bg-emerald-900/30 mix-blend-overlay z-10"></div>
+            <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=400&auto=format&fit=crop" alt="" class="w-full h-auto object-cover filter grayscale-[30%] contrast-125 brightness-90" />
         </div>
 
-        <div class="relative z-10 max-w-lg mt-auto mb-auto">
-            <h1 class="text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
-                Revive <br class="hidden lg:block" />
-                <span class="text-white/70">Your Aura.</span>
-            </h1>
-            <p class="text-lg text-white/60 leading-relaxed font-medium">
-                Khám phá thế giới thời trang bền vững. Nơi phong cách của bạn được tái sinh.
-            </p>
+        <div class="rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10 absolute top-[15%] right-[10%] w-[160px] opacity-45 rotate-8" style="animation: floatImg3 9s ease-in-out infinite;">
+            <div class="absolute inset-0 bg-emerald-900/30 mix-blend-overlay z-10"></div>
+            <img src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=400&auto=format&fit=crop" alt="" class="w-full h-auto object-cover filter grayscale-[30%] contrast-125 brightness-90" />
         </div>
 
-        <div class="relative z-10 text-sm text-white/40 font-medium">
-            © 2026 REVORA. All rights reserved.
+        <div class="rounded-2xl overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.4)] border border-white/10 absolute top-[55%] right-[6%] w-[200px] opacity-45 -rotate-5" style="animation: floatImg1 8s ease-in-out infinite;">
+            <div class="absolute inset-0 bg-emerald-900/30 mix-blend-overlay z-10"></div>
+            <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=400&auto=format&fit=crop" alt="" class="w-full h-auto object-cover filter grayscale-[30%] contrast-125 brightness-90" />
         </div>
     </div>
 
-    <!-- Right Panel - Form Container -->
-    <div class="flex-[0.8] xl:flex-[0.7] flex flex-col justify-center items-center p-6 sm:p-12 relative bg-white">
-        
-        <!-- Mobile Header (Hidden on Desktop) -->
-        <div class="lg:hidden flex flex-col items-center mb-8 mt-4">
-            <a href="/" class="flex items-center gap-3">
-                <img src="/images/logo.png" alt="REVORA Logo" class="w-12 h-12 rounded-full shadow-sm" />
-                <span class="text-2xl font-black text-[#001a11] tracking-tight" style="font-family: 'Raleway', sans-serif; letter-spacing: 0.15em;">
-                    REVORA
-                </span>
+    <div class="relative w-full max-w-[460px] z-10">
+        <!-- Logo -->
+        <div class="text-center mb-8 fade-in-up">
+            <a href="/" class="inline-block group">
+                <div class="flex items-center justify-center gap-3 mb-3">
+                    <img src="/images/logo.png" alt="Logo" class="w-[52px] h-[52px] rounded-full object-cover shadow-lg border-2 border-white/20 transition-transform duration-300 group-hover:scale-105 group-hover:rotate-6" />
+                    <div class="text-left">
+                        <h1 class="text-4xl font-black text-white leading-none drop-shadow-md tracking-[0.25em]" style="font-family: 'Raleway', sans-serif;">
+                            REVORA
+                        </h1>
+                        <p class="text-white/70 text-[10px] tracking-[0.25em] uppercase mt-1 font-semibold">
+                            REVIVE YOUR AURA
+                        </p>
+                    </div>
+                </div>
             </a>
         </div>
 
-        <div class="w-full max-w-[420px]">
-            @RenderBody()
+        <!-- Nút gạt tab -->
+        @{
+            var isLogin = ViewContext.RouteData.Values["action"]?.ToString() == "Login";
+        }
+        <div class="flex bg-white/10 backdrop-blur-md rounded-2xl p-1 mb-4 border border-white/20 shadow-xl relative fade-in-up" style="animation-delay: 0.1s;">
+            <div class="absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-md transition-all duration-300" style="left: @(isLogin ? "4px" : "calc(50%)");"></div>
+            <a href="/Auth/Login" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 z-10 @(isLogin ? "text-[#108A4D]" : "text-white/80 hover:text-white")">
+                Đăng Nhập
+            </a>
+            <a href="/Auth/Register" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-center transition-all duration-300 z-10 @(!isLogin ? "text-[#108A4D]" : "text-white/80 hover:text-white")">
+                Đăng Ký
+            </a>
         </div>
-        
-        <!-- Mobile Footer -->
-        <p class="lg:hidden text-center text-gray-400 text-xs mt-12 font-medium">
-            © 2026 REVORA. All rights reserved.
+
+        <!-- Hộp chứa Form -->
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/40 fade-in-up" style="animation-delay: 0.2s;">
+            <div class="h-1.5 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-500"></div>
+            <div class="p-8 pb-10">
+                @RenderBody()
+            </div>
+        </div>
+
+        <p class="text-center text-white/60 text-xs mt-6 font-medium tracking-wide">
+            © 2026 REVORA. Tất cả quyền được bảo lưu.
         </p>
     </div>
 </div>
+
+<style>
+    @@keyframes float1 {
+        0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+        50% { transform: translateY(-30px) rotate(10deg) scale(1.1); }
+    }
+    @@keyframes float2 {
+        0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+        50% { transform: translateY(40px) translateX(-30px) scale(1.15); }
+    }
+    @@keyframes float3 {
+        0%, 100% { transform: translateY(-50%) translateX(0); }
+        50% { transform: translateY(-40%) translateX(30px); }
+    }
+    @@keyframes floatImg1 {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+    @@keyframes floatImg2 {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+    }
+    @@keyframes floatImg3 {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-25px); }
+    }
+    .fade-in-up {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    @@keyframes fadeInUp {
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script>

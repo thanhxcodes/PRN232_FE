@@ -32,6 +32,25 @@ namespace REVORA_MVC_FE.Models
         public string AvatarUrl { get; set; } = string.Empty;
     }
 
+    public class UserCreditSummaryDto
+    {
+        public int TotalCredits { get; set; }
+        public List<CreditBatchDto> Batches { get; set; } = new();
+    }
+
+    public class CreditBatchDto
+    {
+        public int RemainingCredits { get; set; }
+        public string? ExpiresAt { get; set; }
+        public string? PackageName { get; set; }
+    }
+
+    public class MyCreditsDto
+    {
+        public int PostingCredits { get; set; }
+        public int FeaturedCredits { get; set; }
+    }
+
     public class CategoryDto
     {
         public int CategoryId { get; set; }
@@ -46,6 +65,7 @@ namespace REVORA_MVC_FE.Models
         public string Title { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public string ImageUrl { get; set; } = string.Empty;
+        public string? BannerUrl { get; set; }
         public string Location { get; set; } = string.Empty;
         public bool IsPremium { get; set; }
         public int LikeCount { get; set; }
@@ -53,6 +73,7 @@ namespace REVORA_MVC_FE.Models
         public int? ViewCount { get; set; }
         public string SellerName { get; set; } = string.Empty;
         public DateTime? CreatedAt { get; set; }
+        public string Brand { get; set; } = string.Empty;
     }
 
     public class ProductDetailResponseDto

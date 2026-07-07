@@ -58,5 +58,10 @@ namespace REVORA_MVC_FE.Controllers
                 return StatusCode(500, new { success = false, message = ex.Message });
             }
         }
+
+        public IActionResult TransactionHistory()
+        {
+            return View();
+        }
     }
 }
