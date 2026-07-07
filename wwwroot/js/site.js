@@ -48,6 +48,57 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+if (window.globalConfig && window.globalConfig.accessToken) {
+    window.fetchGlobalUnreadChatCount = async function() {
+        try {
+            const headers = { "Content-Type": "application/json", "Authorization": `Bearer ${window.globalConfig.accessToken}` };
+            const res = await fetch(window.globalConfig.apiBaseUrl + "/Chat/conversations", { headers });
+            if (res.ok) {
+                const json = await res.json();
+                if (json.success) {
+                    const count = json.data.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
+                    window.updateGlobalChatBadge(count);
+                }
+            }
+        } catch(e) {}
+    }
+
+    window.updateGlobalChatBadge = function(count) {
+        const el = document.getElementById('global-unread-chat-count');
+        if (el) {
+            if (count > 0) {
+                el.innerText = count > 99 ? '99+' : count;
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+    }
+
+    // Initial fetch
+    window.fetchGlobalUnreadChatCount();
+
+    // Global SignalR for header updates
+    if (window.signalR) {
+        const globalConnection = new signalR.HubConnectionBuilder()
+            .withUrl(window.globalConfig.hubUrl + "?access_token=" + window.globalConfig.accessToken)
+            .withAutomaticReconnect()
+            .build();
+
+        globalConnection.on("ReceiveMessage", function (msg) {
+            // Delay to ensure DB is updated
+            setTimeout(window.fetchGlobalUnreadChatCount, 500);
+        });
+
+        globalConnection.on("MessagesRead", function (readerId) {
+            // User read messages, we can re-fetch
+            setTimeout(window.fetchGlobalUnreadChatCount, 500);
+        });
+
+        globalConnection.start().catch(err => console.error("Global SignalR Connection Error:", err));
+    }
+}
+
 // Global Wishlist Logic
 window.globalWishlistIds = [];
 

@@ -47,13 +47,39 @@ namespace REVORA_MVC_FE.Controllers
                     if (profileResponse != null && profileResponse.Success && profileResponse.Data != null)
                     {
                         var user = profileResponse.Data;
+                        var role = "User";
+                        try
+                        {
+                            var parts = token.Split('.');
+                            if (parts.Length > 1)
+                            {
+                                var payload = parts[1];
+                                payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+                                payload = payload.Replace('-', '+').Replace('_', '/');
+                                var base64Decoded = Convert.FromBase64String(payload);
+                                var json = System.Text.Encoding.UTF8.GetString(base64Decoded);
+                                using var jsonDoc = System.Text.Json.JsonDocument.Parse(json);
+                                var root = jsonDoc.RootElement;
+                                
+                                if (root.TryGetProperty("role", out var roleProp))
+                                {
+                                    role = roleProp.GetString() ?? "User";
+                                }
+                                else if (root.TryGetProperty("http://schemas.microsoft.com/ws/2008/06/identity/claims/role", out var roleProp2))
+                                {
+                                    role = roleProp2.GetString() ?? "User";
+                                }
+                            }
+                        }
+                        catch { /* Ignored if decode fails */ }
+
                         var claims = new List<Claim>
                         {
                             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                             new Claim(ClaimTypes.Name, user.Username),
                             new Claim(ClaimTypes.Email, user.Email),
                             new Claim("FullName", user.FullName),
-                            new Claim(ClaimTypes.Role, "User"),
+                            new Claim(ClaimTypes.Role, role),
                             new Claim("AvatarUrl", user.AvatarUrl ?? ""),
                             new Claim("AccessToken", token) // Store JWT
                         };
@@ -71,6 +97,10 @@ namespace REVORA_MVC_FE.Controllers
                             new ClaimsPrincipal(claimsIdentity),
                             authProperties);
 
+                        if (role == "Admin" || role == "ADMIN")
+                        {
+                            return RedirectToAction("Index", "Admin");
+                        }
                         return RedirectToAction("Index", "Home");
                     }
                 }
@@ -115,6 +145,15 @@ namespace REVORA_MVC_FE.Controllers
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+                return RedirectToAction("Index", "Home");
+
+            return View();
         }
     }
 }

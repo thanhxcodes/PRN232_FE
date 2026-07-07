@@ -75,7 +75,10 @@ namespace REVORA_MVC_FE.Services
             try {
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<CategoryDto>>>("categories");
                 return response?.Data ?? new List<CategoryDto>();
-            } catch { return new List<CategoryDto>(); }
+            } catch (Exception ex) {
+                Console.WriteLine("API GetCategoriesAsync Error: " + ex.ToString());
+                return new List<CategoryDto>(); 
+            }
         }
 
         public async Task<List<ProductResponseDto>> GetFeaturedProductsAsync(int limit = 10)
@@ -97,7 +100,15 @@ namespace REVORA_MVC_FE.Services
         public async Task<List<ProductResponseDto>> GetNewestProductsAsync(int limit = 10)
         {
             try {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products?sortBy=newest&limit={limit}");
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/newest?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
+            } catch { return new List<ProductResponseDto>(); }
+        }
+
+        public async Task<List<ProductResponseDto>> GetMostViewedProductsAsync(int limit = 10)
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/most-viewed?limit={limit}");
                 return response?.Data ?? new List<ProductResponseDto>();
             } catch { return new List<ProductResponseDto>(); }
         }
@@ -136,6 +147,31 @@ namespace REVORA_MVC_FE.Services
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse<ProductDetailResponseDto>>($"products/{id}");
                 return response?.Data;
             } catch { return null; }
+        }
+
+        public async Task<UserCreditSummaryDto?> GetPostingCreditSummaryAsync()
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<UserCreditSummaryDto>>("CreditPackages/my-posting-credits");
+                return response?.Data;
+            } catch { return null; }
+        }
+
+        public async Task<UserCreditSummaryDto?> GetFeaturedCreditSummaryAsync()
+        {
+            try {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<UserCreditSummaryDto>>("CreditPackages/my-featured-credits");
+                return response?.Data;
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<MyCreditsDto>?> GetMyCreditsAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<MyCreditsDto>>("Products/my-credits");
+                return response;
+            } catch { return new ApiResponse<MyCreditsDto> { Success = false, Message = "Lỗi kết nối", Data = new MyCreditsDto { PostingCredits = 0, FeaturedCredits = 0 } }; }
         }
 
         public async Task<ApiResponse<string>> UploadImageAsync(Microsoft.AspNetCore.Http.IFormFile file)

@@ -59,9 +59,12 @@ namespace REVORA_MVC_FE.Controllers
                     Condition = "Như Mới",
                     CategoryName = "Đồng Hồ",
                     Brand = "Apple",
-                    Location = "Hà Nội",
-                    ViewCount = 1245,
-                    SellerName = "Trần Văn A",
+                    Location = "Quận 1, TP.HCM",
+                    ImageUrls = new List<string> { "https://images.unsplash.com/photo-1434493789847-2f02b9d28220" },
+                    SellerName = "John Doe",
+                    IsPremium = true,
+                    ViewCount = 120,
+                    CreatedAt = DateTime.UtcNow.AddDays(-2),
                     SellerUsername = "tranvana",
                     Description = "Đồng hồ Apple Watch Series 8 size 41mm bản nhôm GPS màu Midnight.\nMáy nữ dùng rất giữ gìn, pin còn 98%.\nPhụ kiện còn đủ hộp sạc zin theo máy."
                 };
@@ -70,10 +73,36 @@ namespace REVORA_MVC_FE.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetDetailApi(int id)
+        {
+            var product = await _apiService.GetProductByIdAsync(id);
+            if (product != null)
+                return Json(new { success = true, data = product });
+            return Json(new { success = false });
+        }
+
+        [HttpGet]
         [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> Create()
         {
             ViewBag.Categories = await _apiService.GetCategoriesAsync();
+            var creditsResponse = await _apiService.GetMyCreditsAsync();
+            if (creditsResponse?.Success == true && creditsResponse.Data != null)
+            {
+                ViewBag.PostingCredits = creditsResponse.Data.PostingCredits;
+                ViewBag.FeaturedCredits = creditsResponse.Data.FeaturedCredits;
+            }
+            else
+            {
+                ViewBag.PostingCredits = 0;
+                ViewBag.FeaturedCredits = 0;
+            }
+            var postingSummary = await _apiService.GetPostingCreditSummaryAsync();
+            ViewBag.PostingBatches = postingSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+            
+            var featuredSummary = await _apiService.GetFeaturedCreditSummaryAsync();
+            ViewBag.FeaturedBatches = featuredSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+
             return View();
         }
 
@@ -89,7 +118,7 @@ namespace REVORA_MVC_FE.Controllers
             var response = await _apiService.CreateProductAsync(model);
             if (response != null && response.Success)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Home");
             }
 
             ModelState.AddModelError(string.Empty, response?.Message ?? "Không thể đăng sản phẩm.");

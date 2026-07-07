@@ -126,9 +126,9 @@
                                     <button class="w-full bg-[#0068FF] text-white py-3.5 rounded-xl hover:bg-[#0055D4] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
                                         <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Zalo
                                     </button>
-                                    <button class="w-full bg-[#2D5A3D] text-white py-3.5 rounded-xl hover:bg-[#234830] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
+                                    <a href="/Chat?userId=@Model.SellerId&productId=@Model.ProductId&sellerName=@Uri.EscapeDataString(Model.SellerName ?? "")&sellerAvatar=@Uri.EscapeDataString(Model.SellerAvatar ?? "")" class="w-full bg-[#2D5A3D] text-white py-3.5 rounded-xl hover:bg-[#234830] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
                                         <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Nội Bộ
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
                         </div>

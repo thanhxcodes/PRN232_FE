@@ -32,7 +32,7 @@ namespace REVORA_MVC_FE.Controllers
             if (id.HasValue)
             {
                 var meResponse = await _apiService.GetUserProfileAsync();
-                if (meResponse != null && meResponse.Success && meResponse.Data.Id != id.Value)
+                if (meResponse != null && meResponse.Success && meResponse.Data != null && meResponse.Data.Id != id.Value)
                 {
                     isOwnProfile = false;
                 }
@@ -123,5 +123,9 @@ namespace REVORA_MVC_FE.Controllers
             return Json(response);
         }
 
+        public IActionResult Notifications()
+        {
+            return View();
+        }
     }
 }
