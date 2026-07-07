@@ -84,32 +84,32 @@ namespace REVORA_MVC_FE.Services
         public async Task<List<ProductResponseDto>> GetFeaturedProductsAsync(int limit = 10)
         {
             try {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PaginatedList<ProductResponseDto>>>($"products/featured?limit={limit}");
-                return response?.Data?.Items ?? new List<ProductResponseDto>();
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/featured?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
             } catch { return new List<ProductResponseDto>(); }
         }
 
         public async Task<List<ProductResponseDto>> GetLovedProductsAsync(int limit = 10)
         {
             try {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PaginatedList<ProductResponseDto>>>($"products/loved?limit={limit}");
-                return response?.Data?.Items ?? new List<ProductResponseDto>();
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/loved?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
             } catch { return new List<ProductResponseDto>(); }
         }
 
         public async Task<List<ProductResponseDto>> GetNewestProductsAsync(int limit = 10)
         {
             try {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PaginatedList<ProductResponseDto>>>($"products?sortBy=newest&limit={limit}");
-                return response?.Data?.Items ?? new List<ProductResponseDto>();
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/newest?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
             } catch { return new List<ProductResponseDto>(); }
         }
 
         public async Task<List<ProductResponseDto>> GetMostViewedProductsAsync(int limit = 10)
         {
             try {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PaginatedList<ProductResponseDto>>>($"products/most-viewed?limit={limit}");
-                return response?.Data?.Items ?? new List<ProductResponseDto>();
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<List<ProductResponseDto>>>($"products/most-viewed?limit={limit}");
+                return response?.Data ?? new List<ProductResponseDto>();
             } catch { return new List<ProductResponseDto>(); }
         }
 
