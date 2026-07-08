@@ -112,6 +112,24 @@ namespace REVORA_MVC_FE.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.Categories = await _apiService.GetCategoriesAsync();
+                var creditsResponse = await _apiService.GetMyCreditsAsync();
+                if (creditsResponse?.Success == true && creditsResponse.Data != null)
+                {
+                    ViewBag.PostingCredits = creditsResponse.Data.PostingCredits;
+                    ViewBag.FeaturedCredits = creditsResponse.Data.FeaturedCredits;
+                }
+                else
+                {
+                    ViewBag.PostingCredits = 0;
+                    ViewBag.FeaturedCredits = 0;
+                }
+                var postingSummary = await _apiService.GetPostingCreditSummaryAsync();
+                ViewBag.PostingBatches = postingSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+                
+                var featuredSummary = await _apiService.GetFeaturedCreditSummaryAsync();
+                ViewBag.FeaturedBatches = featuredSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+
                 return View(model);
             }
 
@@ -123,6 +141,13 @@ namespace REVORA_MVC_FE.Controllers
 
             ModelState.AddModelError(string.Empty, response?.Message ?? "Không thể đăng sản phẩm.");
             return View(model);
+        }
+
+        [HttpGet]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public IActionResult Manage()
+        {
+            return View();
         }
     }
 }

@@ -51,6 +51,8 @@
         lucide.createIcons();
     </script>
 
+
+
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <script>
@@ -58,7 +60,7 @@
                 accessToken: '@Html.Raw(Context.User.Claims.FirstOrDefault(c => c.Type == "AccessToken")?.Value ?? "")',
                 currentUserId: parseInt('@Html.Raw(Context.User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0")'),
                 apiBaseUrl: '/api-proxy',
-                hubUrl: 'https://localhost:7015/chathub'
+                hubUrl: '/api-proxy/chathub'
             };
         </script>
     }

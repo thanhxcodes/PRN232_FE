@@ -9,6 +9,7 @@ namespace REVORA_MVC_FE.Models.ViewModels
         public string Title { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Vui lòng chọn danh mục")]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn danh mục hợp lệ")]
         public int CategoryId { get; set; }
 
         [Required(ErrorMessage = "Vui lòng chọn tình trạng")]
