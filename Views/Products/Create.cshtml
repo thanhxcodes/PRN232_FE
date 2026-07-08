@@ -367,6 +367,9 @@
     <partial name="_ValidationScriptsPartial" />
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            if (window.jQuery && window.jQuery.validator) {
+                window.jQuery.validator.setDefaults({ ignore: "" });
+            }
             // --- BỘ CÔNG CỤ ĐỌC SỐ TIỀN TIẾNG VIỆT ---
             const DOCSO = {
                 chuSo: ["không", "một", "hai", "ba", "bốn", "năm", "sáu", "bảy", "tám", "chín"],
@@ -452,6 +455,9 @@
                 displayPrice.value = new Intl.NumberFormat('en-US').format(numericValue);
                 realPrice.value = numericValue;
                 updatePriceText(numericValue);
+                if (window.jQuery && window.jQuery(realPrice).valid) {
+                    window.jQuery(realPrice).valid();
+                }
             });
 
             function updatePriceText(numericValue) {

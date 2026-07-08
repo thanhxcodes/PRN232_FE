@@ -65,12 +65,25 @@ if (window.globalConfig && window.globalConfig.accessToken) {
 
     window.updateGlobalChatBadge = function(count) {
         const el = document.getElementById('global-unread-chat-count');
+        const floatEl = document.getElementById('floating-chat-badge');
+        
+        const displayCount = count > 99 ? '99+' : count;
+        
         if (el) {
             if (count > 0) {
-                el.innerText = count > 99 ? '99+' : count;
+                el.innerText = displayCount;
                 el.classList.remove('hidden');
             } else {
                 el.classList.add('hidden');
+            }
+        }
+        
+        if (floatEl) {
+            if (count > 0) {
+                floatEl.innerText = displayCount;
+                floatEl.classList.remove('hidden');
+            } else {
+                floatEl.classList.add('hidden');
             }
         }
     }
@@ -81,7 +94,9 @@ if (window.globalConfig && window.globalConfig.accessToken) {
     // Global SignalR for header updates
     if (window.signalR) {
         const globalConnection = new signalR.HubConnectionBuilder()
-            .withUrl(window.globalConfig.hubUrl + "?access_token=" + window.globalConfig.accessToken)
+            .withUrl(window.globalConfig.hubUrl + "?access_token=" + window.globalConfig.accessToken, {
+                transport: signalR.HttpTransportType.LongPolling
+            })
             .withAutomaticReconnect()
             .build();
 

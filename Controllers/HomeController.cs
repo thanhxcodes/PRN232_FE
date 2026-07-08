@@ -31,6 +31,9 @@ public class HomeController : Controller
         ViewBag.LovedProducts = loved;
         ViewBag.NewestProducts = newest;
         ViewBag.MostViewedProducts = mostViewed;
+        
+        var categories = await _apiService.GetCategoriesAsync();
+        ViewBag.Categories = categories;
 
         return View();
     }

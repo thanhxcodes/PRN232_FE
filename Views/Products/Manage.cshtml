@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Quản Lí Tin Đăng";
+}
+
+<div class="min-h-screen bg-gray-50 pb-20">
+    <!-- Header -->
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-5">
+            <h1 class="text-2xl font-bold text-gray-900">Quản Lí Tin Đăng</h1>
+            <p class="text-gray-600 text-sm mt-0.5">Quản lý sản phẩm và theo dõi lịch sử sử dụng credit</p>
+
+            <!-- Tabs -->
+            <div class="flex items-center space-x-1 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+                <button onclick="window.manageProducts.setActiveTab('products')" id="tab-products" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-[#2D5A3D] text-white">
+                    <i data-lucide="package" class="w-4 h-4"></i>
+                    <span>Tin Đăng</span>
+                </button>
+                <button onclick="window.manageProducts.setActiveTab('shorts')" id="tab-shorts" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="video" class="w-4 h-4"></i>
+                    <span>Short Video</span>
+                </button>
+                <button onclick="window.manageProducts.setActiveTab('credits')" id="tab-credits" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="credit-card" class="w-4 h-4"></i>
+                    <span>Lịch Sử Credit</span>
+                </button>
+                <button onclick="window.manageProducts.setActiveTab('trash')" id="tab-trash" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <span id="trash-count-badge">Thùng Rác (0)</span>
+                </button>
+                <button onclick="window.manageProducts.setActiveTab('violated')" id="tab-violated" class="tab-btn flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-gray-600 hover:bg-gray-100">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    <span id="violated-count-badge">Vi phạm (0)</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Content Containers -->
+        <div id="content-products" class="tab-content block"></div>
+        <div id="content-shorts" class="tab-content hidden"></div>
+        <div id="content-credits" class="tab-content hidden"></div>
+        <div id="content-trash" class="tab-content hidden"></div>
+        <div id="content-violated" class="tab-content hidden"></div>
+    </div>
+</div>
+
+<!-- Modals Container -->
+<div id="modals-container"></div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/manage-products.js" asp-append-version="true"></script>
+}
