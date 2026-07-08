@@ -1,28 +1,14 @@
 @{
     ViewData["Title"] = "Trang Chủ";
-    var categories = ViewBag.Categories as List<REVORA_MVC_FE.Models.CategoryDto> ?? new List<REVORA_MVC_FE.Models.CategoryDto>();
     
-    // Fallback images for specific category names
-    var fallbackImages = new Dictionary<string, string>
-    {
-        { "Quần Áo", "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?w=400" },
-        { "Giày Dép", "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400" },
-        { "Túi Xách", "https://images.unsplash.com/photo-1705909237050-7a7625b47fac?w=400" },
-        { "Phụ Kiện", "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400" },
-        { "Đồng Hồ", "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400" },
-        { "Kính Mắt", "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400" }
+    var categories = new[] {
+        new { name = "Quần Áo", image = "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?w=400" },
+        new { name = "Giày Dép", image = "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400" },
+        new { name = "Túi Xách", image = "https://images.unsplash.com/photo-1705909237050-7a7625b47fac?w=400" },
+        new { name = "Phụ Kiện", image = "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400" },
+        new { name = "Đồng Hồ", image = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400" },
+        new { name = "Kính Mắt", image = "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400" }
     };
-
-    string GetCategoryImage(REVORA_MVC_FE.Models.CategoryDto cat)
-    {
-        if (!string.IsNullOrEmpty(cat.ImageUrl))
-            return cat.ImageUrl;
-        
-        if (fallbackImages.ContainsKey(cat.Name))
-            return fallbackImages[cat.Name];
-            
-        return "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?w=400"; // default fallback
-    }
 }
 
 <div class="min-h-screen bg-[#fafaf7]">
@@ -33,24 +19,21 @@
     </section>
 
     <!-- Categories Section -->
-    @if (categories.Any())
-    {
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-            <div class="bg-white rounded-3xl shadow-lg p-8">
-                <div class="grid grid-cols-3 md:grid-cols-6 gap-6">
-                    @foreach(var cat in categories)
-                    {
-                        <a href="/Products?categoryId=@cat.CategoryId" class="flex flex-col items-center space-y-3 group">
-                            <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all group-hover:scale-105">
-                                <img src="@GetCategoryImage(cat)" alt="@cat.Name" class="w-full h-full object-cover" />
-                            </div>
-                            <span class="text-sm text-gray-700 font-medium group-hover:text-[#2D5A3D] transition-colors">@cat.Name</span>
-                        </a>
-                    }
-                </div>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <div class="bg-white rounded-3xl shadow-lg p-8">
+            <div class="grid grid-cols-3 md:grid-cols-6 gap-6">
+                @foreach(var cat in categories)
+                {
+                    <a href="/Products" class="flex flex-col items-center space-y-3 group">
+                        <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all group-hover:scale-105">
+                            <img src="@cat.image" alt="@cat.name" class="w-full h-full object-cover" />
+                        </div>
+                        <span class="text-sm text-gray-700 font-medium group-hover:text-[#2D5A3D] transition-colors">@cat.name</span>
+                    </a>
+                }
             </div>
-        </section>
-    }
+        </div>
+    </section>
 
     @if (ViewBag.FeaturedProducts != null && ViewBag.FeaturedProducts.Count > 0)
     {
@@ -97,30 +80,6 @@
             </div>
             
             @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.LovedProducts)
-        </section>
-    }
-
-    @if (ViewBag.MostViewedProducts != null && ViewBag.MostViewedProducts.Count > 0)
-    {
-        <!-- Most Viewed Products Section -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl">
-                        <i data-lucide="eye" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-3xl text-gray-900 font-bold">Được Xem Nhiều Nhất</h2>
-                        <p class="text-sm text-gray-600">Những sản phẩm thu hút sự chú ý</p>
-                    </div>
-                </div>
-                <a href="/Products?sort=most-viewed" class="flex items-center space-x-2 px-6 py-3 bg-white text-indigo-600 rounded-full hover:shadow-lg transition-all font-semibold border-2 border-indigo-500">
-                    <span>Tất Cả Sản Phẩm</span>
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </a>
-            </div>
-            
-            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.MostViewedProducts)
         </section>
     }
 

@@ -410,11 +410,12 @@ function renderMessages() {
                 <div class="rounded-3xl rounded-br-md px-4 py-3 text-[15px] border border-gray-200 text-gray-400 italic bg-transparent mb-1 shadow-sm">
                     Tin nhắn đã bị thu hồi
                 </div>` : `
+                ${imgHtml ? `<div class="mb-1">${imgHtml}</div>` : ''}
+                ${productHtml ? `<div class="mb-1 rounded-2xl px-4 py-3 shadow-sm ${isMe ? 'rounded-tr-sm bg-[#EBF4F0]' : 'rounded-tl-sm border border-gray-200 bg-white'}">${productHtml}</div>` : ''}
+                ${(msg.text && msg.text !== '📷 Hình ảnh đính kèm') ? `
                 <div class="rounded-2xl px-4 py-3 text-[15px] leading-relaxed shadow-sm ${isMe ? 'rounded-tr-sm bg-[#EBF4F0] text-gray-900 inline-block' : 'rounded-tl-sm border border-gray-200 bg-white text-gray-900'}">
-                    ${productHtml}
-                    ${imgHtml}
-                    <p class="whitespace-pre-wrap">${msg.text || ''}</p>
-                </div>
+                    <p class="whitespace-pre-wrap">${msg.text}</p>
+                </div>` : ''}
                 <div class="mt-1 flex items-center gap-1.5 text-[11px] text-gray-500 ${isMe ? 'justify-end' : 'justify-start'}">
                     <span>${msg.time || ''}</span>
                     ${statusHtml}
@@ -539,9 +540,10 @@ fileInput?.addEventListener("change", async (e) => {
     }
 });
 
-// --- SignalR Connection ---
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${config.hubUrl}?access_token=${config.accessToken}`)
+    .withUrl(`${config.hubUrl}?access_token=${config.accessToken}`, {
+        transport: signalR.HttpTransportType.LongPolling
+    })
     .withAutomaticReconnect()
     .build();
 
