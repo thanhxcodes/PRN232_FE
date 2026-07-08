@@ -142,5 +142,12 @@ namespace REVORA_MVC_FE.Controllers
             ModelState.AddModelError(string.Empty, response?.Message ?? "Không thể đăng sản phẩm.");
             return View(model);
         }
+
+        [HttpGet]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public IActionResult Manage()
+        {
+            return View();
+        }
     }
 }
