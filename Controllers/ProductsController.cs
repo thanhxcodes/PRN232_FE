@@ -112,6 +112,24 @@ namespace REVORA_MVC_FE.Controllers
         {
             if (!ModelState.IsValid)
             {
+                ViewBag.Categories = await _apiService.GetCategoriesAsync();
+                var creditsResponse = await _apiService.GetMyCreditsAsync();
+                if (creditsResponse?.Success == true && creditsResponse.Data != null)
+                {
+                    ViewBag.PostingCredits = creditsResponse.Data.PostingCredits;
+                    ViewBag.FeaturedCredits = creditsResponse.Data.FeaturedCredits;
+                }
+                else
+                {
+                    ViewBag.PostingCredits = 0;
+                    ViewBag.FeaturedCredits = 0;
+                }
+                var postingSummary = await _apiService.GetPostingCreditSummaryAsync();
+                ViewBag.PostingBatches = postingSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+                
+                var featuredSummary = await _apiService.GetFeaturedCreditSummaryAsync();
+                ViewBag.FeaturedBatches = featuredSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+
                 return View(model);
             }
 
