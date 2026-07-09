@@ -82,11 +82,19 @@ namespace REVORA_MVC_FE.Controllers
                 foreach (var header in Request.Headers)
                 {
                     if (restrictedHeaders.Contains(header.Key, StringComparer.OrdinalIgnoreCase)) continue;
+                    // Don't copy Authorization if we're injecting it
+                    if (header.Key.Equals("Authorization", StringComparison.OrdinalIgnoreCase)) continue;
 
                     if (!requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray()))
                     {
                         requestMessage.Content?.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
                     }
+                }
+
+                var token = User?.Claims?.FirstOrDefault(c => c.Type == "AccessToken")?.Value;
+                if (!string.IsNullOrEmpty(token))
+                {
+                    requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
 
                 var responseMessage = await _httpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseHeadersRead, HttpContext.RequestAborted);

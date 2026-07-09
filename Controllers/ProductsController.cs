@@ -106,6 +106,33 @@ namespace REVORA_MVC_FE.Controllers
             return View();
         }
 
+        [HttpGet]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> Edit(int id)
+        {
+            ViewBag.EditId = id;
+            ViewBag.Categories = await _apiService.GetCategoriesAsync();
+            var creditsResponse = await _apiService.GetMyCreditsAsync();
+            if (creditsResponse?.Success == true && creditsResponse.Data != null)
+            {
+                ViewBag.PostingCredits = creditsResponse.Data.PostingCredits;
+                ViewBag.FeaturedCredits = creditsResponse.Data.FeaturedCredits;
+            }
+            else
+            {
+                ViewBag.PostingCredits = 0;
+                ViewBag.FeaturedCredits = 0;
+            }
+            
+            var postingSummary = await _apiService.GetPostingCreditSummaryAsync();
+            ViewBag.PostingBatches = postingSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+            
+            var featuredSummary = await _apiService.GetFeaturedCreditSummaryAsync();
+            ViewBag.FeaturedBatches = featuredSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+
+            return View("Create");
+        }
+
         [HttpPost]
         [Microsoft.AspNetCore.Authorization.Authorize]
         public async Task<IActionResult> Create(REVORA_MVC_FE.Models.ViewModels.ProductCreateViewModel model)
@@ -141,6 +168,46 @@ namespace REVORA_MVC_FE.Controllers
 
             ModelState.AddModelError(string.Empty, response?.Message ?? "Không thể đăng sản phẩm.");
             return View(model);
+        }
+
+        [HttpPost]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> Edit(int id, REVORA_MVC_FE.Models.ViewModels.ProductCreateViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.EditId = id;
+                ViewBag.Categories = await _apiService.GetCategoriesAsync();
+                var creditsResponse = await _apiService.GetMyCreditsAsync();
+                if (creditsResponse?.Success == true && creditsResponse.Data != null)
+                {
+                    ViewBag.PostingCredits = creditsResponse.Data.PostingCredits;
+                    ViewBag.FeaturedCredits = creditsResponse.Data.FeaturedCredits;
+                }
+                else
+                {
+                    ViewBag.PostingCredits = 0;
+                    ViewBag.FeaturedCredits = 0;
+                }
+                var postingSummary = await _apiService.GetPostingCreditSummaryAsync();
+                ViewBag.PostingBatches = postingSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+                
+                var featuredSummary = await _apiService.GetFeaturedCreditSummaryAsync();
+                ViewBag.FeaturedBatches = featuredSummary?.Batches ?? new List<REVORA_MVC_FE.Models.CreditBatchDto>();
+
+                return View("Create", model);
+            }
+
+            var response = await _apiService.UpdateProductAsync(id, model);
+            if (response != null && response.Success)
+            {
+                return RedirectToAction("Manage", "Products");
+            }
+
+            ModelState.AddModelError(string.Empty, response?.Message ?? "Không thể cập nhật sản phẩm.");
+            ViewBag.EditId = id;
+            ViewBag.Categories = await _apiService.GetCategoriesAsync();
+            return View("Create", model);
         }
 
         [HttpGet]
