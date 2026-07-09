@@ -46,7 +46,150 @@
 </div>
 
 <!-- Modals Container -->
-<div id="modals-container"></div>
+<div id="modals-container">
+    <!-- RENEW MODAL -->
+    <div id="renewModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl my-8 transform transition-all scale-100 opacity-100">
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center space-x-2">
+                    <h2 class="text-xl font-bold text-gray-900">Gia Hạn Dịch Vụ</h2>
+                    <button class="text-blue-500 hover:text-blue-600 transition-colors p-1" onclick="document.getElementById('renewInfoModal').classList.remove('hidden')">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <button class="text-gray-400 hover:text-gray-600" onclick="window.manageProducts.closeRenewModal()">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-4">
+                <div class="flex-1">
+                    <span class="text-xs text-blue-700 font-semibold block">Credit Đăng Tin vĩnh viễn</span>
+                    <span id="rm-posting-credit" class="text-lg font-bold text-blue-800">0</span>
+                </div>
+                <div class="flex-1 border-l border-blue-200 pl-4">
+                    <span class="text-xs text-blue-700 font-semibold block">Credit Nổi Bật vĩnh viễn</span>
+                    <span id="rm-featured-credit" class="text-lg font-bold text-blue-800">0</span>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Cột 1: Lựa chọn dịch vụ -->
+                <div class="flex flex-col">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sản phẩm đang chọn</label>
+                        <input type="text" id="rm-product-title" disabled class="w-full bg-gray-100 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 font-medium" />
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Renew Product -->
+                        <label id="rm-label-product" class="flex items-start space-x-3 p-3 border rounded-xl transition-colors hover:bg-gray-50 cursor-pointer">
+                            <input type="checkbox" id="rm-opt-product" class="mt-1 w-4 h-4 text-blue-600 rounded border-gray-300" />
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="block text-sm font-semibold text-gray-900">Gia hạn Sản Phẩm</span>
+                                    <span id="rm-expired-badge" class="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold hidden">Đã hết hạn</span>
+                                </div>
+                                <span class="block text-xs text-gray-500 mt-0.5 flex items-center gap-1"><i data-lucide="image" class="w-3.5 h-3.5 text-blue-500"></i> Tốn 1 Credit Đăng Tin</span>
+                            </div>
+                        </label>
+
+                        <!-- Renew Banner -->
+                        <label id="rm-label-banner" class="flex items-start space-x-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer transition-colors hidden">
+                            <input type="checkbox" id="rm-opt-banner" class="mt-1 w-4 h-4 text-orange-500 rounded border-gray-300" />
+                            <div>
+                                <span class="block text-sm font-semibold text-gray-900">Gia hạn Banner (+24h)</span>
+                                <span class="block text-xs text-gray-500 mt-0.5 flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-orange-500"></i> Tốn 1 Credit Nổi Bật</span>
+                            </div>
+                        </label>
+
+                        <!-- Renew Short -->
+                        <label id="rm-label-short" class="flex items-start space-x-3 p-3 border rounded-xl hover:bg-gray-50 cursor-pointer transition-colors hidden">
+                            <input type="checkbox" id="rm-opt-short" class="mt-1 w-4 h-4 text-orange-500 rounded border-gray-300" />
+                            <div>
+                                <span class="block text-sm font-semibold text-gray-900">Gia hạn Short Video</span>
+                                <span class="block text-xs text-gray-500 mt-0.5 flex items-center gap-1"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-orange-500"></i> Tốn 1 Credit Nổi Bật</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Cột 2: Tổng kết -->
+                <div class="flex flex-col h-full">
+                    <div class="bg-gray-50/50 rounded-2xl p-5 border border-gray-100 h-full flex flex-col justify-center">
+                        <h3 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-[#2D5A3D]"></i>
+                            Dự kiến sau khi gia hạn
+                        </h3>
+                        
+                        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-50 mb-4">
+                            <div class="flex justify-between items-center text-sm mb-3">
+                                <span class="text-gray-600 flex items-center gap-1.5"><i data-lucide="image" class="w-4 h-4 text-blue-500"></i> Credit Đăng Tin:</span>
+                                <span id="rm-cost-posting" class="font-bold text-base text-gray-400">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 flex items-center gap-1.5"><i data-lucide="sparkles" class="w-4 h-4 text-orange-500"></i> Credit Nổi Bật:</span>
+                                <span id="rm-cost-featured" class="font-bold text-base text-gray-400">0</span>
+                            </div>
+                        </div>
+
+                        <div id="rm-summary-list" class="space-y-2 text-sm text-[#2D5A3D] font-medium bg-green-50/70 p-4 rounded-xl border border-green-100/50 flex-grow flex flex-col justify-center">
+                            <span class="text-gray-500 font-normal italic text-center w-full block">Vui lòng chọn dịch vụ để xem trước.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 flex space-x-3">
+                <button onclick="window.manageProducts.closeRenewModal()" class="flex-1 py-2.5 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors">
+                    Hủy
+                </button>
+                <button id="rm-confirm-btn" onclick="window.manageProducts.confirmRenew()" class="flex-1 py-2.5 rounded-lg bg-[#2D5A3D] text-white font-semibold hover:bg-[#2D5A3D]/90 transition-colors flex justify-center items-center gap-2">
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Renew Info Modal -->
+    <div id="renewInfoModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                    <i data-lucide="info" class="w-6 h-6 text-blue-500"></i>
+                    Chính Sách Gia Hạn Dịch Vụ
+                </h2>
+                <button onclick="document.getElementById('renewInfoModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                    <h3 class="font-semibold text-blue-800 mb-2 flex items-center gap-2">Gia Hạn Cơ Bản</h3>
+                    <ul class="text-sm text-gray-700 space-y-2 list-disc pl-5">
+                        <li><strong>Chỉ gia hạn Sản Phẩm:</strong> +30 ngày đăng bán. Không bao gồm các dịch vụ nổi bật.</li>
+                        <li><strong>Gia hạn Banner:</strong> +24 giờ hiển thị banner. (Được +30 ngày hiển thị viền nổi bật và +30 ngày đăng bán sản phẩm miễn phí).</li>
+                    </ul>
+                </div>
+
+                <div class="bg-orange-50/50 border border-orange-100 rounded-xl p-4">
+                    <h3 class="font-semibold text-orange-800 mb-2 flex items-center gap-2">Gia Hạn Đặc Biệt</h3>
+                    <ul class="text-sm text-gray-700 space-y-2 list-disc pl-5">
+                        <li><strong>Gia hạn Short Video:</strong> +60 ngày duy trì Video Short. (Được +60 ngày hiển thị viền nổi bật và +60 ngày đăng bán sản phẩm miễn phí).</li>
+                        <li><strong>Gia hạn đồng thời Sản phẩm & Banner:</strong> Thời hạn sẽ được điều chỉnh thành 60 ngày cho cả hai. (Bạn sẽ có 60 ngày sản phẩm & viền nổi bật).</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button onclick="document.getElementById('renewInfoModal').classList.add('hidden')" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                    Đã hiểu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

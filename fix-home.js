@@ -1,35 +1,21 @@
-@model List<REVORA_MVC_FE.Models.ProductResponseDto>
+const fs = require('fs');
+let code = fs.readFileSync('Views/Home/Index.cshtml', 'utf8');
 
-@{
-    var id = "carousel-" + Guid.NewGuid().ToString("N").Substring(0, 8);
-    var itemsToShow = 5;
-}
+// Replace rounded-xl with rounded-full for the 4 specific icon containers
+code = code.replace(/<div class="p-2 bg-gradient-to-br from-\[#2D5A3D\] to-\[#3D7054\] rounded-xl">/g, '<div class="p-2 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full">');
+code = code.replace(/<div class="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl">/g, '<div class="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-full">');
+code = code.replace(/<div class="p-2 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl">/g, '<div class="p-2 bg-gradient-to-br from-green-500 to-teal-500 rounded-full">');
+code = code.replace(/<div class="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl">/g, '<div class="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full">');
 
-<div class="relative group" id="@id">
-    <!-- Prev Button -->
-    <button class="carousel-prev hidden absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100">
-        <i data-lucide="chevron-left" class="w-6 h-6 text-gray-700"></i>
-    </button>
+// Capitalize Được yêu thích nhất
+code = code.replace('Được yêu thích nhất', 'Được Yêu Thích Nhất');
 
-    <!-- Scroll Container -->
-    <div class="carousel-container flex gap-6 overflow-x-auto scroll-smooth hide-scrollbar pb-4 snap-x snap-mandatory">
-        @if (Model != null)
-        {
-            foreach (var item in Model)
-            {
-                <div class="flex-shrink-0 snap-start" style="width: calc((100% - @((itemsToShow - 1) * 24)px) / @itemsToShow)">
-                    @await Html.PartialAsync("_ProductCard", item)
-                </div>
-            }
-        }
-    </div>
+fs.writeFileSync('Views/Home/Index.cshtml', code);
 
-    <!-- Next Button -->
-    <button class="carousel-next absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-all opacity-0 group-hover:opacity-100">
-        <i data-lucide="chevron-right" class="w-6 h-6 text-gray-700"></i>
-    </button>
-</div>
+// Now for _ProductCarousel.cshtml (Add drag to scroll feature)
+let carouselCode = fs.readFileSync('Views/Shared/_ProductCarousel.cshtml', 'utf8');
 
+const replacementScript = `
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const wrapper = document.getElementById('@id');
@@ -119,3 +105,9 @@
         });
     });
 </script>
+`;
+
+carouselCode = carouselCode.replace(/<script>[\s\S]*<\/script>/, replacementScript.trim());
+fs.writeFileSync('Views/Shared/_ProductCarousel.cshtml', carouselCode);
+
+console.log('Fixed Index.cshtml and _ProductCarousel.cshtml');

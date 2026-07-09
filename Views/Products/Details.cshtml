@@ -4,6 +4,15 @@
     ViewData["Title"] = Model != null ? Model.Title : "Chi tiết sản phẩm";
     var images = Model?.ImageUrls != null && Model.ImageUrls.Count > 0 ? Model.ImageUrls : new List<string> { "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800" };
     var mainImage = images[0];
+    bool isOwner = false;
+    if (Model != null && User.Identity.IsAuthenticated)
+    {
+        var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserIdStr == Model.SellerId.ToString())
+        {
+            isOwner = true;
+        }
+    }
 }
 
 <div class="min-h-screen bg-gray-50 py-8">
@@ -114,22 +123,33 @@
                                     </div>
                                     <a href="/Profile?id=@Model.SellerId" class="block text-sm text-gray-500 mb-2 hover:underline">@@@Model.SellerUsername</a>
                                 </div>
-                                
-                                <button id="btn-seller-follow" data-target="@Model.SellerId" class="flex-shrink-0 flex items-center justify-center px-4 py-2 rounded-full text-xs font-semibold transition-all min-w-[110px] shadow-sm @(Model.IsFollowingSeller ? "bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600" : "bg-[#2D5A3D] text-white hover:bg-[#234830]")">
-                                    @(Model.IsFollowingSeller ? "Đang theo dõi" : "Theo dõi")
-                                </button>
+                                @if (!isOwner)
+                                {
+                                    <button id="btn-seller-follow" data-target="@Model.SellerId" class="flex-shrink-0 flex items-center justify-center px-4 py-2 rounded-full text-xs font-semibold transition-all min-w-[110px] shadow-sm @(Model.IsFollowingSeller ? "bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600" : "bg-[#2D5A3D] text-white hover:bg-[#234830]")">
+                                        @(Model.IsFollowingSeller ? "Đang theo dõi" : "Theo dõi")
+                                    </button>
+                                }
                             </div>
 
                             <!-- Các nút liên hệ -->
                             <div class="mt-6">
-                                <div class="grid grid-cols-2 gap-3">
-                                    <button class="w-full bg-[#0068FF] text-white py-3.5 rounded-xl hover:bg-[#0055D4] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
-                                        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Zalo
-                                    </button>
-                                    <a href="/Chat?userId=@Model.SellerId&productId=@Model.ProductId&sellerName=@Uri.EscapeDataString(Model.SellerName ?? "")&sellerAvatar=@Uri.EscapeDataString(Model.SellerAvatar ?? "")" class="w-full bg-[#2D5A3D] text-white py-3.5 rounded-xl hover:bg-[#234830] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
-                                        <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Nội Bộ
+                                @if (isOwner)
+                                {
+                                    <a href="/Products/Manage" class="w-full bg-[#2D5A3D] text-white py-3.5 rounded-xl hover:bg-[#234830] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
+                                        <i data-lucide="edit-2" class="w-5 h-5"></i> Đây là Sản phẩm của bạn (Quản lý)
                                     </a>
-                                </div>
+                                }
+                                else
+                                {
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <button class="w-full bg-[#0068FF] text-white py-3.5 rounded-xl hover:bg-[#0055D4] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
+                                            <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Zalo
+                                        </button>
+                                        <a href="/Chat?userId=@Model.SellerId&productId=@Model.ProductId&sellerName=@Uri.EscapeDataString(Model.SellerName ?? "")&sellerAvatar=@Uri.EscapeDataString(Model.SellerAvatar ?? "")" class="w-full bg-[#2D5A3D] text-white py-3.5 rounded-xl hover:bg-[#234830] transition-colors font-semibold flex items-center justify-center gap-2 shadow-sm">
+                                            <i data-lucide="message-circle" class="w-5 h-5"></i> Chat Nội Bộ
+                                        </a>
+                                    </div>
+                                }
                             </div>
                         </div>
 
