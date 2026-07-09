@@ -285,9 +285,9 @@ window.manageProducts = (function() {
             }
 
             html += `
-            <div class="relative bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-all flex flex-col h-full ${ringClass}">
+            <div class="relative bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-all ${ringClass} flex flex-col h-full">
                 ${shimmerEffect}
-                <div class="relative flex-shrink-0">
+                <div class="relative">
                     <img src="${p.imageUrl || 'https://via.placeholder.com/400'}" alt="${p.title}" class="w-full h-48 object-cover block ${isExpired ? 'grayscale' : ''}" onerror="this.src='https://via.placeholder.com/400'" />
                     ${isExpired ? `<div class="absolute inset-0 bg-red-900/10"></div>` : ''}
                     ${premiumBadge}
@@ -296,7 +296,7 @@ window.manageProducts = (function() {
                     </div>
                 </div>
 
-                <div class="p-4 flex-1 flex flex-col">
+                <div class="p-4 flex flex-col flex-1">
                     <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">${p.title}</h3>
                     <p class="text-[#2D5A3D] font-bold text-lg mb-2">${p.price.toLocaleString()}đ</p>
                     <p class="text-gray-600 text-sm mb-3 line-clamp-2">${p.condition || 'Chưa cập nhật'}</p>
@@ -315,12 +315,12 @@ window.manageProducts = (function() {
                         </div>
                         ${extraInfo}
                     </div>
-                    <div class="flex items-center justify-between text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100 mt-auto">
-                        <span class="flex items-center gap-1.5"><i data-lucide="eye" class="w-4 h-4 text-blue-500"></i> ${p.viewCount} lượt xem</span>
-                        <span class="flex items-center gap-1.5"><i data-lucide="heart" class="w-4 h-4 text-red-500"></i> ${p.likeCount || 0} lượt thích</span>
-                    </div>
+                    <div class="mt-auto">
+                        <div class="flex items-center justify-between text-sm text-gray-600 mb-4 pb-4 border-b border-gray-100">
+                            <span class="flex items-center gap-1.5"><i data-lucide="eye" class="w-4 h-4 text-blue-500"></i> ${p.viewCount} lượt xem</span>
+                            <span class="flex items-center gap-1.5"><i data-lucide="heart" class="w-4 h-4 text-red-500"></i> ${p.likeCount || 0} lượt thích</span>
+                        </div>
 
-                    <div>
                         ${actionButtons}
                     </div>
                 </div>
@@ -395,8 +395,8 @@ window.manageProducts = (function() {
                 : `<button onclick="window.manageProducts.handleToggleShortStatus(${p.productId})" class="py-2 px-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center space-x-1 bg-blue-50 text-blue-700 hover:bg-blue-100"><i data-lucide="eye" class="w-4 h-4"></i><span>Hiện Video</span></button>`;
 
             html += `
-            <div class="relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all flex flex-col h-full">
-                <div class="relative h-64 bg-gray-900 group flex-shrink-0">
+            <div class="relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all">
+                <div class="relative h-64 bg-gray-900 group">
                     <img src="${p.imageUrl || 'https://via.placeholder.com/400'}" alt="${p.title}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity block" onerror="this.src='https://via.placeholder.com/400'" />
                     <div class="absolute inset-0 flex items-center justify-center">
                         <div class="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/40 group-hover:scale-110 transition-transform">
@@ -407,14 +407,14 @@ window.manageProducts = (function() {
                         ${statusBadge}
                     </div>
                 </div>
-                <div class="p-4 flex-1 flex flex-col">
+                <div class="p-4">
                     <h3 class="font-semibold text-gray-900 mb-1 line-clamp-2">${p.title}</h3>
                     <div class="flex items-center text-xs text-gray-500 mb-4 space-x-4">
                         <span class="flex items-center space-x-1"><i data-lucide="eye" class="w-3.5 h-3.5"></i><span>${p.viewCount || 0}</span></span>
                         <span class="flex items-center space-x-1"><i data-lucide="heart" class="w-3.5 h-3.5"></i><span>${p.likeCount || 0}</span></span>
                         <span class="flex items-center space-x-1"><i data-lucide="message-circle" class="w-3.5 h-3.5"></i><span>0</span></span>
                     </div>
-                    <div class="mt-auto border-t border-gray-100 pt-3 flex flex-col gap-2">
+                    <div class="mt-2 border-t border-gray-100 pt-3 flex flex-col gap-2">
                         ${actionBtn}
                     </div>
                 </div>
@@ -570,24 +570,24 @@ window.manageProducts = (function() {
             }
 
             html += `
-            <div class="relative bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden opacity-90 hover:opacity-100 transition-all flex flex-col h-full">
-                <div class="relative flex-shrink-0">
-                    <img src="${p.imageUrl || 'https://via.placeholder.com/400'}" alt="${p.title}" class="w-full h-48 object-cover grayscale block" onerror="this.src='https://via.placeholder.com/400'" />
+            <div class="bg-white rounded-xl shadow-sm border border-red-200 overflow-hidden opacity-90 hover:opacity-100 transition-all flex flex-col h-full">
+                <div class="relative">
+                    <img src="${p.imageUrl || 'https://placehold.co/400x300?text=No+Image'}" alt="${p.title}" class="w-full h-48 object-cover grayscale block" onerror="this.src='https://placehold.co/400x300?text=No+Image'" />
                     <div class="absolute inset-0 bg-red-900/10"></div>
                     <div class="absolute top-2 right-2">
                         <div class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-semibold flex items-center space-x-1"><i data-lucide="trash-2" class="w-3 h-3"></i><span>Đã Xóa</span></div>
                     </div>
-                    <div class="absolute bottom-0 left-0 right-0 bg-red-600/90 text-white text-xs font-bold py-1.5 text-center shadow-sm">
-                        ${deleteText}
-                    </div>
                 </div>
-                <div class="p-4 flex-1 flex flex-col">
+                <div class="bg-[#e43c3c] text-white text-xs font-bold py-2 text-center shadow-sm">
+                    ${deleteText}
+                </div>
+                <div class="p-4 flex flex-col flex-1">
                     <h3 class="font-semibold text-gray-900 mb-1 line-clamp-1">${p.title}</h3>
                     <p class="text-gray-500 font-bold text-lg mb-2">${p.price.toLocaleString()}đ</p>
-                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100 mt-auto">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">
                         <span>Đã xóa vào: ${p.deletedAt ? new Date(p.deletedAt + (p.deletedAt.endsWith('Z') ? '' : 'Z')).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN')}</span>
                     </div>
-                    <div>
+                    <div class="mt-auto w-full">
                         ${actionBtn}
                     </div>
                 </div>
@@ -623,7 +623,7 @@ window.manageProducts = (function() {
         if (result.isConfirmed) {
             try {
                 Swal.showLoading();
-                const res = await apiCall(`/Products/${id}/status`, 'PUT', { status: newStatus });
+                const res = await apiCall(`/Products/${id}/status`, 'PATCH', { status: newStatus });
                 if (res.success) {
                     Swal.fire('Thành công', 'Cập nhật trạng thái thành công', 'success');
                     loadData();
@@ -707,8 +707,163 @@ window.manageProducts = (function() {
         }
     }
 
-    function openRenewModal(id) {
-        Swal.fire('Thông báo', 'Chức năng gia hạn sẽ được cập nhật trong phiên bản tiếp theo.', 'info');
+    let currentRenewProduct = null;
+    let renewOptions = { product: false, banner: false, short: false };
+
+    async function openRenewModal(id) {
+        const p = state.products.find(x => x.productId === id);
+        if (!p) return;
+        currentRenewProduct = p;
+        
+        Swal.showLoading();
+        let postingCredits = 0;
+        let featuredCredits = 0;
+        try {
+            const creditRes = await apiCall('/Products/my-credits', 'GET');
+            if (creditRes && creditRes.success) {
+                postingCredits = creditRes.data.postingCredits;
+                featuredCredits = creditRes.data.featuredCredits;
+            }
+        } catch(e) {}
+        Swal.close();
+
+        document.getElementById('rm-posting-credit').textContent = postingCredits;
+        document.getElementById('rm-featured-credit').textContent = featuredCredits;
+        document.getElementById('rm-product-title').value = p.title;
+        
+        const isProductExpired = p.productExpiredAt ? new Date(p.productExpiredAt + (p.productExpiredAt.endsWith('Z') ? '' : 'Z')).getTime() <= new Date().getTime() : false;
+        
+        renewOptions = { product: isProductExpired, banner: false, short: false };
+        
+        const optProduct = document.getElementById('rm-opt-product');
+        const optBanner = document.getElementById('rm-opt-banner');
+        const optShort = document.getElementById('rm-opt-short');
+        
+        optProduct.checked = renewOptions.product;
+        optProduct.disabled = isProductExpired;
+        document.getElementById('rm-expired-badge').classList.toggle('hidden', !isProductExpired);
+        
+        if (p.bannerExpiredAt) {
+            document.getElementById('rm-label-banner').classList.remove('hidden');
+            optBanner.checked = false;
+        } else {
+            document.getElementById('rm-label-banner').classList.add('hidden');
+        }
+        
+        if (p.shortExpiredAt) {
+            document.getElementById('rm-label-short').classList.remove('hidden');
+            optShort.checked = false;
+        } else {
+            document.getElementById('rm-label-short').classList.add('hidden');
+        }
+        
+        optProduct.onchange = (e) => { renewOptions.product = e.target.checked; updateRenewSummary(); };
+        optBanner.onchange = (e) => { renewOptions.banner = e.target.checked; updateRenewSummary(); };
+        optShort.onchange = (e) => { 
+            renewOptions.short = e.target.checked; 
+            updateRenewSummary(); 
+        };
+        
+        updateRenewSummary();
+        document.getElementById('renewModal').classList.remove('hidden');
+    }
+
+    function closeRenewModal() {
+        document.getElementById('renewModal').classList.add('hidden');
+        currentRenewProduct = null;
+    }
+
+    function updateRenewSummary() {
+        if (renewOptions.short) {
+            renewOptions.product = true;
+            document.getElementById('rm-opt-product').checked = true;
+        }
+
+        const costPosting = renewOptions.product ? 1 : 0;
+        const costFeatured = (renewOptions.banner ? 1 : 0) + (renewOptions.short ? 1 : 0);
+        document.getElementById('rm-cost-posting').textContent = costPosting > 0 ? `-${costPosting}` : '0';
+        document.getElementById('rm-cost-posting').className = `font-bold text-base ${costPosting > 0 ? 'text-red-600' : 'text-gray-400'}`;
+        
+        document.getElementById('rm-cost-featured').textContent = costFeatured > 0 ? `-${costFeatured}` : '0';
+        document.getElementById('rm-cost-featured').className = `font-bold text-base ${costFeatured > 0 ? 'text-red-600' : 'text-gray-400'}`;
+        
+        const summaryList = document.getElementById('rm-summary-list');
+        let productDays = 0;
+        let highlightDays = 0;
+        
+        if (renewOptions.short) {
+            productDays = 60;
+            highlightDays = 60;
+        } else if (renewOptions.product && renewOptions.banner) {
+            productDays = 60;
+            highlightDays = 60;
+        } else if (renewOptions.product) {
+            productDays = 30;
+        } else if (renewOptions.banner) {
+            productDays = 30;
+            highlightDays = 30;
+        }
+
+        const results = [];
+        if (productDays > 0) results.push(`+ ${productDays} ngày Sản Phẩm`);
+        if (renewOptions.short) results.push(`+ 60 ngày Video Short`);
+        if (renewOptions.banner) results.push(`+ 24 giờ Banner`);
+        if (highlightDays > 0) results.push(`+ ${highlightDays} ngày Viền Nổi Bật`);
+        
+        if (results.length === 0) {
+            summaryList.innerHTML = `<span class="text-gray-500 font-normal italic text-center w-full block">Vui lòng chọn dịch vụ để xem trước.</span>`;
+        } else {
+            summaryList.innerHTML = results.map(res => `<div class="flex items-center space-x-2"><i data-lucide="check-circle" class="w-4 h-4 text-[#2D5A3D] flex-shrink-0"></i><span>${res}</span></div>`).join('');
+            lucide.createIcons({root: summaryList});
+        }
+        
+        const isProductExpired = currentRenewProduct?.productExpiredAt ? new Date(currentRenewProduct.productExpiredAt + (currentRenewProduct.productExpiredAt.endsWith('Z') ? '' : 'Z')).getTime() <= new Date().getTime() : false;
+        const optProduct = document.getElementById('rm-opt-product');
+        const lblProduct = document.getElementById('rm-label-product');
+        
+        if (isProductExpired || renewOptions.short) {
+            optProduct.disabled = true;
+            lblProduct.classList.add('opacity-70', 'cursor-not-allowed', 'bg-gray-50');
+            lblProduct.classList.remove('hover:bg-gray-50', 'cursor-pointer');
+        } else {
+            optProduct.disabled = false;
+            lblProduct.classList.remove('opacity-70', 'cursor-not-allowed', 'bg-gray-50');
+            lblProduct.classList.add('hover:bg-gray-50', 'cursor-pointer');
+        }
+    }
+
+    async function confirmRenew() {
+        if (!currentRenewProduct) return;
+        if (!renewOptions.product && !renewOptions.banner && !renewOptions.short) {
+            Swal.fire('Cảnh báo', 'Vui lòng chọn ít nhất một dịch vụ để gia hạn.', 'warning');
+            return;
+        }
+        
+        document.getElementById('rm-confirm-btn').disabled = true;
+        document.getElementById('rm-confirm-btn').innerHTML = 'Đang xử lý...';
+        
+        try {
+            const res = await apiCall(`/Products/${currentRenewProduct.productId}/renew`, 'POST', {
+                renewProduct: renewOptions.product,
+                renewBanner: renewOptions.banner,
+                renewShort: renewOptions.short,
+                newBannerUrl: null
+            });
+            
+            if (res.success) {
+                Swal.fire('Thành công!', 'Gia hạn thành công!', 'success');
+                closeRenewModal();
+                loadData();
+            } else {
+                Swal.fire('Lỗi', res.message || 'Có lỗi xảy ra khi gia hạn.', 'error');
+            }
+        } catch(e) {
+            Swal.fire('Lỗi', 'Lỗi kết nối khi gia hạn', 'error');
+        } finally {
+            const btn = document.getElementById('rm-confirm-btn');
+            btn.disabled = false;
+            btn.innerHTML = 'Xác nhận';
+        }
     }
 
     function openAppealModal(id) {
@@ -729,6 +884,8 @@ window.manageProducts = (function() {
         handleRestore,
         handleToggleShortStatus,
         openRenewModal,
+        closeRenewModal,
+        confirmRenew,
         openAppealModal
     };
 })();

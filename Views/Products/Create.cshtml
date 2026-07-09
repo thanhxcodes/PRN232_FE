@@ -4,6 +4,7 @@
     ViewData["Title"] = "Đăng Sản Phẩm";
     Layout = "_Layout";
     var categories = ViewBag.Categories as List<REVORA_MVC_FE.Models.CategoryDto> ?? new List<REVORA_MVC_FE.Models.CategoryDto>();
+    bool isEditMode = ViewBag.EditId != null;
 }
 
 <div class="min-h-screen bg-gray-50 relative overflow-hidden">
@@ -19,20 +20,21 @@
         <div class="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center relative">
                 <h1 class="text-4xl md:text-[52px] font-black text-white mb-4 tracking-tight">
-                    Đăng Sản Phẩm 
+                    @(isEditMode ? "Chỉnh Sửa" : "Đăng Sản Phẩm") 
                     <span class="italic" style="background: linear-gradient(90deg, #4ade80, #86efac); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
                         Thời Trang
                     </span>
                 </h1>
                 <p class="text-gray-400 text-base max-w-xl mx-auto">
-                    Điền thông tin và chọn tính năng nâng cao để tối đa hóa lượt tiếp cận
+                    @(isEditMode ? "Chỉnh sửa thông tin sản phẩm của bạn" : "Điền thông tin và chọn tính năng nâng cao để tối đa hóa lượt tiếp cận")
                 </p>
             </div>
         </div>
     </div>
 
     <div class="relative z-20 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 pb-20">
-        <form asp-action="Create" method="post" enctype="multipart/form-data" id="createProductForm">
+        <form asp-action="@(isEditMode ? "Edit" : "Create")" asp-route-id="@(isEditMode ? ViewBag.EditId : null)" method="post" enctype="multipart/form-data" id="createProductForm">
+        <div id="existingFilesContainer"></div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 space-y-6">
@@ -366,9 +368,80 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
+                window.EDIT_PRODUCT_ID = @(ViewBag.EditId ?? "null");
+        window.existingImageUrls = [];
         document.addEventListener('DOMContentLoaded', function () {
             if (window.jQuery && window.jQuery.validator) {
                 window.jQuery.validator.setDefaults({ ignore: "" });
+            }
+
+            if (window.EDIT_PRODUCT_ID && window.EDIT_PRODUCT_ID !== null) {
+                fetchProductDetails(window.EDIT_PRODUCT_ID);
+            }
+
+            async function fetchProductDetails(id) {
+                try {
+                    const response = await fetch('/api-proxy/Products/' + id);
+                    const result = await response.json();
+                    if (result.success) {
+                        const prod = result.data;
+                        document.getElementById('Title').value = prod.title || '';
+                        
+                        // Select category by name
+                        const categorySelect = document.getElementById('CategoryId');
+                        if (prod.categoryName && categorySelect) {
+                            for (let i = 0; i < categorySelect.options.length; i++) {
+                                if (categorySelect.options[i].text === prod.categoryName) {
+                                    categorySelect.selectedIndex = i;
+                                    break;
+                                }
+                            }
+                        }
+
+                        document.getElementById('Condition').value = prod.condition || '';
+                        
+                        const priceInput = document.getElementById('realPrice');
+                        const displayPrice = document.getElementById('displayPrice');
+                        if (priceInput && displayPrice) {
+                            priceInput.value = prod.price || 0;
+                            displayPrice.value = new Intl.NumberFormat('en-US').format(prod.price || 0);
+                            // Fire input event to update text
+                            displayPrice.dispatchEvent(new Event('input'));
+                        }
+                        
+                        document.getElementById('Brand').value = prod.brand || '';
+                        document.getElementById('Description').value = prod.description || '';
+
+                        const existingFilesContainer = document.getElementById('existingFilesContainer');
+                        if (prod.imageUrls && prod.imageUrls.length > 0) {
+                            window.existingImageUrls = [...prod.imageUrls];
+                            renderImagePreviews();
+                        }
+                        // Note: BannerUrl might not be returned in ProductDetailResponseDto, but if it is, we map it
+                        if (prod.bannerUrl) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'ExistingBannerUrl';
+                            input.value = prod.bannerUrl;
+                            existingFilesContainer.appendChild(input);
+                            
+                            document.getElementById('enableBannerBoost').checked = true;
+                            document.getElementById('enableBannerBoost').dispatchEvent(new Event('change'));
+                        }
+                        if (prod.videoUrl) {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'ExistingVideoUrl';
+                            input.value = prod.videoUrl;
+                            existingFilesContainer.appendChild(input);
+                            
+                            document.getElementById('enableVideoUpload').checked = true;
+                            document.getElementById('enableVideoUpload').dispatchEvent(new Event('change'));
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch product details', err);
+                }
             }
             // --- BỘ CÔNG CỤ ĐỌC SỐ TIỀN TIẾNG VIỆT ---
             const DOCSO = {
@@ -484,8 +557,9 @@
                 const files = e.target.files;
                 if (!files || files.length === 0) return;
 
-                if (dataTransfer.items.length + files.length > 5) {
-                    Swal.fire({ icon: 'warning', title: 'Giới hạn ảnh', text: `Tối đa 5 ảnh. Đang có sẵn ${dataTransfer.items.length} ảnh.` });
+                const existingCount = window.existingImageUrls ? window.existingImageUrls.length : 0;
+                if (dataTransfer.items.length + files.length + existingCount > 5) {
+                    Swal.fire({ icon: 'warning', title: 'Giới hạn ảnh', text: `Tối đa 5 ảnh. Đang có sẵn ${dataTransfer.items.length + existingCount} ảnh.` });
                     imagesInput.value = '';
                     return;
                 }
@@ -501,19 +575,59 @@
             function renderImagePreviews() {
                 imagePreviewContainer.innerHTML = '';
                 const files = dataTransfer.files;
+                const existingImages = window.existingImageUrls || [];
+                const totalImages = files.length + existingImages.length;
 
-                if (files.length > 0) {
+                if (totalImages > 0) {
                     imagePreviewContainer.classList.remove('hidden');
-                    imageCounter.textContent = `${files.length}/5 ảnh`;
+                    imageCounter.textContent = `${totalImages}/5 ảnh`;
                 } else {
                     imagePreviewContainer.classList.add('hidden');
                     imageCounter.textContent = `0/5 ảnh`;
                 }
 
-                if (files.length >= 5) {
+                if (totalImages >= 5) {
                     imageUploadArea.classList.add('hidden');
                 } else {
                     imageUploadArea.classList.remove('hidden');
+                }
+                
+                const existingFilesContainer = document.getElementById('existingFilesContainer');
+                if (existingFilesContainer) {
+                    const oldInputs = existingFilesContainer.querySelectorAll('input[name^="ExistingImages"]');
+                    oldInputs.forEach(input => input.remove());
+                    
+                    existingImages.forEach((url, idx) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ExistingImages[' + idx + ']';
+                        input.value = url;
+                        existingFilesContainer.appendChild(input);
+                    });
+                }
+
+                for (let i = 0; i < existingImages.length; i++) {
+                    const url = existingImages[i];
+                    const div = document.createElement('div');
+                    div.className = 'relative group rounded-xl overflow-hidden shadow-sm border border-gray-100 aspect-square';
+                    
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'w-full h-full object-cover';
+                    
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'absolute top-1.5 right-1.5 bg-white/90 backdrop-blur-sm text-red-500 p-1.5 rounded-full opacity-0 group-hover:opacity-100 hover:bg-red-50 hover:text-red-600 transition-all shadow-sm';
+                    btn.innerHTML = '<i data-lucide="x" class="w-3.5 h-3.5"></i>';
+                    
+                    btn.onclick = function() {
+                        window.existingImageUrls.splice(i, 1);
+                        renderImagePreviews();
+                    };
+
+                    div.appendChild(img);
+                    div.appendChild(btn);
+                    imagePreviewContainer.appendChild(div);
                 }
 
                 for (let i = 0; i < files.length; i++) {
@@ -742,7 +856,8 @@
             
             // 7. FORM SUBMIT VALIDATION FOR IMAGES
             document.getElementById('createProductForm').addEventListener('submit', function(e) {
-                if (dataTransfer.items.length === 0) {
+                const hasExistingImages = window.EDIT_PRODUCT_ID && document.querySelectorAll('input[name^="ExistingImages"]').length > 0;
+                if (dataTransfer.items.length === 0 && !hasExistingImages) {
                     e.preventDefault();
                     Swal.fire({ icon: 'warning', title: 'Thiếu hình ảnh', text: "Vui lòng tải lên ít nhất 1 hình ảnh." });
                 }

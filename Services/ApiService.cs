@@ -307,6 +307,121 @@ namespace REVORA_MVC_FE.Services
             }
         }
 
+        public async Task<ApiResponse<object>?> UpdateProductAsync(int id, ProductCreateViewModel model)
+        {
+            try
+            {
+                var imageUrls = new List<string>();
+                string? videoUrl = null;
+                string? bannerUrl = null;
+
+                // 1. Upload Images
+                if (model.Images != null && model.Images.Any())
+                {
+                    using var content = new MultipartFormDataContent();
+                    foreach (var file in model.Images)
+                    {
+                        var fileContent = new StreamContent(file.OpenReadStream());
+                        fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+                        content.Add(fileContent, "files", file.FileName);
+                    }
+                    var imgResponse = await _httpClient.PostAsync("media/upload-images", content);
+                    if (imgResponse.IsSuccessStatusCode)
+                    {
+                        var imgResult = await imgResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                        if (imgResult.TryGetProperty("urls", out var urlsProp))
+                        {
+                            foreach (var url in urlsProp.EnumerateArray())
+                            {
+                                imageUrls.Add(url.GetString() ?? "");
+                            }
+                        }
+                    }
+                }
+
+                if (model.ExistingImages != null && model.ExistingImages.Any())
+                {
+                    imageUrls.AddRange(model.ExistingImages);
+                }
+
+                // 2. Upload Video
+                if (model.EnableVideoUpload && model.VideoFile != null)
+                {
+                    using var content = new MultipartFormDataContent();
+                    var fileContent = new StreamContent(model.VideoFile.OpenReadStream());
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(model.VideoFile.ContentType);
+                    content.Add(fileContent, "file", model.VideoFile.FileName);
+                    
+                    var vidResponse = await _httpClient.PostAsync("media/upload-video", content);
+                    if (vidResponse.IsSuccessStatusCode)
+                    {
+                        var vidResult = await vidResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                        if (vidResult.TryGetProperty("url", out var urlProp))
+                        {
+                            videoUrl = urlProp.GetString();
+                        }
+                    }
+                }
+                else if (model.EnableVideoUpload && !string.IsNullOrEmpty(model.ExistingVideoUrl))
+                {
+                    videoUrl = model.ExistingVideoUrl;
+                }
+
+                // 3. Upload Banner
+                if (model.EnableBannerBoost && model.BannerFile != null)
+                {
+                    using var content = new MultipartFormDataContent();
+                    var fileContent = new StreamContent(model.BannerFile.OpenReadStream());
+                    fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(model.BannerFile.ContentType);
+                    content.Add(fileContent, "files", model.BannerFile.FileName);
+                    
+                    var banResponse = await _httpClient.PostAsync("media/upload-images", content);
+                    if (banResponse.IsSuccessStatusCode)
+                    {
+                        var banResult = await banResponse.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+                        if (banResult.TryGetProperty("urls", out var urlsProp) && urlsProp.GetArrayLength() > 0)
+                        {
+                            bannerUrl = urlsProp[0].GetString();
+                        }
+                    }
+                }
+                else if (model.EnableBannerBoost && !string.IsNullOrEmpty(model.ExistingBannerUrl))
+                {
+                    bannerUrl = model.ExistingBannerUrl;
+                }
+
+
+                // 4. Update Product
+                var response = await _httpClient.PutAsJsonAsync($"products/{id}", new {
+                    title = model.Title,
+                    categoryId = model.CategoryId,
+                    price = model.Price,
+                    condition = model.Condition,
+                    description = model.Description,
+                    brand = model.Brand,
+                    imageUrls = imageUrls,
+                    enableVideoUpload = model.EnableVideoUpload,
+                    videoUrl = videoUrl,
+                    enableBannerBoost = model.EnableBannerBoost,
+                    bannerUrl = bannerUrl
+                });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                else 
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return new ApiResponse<object> { Success = false, Message = "Lỗi cập nhật sản phẩm: " + error };
+                }
+            } 
+            catch (Exception ex) 
+            { 
+                return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; 
+            }
+        }
+
         public async Task<ApiResponse<UserProfileDto>?> GetUserProfileAsync()
         {
             try

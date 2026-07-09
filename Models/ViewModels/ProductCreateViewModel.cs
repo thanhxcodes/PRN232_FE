@@ -32,5 +32,10 @@ namespace REVORA_MVC_FE.Models.ViewModels
 
         public bool EnableBannerBoost { get; set; }
         public IFormFile? BannerFile { get; set; }
+
+        // For Edit mode
+        public List<string> ExistingImages { get; set; } = new List<string>();
+        public string? ExistingVideoUrl { get; set; }
+        public string? ExistingBannerUrl { get; set; }
     }
 }
