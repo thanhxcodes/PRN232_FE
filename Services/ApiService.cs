@@ -621,6 +621,20 @@ namespace REVORA_MVC_FE.Services
             } catch { return null; }
         }
 
+        public async Task<ApiResponse<object>?> EditCreditPackageAsync(long id, CreditPackageViewModel model)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"CreditPackages/{id}", model);
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                var error = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<object> { Success = false, Message = "Lỗi cập nhật: " + error };
+            } catch (Exception ex) { return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; }
+        }
+
         public async Task<ApiResponse<AdminUserPagedResult>?> GetAdminUsersAsync(int page, int pageSize, string search, bool? isActive)
         {
             try

@@ -57,6 +57,21 @@ namespace REVORA_MVC_FE.Controllers
             return View(new System.Collections.Generic.List<CreditPackageViewModel>());
         }
 
+        [HttpPost]
+        public async Task<IActionResult> EditPackage(CreditPackageViewModel model)
+        {
+            var response = await _apiService.EditCreditPackageAsync(model.PaidCreditPackageId, model);
+            if (response != null && response.Success)
+            {
+                TempData["SuccessMessage"] = "Cập nhật gói cước thành công";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = response?.Message ?? "Có lỗi xảy ra khi cập nhật";
+            }
+            return RedirectToAction("Packages");
+        }
+
         public async Task<IActionResult> Users(int page = 1, string search = "", string statusFilter = "all")
         {
             int pageSize = 10;
