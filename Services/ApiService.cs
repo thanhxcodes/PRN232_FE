@@ -591,5 +591,61 @@ namespace REVORA_MVC_FE.Services
                 return response;
             } catch { return new ApiResponse<object> { Success = false, Message = "Lỗi kết nối Server" }; }
         }
+        public async Task<ApiResponse<DashboardStatsViewModel>?> GetDashboardStatsAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<DashboardStatsViewModel>>("Admin/Dashboard");
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<RevenueStatsViewModel>?> GetRevenueStatsAsync(string filterType, int year, int? month = null, string? startDate = null, string? endDate = null)
+        {
+            try
+            {
+                var query = new List<string> { $"filterType={filterType}" };
+                if (filterType == "year") query.Add($"year={year}");
+                else if (filterType == "month") { query.Add($"year={year}"); if (month.HasValue) query.Add($"month={month.Value}"); }
+                else if (filterType == "custom") { if (startDate != null) query.Add($"startDate={startDate}"); if (endDate != null) query.Add($"endDate={endDate}"); }
+                
+                string queryString = string.Join("&", query);
+                return await _httpClient.GetFromJsonAsync<ApiResponse<RevenueStatsViewModel>>($"Admin/Revenue?{queryString}");
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<List<CreditPackageViewModel>>?> GetAdminPackagesAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<List<CreditPackageViewModel>>>("CreditPackages/active");
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<AdminUserPagedResult>?> GetAdminUsersAsync(int page, int pageSize, string search, bool? isActive)
+        {
+            try
+            {
+                var query = new List<string> { $"page={page}", $"pageSize={pageSize}" };
+                if (!string.IsNullOrEmpty(search)) query.Add($"search={Uri.EscapeDataString(search)}");
+                if (isActive.HasValue) query.Add($"isActive={isActive.Value}");
+                
+                string queryString = string.Join("&", query);
+                return await _httpClient.GetFromJsonAsync<ApiResponse<AdminUserPagedResult>>($"Admin/Users?{queryString}");
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<object>?> ToggleUserStatusAsync(long userId, bool isBanning, string reason)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync($"Admin/Users/{userId}/toggle-status", new { IsBanning = isBanning, Reason = reason });
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                var error = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<object> { Success = false, Message = "Lỗi thao tác: " + error };
+            } catch (Exception ex) { return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; }
+        }
     }
 }

@@ -23,17 +23,29 @@
 
     <div class="min-h-screen bg-gray-50">
         <!-- Top Navbar -->
-        @await Html.PartialAsync("_TopNavbar")
+        @{ var controllerName = ViewContext.RouteData.Values["Controller"]?.ToString(); }
+        
+        @if (controllerName != "Admin")
+        {
+            @await Html.PartialAsync("_TopNavbar")
+        }
 
-        <div class="pt-16 flex">
+        <div class="@(controllerName != "Admin" ? "pt-16" : "") flex min-h-screen">
             <!-- Sidebar -->
             @if (ViewData["HideSidebar"] as bool? != true)
             {
-                @await Html.PartialAsync("_Sidebar")
+                if (controllerName == "Admin")
+                {
+                    @await Html.PartialAsync("_AdminSidebar")
+                }
+                else
+                {
+                    @await Html.PartialAsync("_Sidebar")
+                }
             }
 
             <!-- Main Content -->
-            <main class="flex-1 overflow-hidden">
+            <main class="flex-1 @(controllerName == "Admin" ? "p-8 overflow-y-auto" : "overflow-hidden")">
                 @RenderBody()
 
                 <!-- Footer (conditionally rendered in real app, but placed here for now) -->

@@ -1,0 +1,237 @@
+@model REVORA_MVC_FE.Models.ViewModels.AdminUserPagedResult
+@{
+    ViewData["Title"] = "Quản Lý Người Dùng";
+    Layout = "_Layout";
+    var currentFilter = ViewBag.StatusFilter as string ?? "all";
+    var search = ViewBag.Search as string ?? "";
+}
+
+<div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div>
+            <h2 class="text-[28px] font-bold text-gray-900 mb-1">Quản Lý Người Dùng</h2>
+            <p class="text-gray-500 text-[15px]">Theo dõi, quản lý trạng thái và phân quyền tài khoản thành viên</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="bg-gray-50 text-gray-700 px-4 py-2 rounded-full text-sm font-medium border border-gray-200 flex items-center gap-2">
+                <i data-lucide="shield" class="w-4 h-4 text-green-600"></i>
+                Quyền: Administrator
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <form method="get" action="/Admin/Users" class="bg-white p-2 rounded-full shadow-sm border border-gray-100 flex items-center justify-between gap-4 mb-6">
+        <!-- Search input -->
+        <div class="flex-1 relative flex items-center pl-2">
+            <i data-lucide="search" class="absolute left-4 w-4 h-4 text-gray-400"></i>
+            <input type="text" name="search" value="@search" placeholder="Tìm kiếm theo tên, email..." class="w-full bg-transparent border-none text-gray-900 py-2.5 pl-10 pr-4 focus:outline-none focus:ring-0 text-[15px]" />
+        </div>
+        
+        <!-- Status Dropdown -->
+        <div class="flex items-center gap-2 pr-2">
+            <select name="statusFilter" id="statusFilter" onchange="this.form.submit()" class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-full focus:ring-green-500 focus:border-green-500 block px-4 py-2 font-medium appearance-none pr-10 relative cursor-pointer outline-none">
+                <option value="all" selected="@(currentFilter == "all")">Tất cả trạng thái</option>
+                <option value="active" selected="@(currentFilter == "active")">Đang Hoạt Động</option>
+                <option value="suspended" selected="@(currentFilter == "suspended")">Bị Khóa</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium flex items-center gap-2">
+        <i data-lucide="check-circle" class="w-5 h-5"></i>
+        @TempData["SuccessMessage"]
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-medium flex items-center gap-2">
+        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead>
+                <tr class="border-b border-gray-100">
+                    <th class="text-left py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">NGƯỜI DÙNG</th>
+                    <th class="text-left py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">EMAIL</th>
+                    <th class="text-left py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">CHỨC VỤ</th>
+                    <th class="text-left py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">NGÀY THAM GIA</th>
+                    <th class="text-left py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">LƯỢT GD</th>
+                    <th class="text-left py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">TRẠNG THÁI</th>
+                    <th class="text-center py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">THAO TÁC</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @if (Model.Items == null || !Model.Items.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-10">
+                            <div class="flex flex-col items-center justify-center text-gray-400">
+                                <i data-lucide="users" class="w-12 h-12 mb-2 opacity-20"></i>
+                                <p class="font-medium">Không tìm thấy người dùng nào</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var user in Model.Items)
+                    {
+                        <tr class="hover:bg-gray-50/50 transition-colors group">
+                            <td class="py-4 px-6 whitespace-nowrap">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                                        @if (!string.IsNullOrEmpty(user.AvatarUrl) && user.AvatarUrl.StartsWith("http"))
+                                        {
+                                            <img src="@user.AvatarUrl" alt="avatar" class="w-full h-full object-cover" />
+                                        }
+                                        else
+                                        {
+                                            @((!string.IsNullOrEmpty(user.FullName) ? user.FullName : user.Username).Substring(0, 1).ToUpper())
+                                        }
+                                    </div>
+                                    <div>
+                                        <div class="font-bold text-[14px] text-gray-900">@(string.IsNullOrEmpty(user.FullName) ? user.Username : user.FullName)</div>
+                                        <div class="text-[13px] text-gray-500 font-medium mt-0.5">@@@user.Username</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 text-[14px] text-gray-700 font-medium whitespace-nowrap">
+                                @user.Email
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border @(user.RoleName.ToUpper() == "ADMIN" ? "bg-purple-50 text-purple-700 border-purple-200" : "bg-gray-50 text-gray-600 border-gray-200")">
+                                    @user.RoleName
+                                </span>
+                            </td>
+                            <td class="py-4 px-6 text-[14px] text-gray-700 font-medium whitespace-nowrap">
+                                @user.CreatedAt.ToString("d/M/yyyy")
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap">
+                                <div class="flex items-center gap-1.5 text-[14px] font-bold text-gray-900">
+                                    @user.TradeSuccessCount <span class="text-gray-500 font-normal">lượt</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold @(user.IsActive ? "bg-emerald-50 text-emerald-600 border border-emerald-200" : "bg-red-50 text-red-600 border border-red-200")">
+                                    <i data-lucide="check" class="w-3 h-3"></i>
+                                    @(user.IsActive ? "Hoạt động" : "Bị Khóa")
+                                </span>
+                            </td>
+                            <td class="py-4 px-6 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <button class="px-3 py-1.5 bg-gray-50 text-gray-600 rounded-full hover:bg-gray-100 transition-colors border border-gray-200 flex items-center gap-1.5 text-xs font-bold shadow-sm">
+                                        <i data-lucide="eye" class="w-3.5 h-3.5"></i> Xem
+                                    </button>
+                                    @if (user.IsActive)
+                                    {
+                                        <button onclick="openStatusModal(@user.UserId, true, '@(user.Username)')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-colors border border-red-100 flex items-center gap-1.5 text-xs font-bold shadow-sm">
+                                            <i data-lucide="ban" class="w-3.5 h-3.5"></i> Khóa
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button onclick="openStatusModal(@user.UserId, false, '@(user.Username)')" class="px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-full hover:bg-emerald-100 transition-colors border border-emerald-100 flex items-center gap-1.5 text-xs font-bold shadow-sm">
+                                            <i data-lucide="unlock" class="w-3.5 h-3.5"></i> Mở Khóa
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    
+    @if (Model.TotalPages > 1)
+    {
+        <div class="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+            <span class="text-sm text-gray-500 font-medium">
+                Trang @Model.CurrentPage / @Model.TotalPages
+            </span>
+            <div class="flex items-center gap-1">
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    <a href="/Admin/Users?page=@p&search=@Uri.EscapeDataString(search)&statusFilter=@currentFilter" 
+                       class="w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold @(p == Model.CurrentPage ? "bg-[#2D5A3D] text-white shadow-sm" : "text-gray-600 hover:bg-gray-100")">
+                        @p
+                    </a>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Modal Toggle Status -->
+<div id="statusModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-900" id="statusModalTitle">Xác nhận thao tác</h3>
+            <button type="button" onclick="closeStatusModal()" class="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <form method="post" action="/Admin/ToggleUserStatus" id="statusForm">
+            <input type="hidden" name="userId" id="modalUserId" />
+            <input type="hidden" name="isBanning" id="modalIsBanning" />
+            
+            <p class="text-gray-600 mb-6 text-[15px]" id="statusModalMessage"></p>
+            
+            <div class="space-y-4 mb-8" id="reasonGroup">
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">Lý do khóa tài khoản <span class="text-red-500">*</span></label>
+                    <textarea name="reason" id="modalReason" rows="3" placeholder="Nhập lý do chi tiết..." class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] outline-none text-[15px] resize-none"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeStatusModal()" class="px-6 py-2.5 rounded-full font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Hủy</button>
+                <button type="submit" id="statusModalBtn" class="px-6 py-2.5 rounded-full font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95">Xác nhận</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openStatusModal(userId, isBanning, username) {
+            document.getElementById('modalUserId').value = userId;
+            document.getElementById('modalIsBanning').value = isBanning;
+            
+            const title = document.getElementById('statusModalTitle');
+            const message = document.getElementById('statusModalMessage');
+            const btn = document.getElementById('statusModalBtn');
+            const reasonGroup = document.getElementById('reasonGroup');
+            
+            if (isBanning) {
+                title.textContent = 'Khóa Tài Khoản';
+                message.textContent = `Bạn có chắc chắn muốn khóa tài khoản của người dùng @@${username}?`;
+                btn.textContent = 'Khóa Tài Khoản';
+                btn.className = 'px-6 py-2.5 rounded-full font-bold text-white shadow-lg bg-red-500 hover:bg-red-600 transition-all';
+                reasonGroup.style.display = 'block';
+                document.getElementById('modalReason').required = true;
+            } else {
+                title.textContent = 'Mở Khóa Tài Khoản';
+                message.textContent = `Bạn có chắc chắn muốn mở khóa tài khoản cho người dùng @@${username}?`;
+                btn.textContent = 'Mở Khóa Tài Khoản';
+                btn.className = 'px-6 py-2.5 rounded-full font-bold text-white shadow-lg bg-emerald-500 hover:bg-emerald-600 transition-all';
+                reasonGroup.style.display = 'none';
+                document.getElementById('modalReason').required = false;
+            }
+            
+            document.getElementById('statusModal').classList.remove('hidden');
+        }
+        
+        function closeStatusModal() {
+            document.getElementById('statusModal').classList.add('hidden');
+            document.getElementById('modalReason').value = '';
+        }
+    </script>
+}
