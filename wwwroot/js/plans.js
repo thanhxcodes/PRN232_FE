@@ -112,39 +112,23 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const computeCreditTypePurchaseStatus = (summary, packages, creditType) => {
-        if (!summary) return { isTypeLocked: false, activePackageId: null };
+        if (!summary) return { pendingOrdersByPackageId: {} };
 
-        if (!summary.hasActivePaidCredits && !summary.hasPendingPaidOrder) {
-            return { isTypeLocked: false, activePackageId: null };
+        const pendingOrdersByPackageId = {};
+        if (summary.pendingOrders) {
+            summary.pendingOrders.forEach((po) => {
+                pendingOrdersByPackageId[po.packageId] = po;
+            });
         }
 
-        if (summary.hasPendingPaidOrder && summary.pendingPaidPackageId != null) {
-            const pendingPackage = packages.find(pkg => pkg.paidCreditPackageId === summary.pendingPaidPackageId);
-            return {
-                isTypeLocked: true,
-                activePackageId: pendingPackage ? pendingPackage.id : null,
-                pendingOrderCheckoutUrl: summary.pendingOrderCheckoutUrl,
-                pendingOrderExpiredAt: summary.pendingOrderExpiredAt,
-            };
-        }
-
-        const activePaidBatch = summary.batches.find(batch => batch.isPaid && batch.remainingCredits > 0);
-        if (activePaidBatch) {
-            return {
-                isTypeLocked: true,
-                activePackageId: resolveActivePackageId(activePaidBatch, packages, creditType),
-            };
-        }
-
-        return { isTypeLocked: false, activePackageId: null };
+        return { pendingOrdersByPackageId };
     };
 
-    const getPackagePurchaseState = (packageId, status) => {
-        if (!status.isTypeLocked) return 'available';
-        if (status.activePackageId === packageId) {
-            return status.pendingOrderCheckoutUrl ? 'pending' : 'in_use';
+    const getPackagePurchaseState = (packageIdNum, status) => {
+        if (status.pendingOrdersByPackageId && status.pendingOrdersByPackageId[packageIdNum]) {
+            return 'pending';
         }
-        return 'locked';
+        return 'available';
     };
 
     const postingFeatures = (credits, durationDays, discountRate) => {
@@ -185,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             duration: pkg.durationDays,
             badge: postingPackageMeta[pkg.durationDays]?.badge || 'Gói',
             badgeColor: postingPackageMeta[pkg.durationDays]?.badgeColor || 'bg-gray-100 text-gray-800',
-            features: postingFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate),
+            features: (pkg.descriptions && pkg.descriptions.length > 0) ? pkg.descriptions : postingFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate),
             cta: postingPackageMeta[pkg.durationDays]?.cta || 'Mở Khóa',
             tier: postingPackageMeta[pkg.durationDays]?.tier || pkg.durationDays,
         }));
@@ -201,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
             duration: pkg.durationDays,
             badge: featuredPackageMeta[pkg.durationDays]?.badge || 'Gói',
             badgeColor: featuredPackageMeta[pkg.durationDays]?.badgeColor || 'bg-gray-100 text-gray-800',
-            features: featuredFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate, pkg.rewardBadge),
+            features: (pkg.descriptions && pkg.descriptions.length > 0) ? pkg.descriptions : featuredFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate, pkg.rewardBadge),
             cta: (pkg.rewardBadge && pkg.rewardBadge.name) ? `Mở Khóa ${pkg.rewardBadge.name}` : (featuredPackageMeta[pkg.durationDays]?.cta || 'Mở Khóa'),
             tier: featuredPackageMeta[pkg.durationDays]?.tier || pkg.durationDays,
         }));
@@ -267,100 +251,240 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!container) return;
 
         if (isPackageLoading) {
-            container.innerHTML = `<div class="md:col-span-3 bg-white rounded-3xl border border-dashed border-gray-300 p-10 text-center text-gray-500">Đang tải danh sách gói credits...</div>`;
+            container.innerHTML = `<div class="md:col-span-3 bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400 text-sm">Đang tải danh sách gói credits...</div>`;
             return;
         }
 
         if (packages.length === 0) {
-            container.innerHTML = `<div class="md:col-span-3 bg-white rounded-3xl border border-dashed border-gray-300 p-10 text-center text-gray-500">Chưa có gói nào khả dụng.</div>`;
+            container.innerHTML = `<div class="md:col-span-3 bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400 text-sm">Chưa có gói đăng tin nào khả dụng.</div>`;
             return;
         }
 
         container.innerHTML = packages.map(pkg => {
-            const purchaseState = getPackagePurchaseState(pkg.id, purchaseStatus);
-            const isInUse = purchaseState === 'in_use';
+            const purchaseState = getPackagePurchaseState(pkg.paidCreditPackageId, purchaseStatus);
             
-            const ringClass = variant === 'posting' ? 'ring-blue-500' : 'ring-[#C4603A]';
-            const bgBadgeClass = variant === 'posting' ? 'bg-blue-600' : 'bg-[#C4603A]';
-            const priceColor = variant === 'posting' ? 'text-blue-600' : 'text-[#C4603A]';
-            const creditBgColor = variant === 'posting' ? 'bg-blue-50' : 'bg-[#C4603A]/10';
+            const isRecommended = pkg.tier === 2;
+            const isPremium = pkg.tier === 3;
+            
+            let containerClasses = `relative rounded-2xl transition-all duration-300 p-[2px] ${purchaseState === 'available' ? 'hover:-translate-y-1' : 'opacity-90'} `;
+            let innerStyle = '';
+            let sparklesHtml = '';
+            let ribbonHtml = '';
+            
+            let badgeBgClass = '';
+            let titleColorClass = '';
+            let priceColorClass = '';
+            let originalPriceColorClass = '';
+            let creditBgClass = '';
+            let creditTextColorClass = '';
+            let creditLabelColorClass = '';
+            let checkIconBgClass = '';
+            let checkIconColorClass = '';
+            let featureTextColorClass = '';
+            
+            if (variant === 'posting') {
+                if (isPremium) {
+                    containerClasses += 'bg-gradient-to-br from-blue-400 via-blue-800 to-[#0f172a] shadow-2xl shadow-blue-800/40';
+                    innerStyle = `background-image: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.08) 1.5px, transparent 0), linear-gradient(145deg, #0f172a 0%, #1e3a8a 100%); background-size: 20px 20px, auto;`;
+                    sparklesHtml = `
+                        <i data-lucide="sparkles" class="absolute top-4 left-4 w-6 h-6 text-blue-300 opacity-90 animate-pulse z-10"></i>
+                        <i data-lucide="sparkles" class="absolute bottom-6 right-6 w-8 h-8 text-blue-400 opacity-70 animate-pulse delay-150 z-10"></i>
+                        <i data-lucide="sparkles" class="absolute top-1/3 -left-3 w-5 h-5 text-blue-200 opacity-80 animate-bounce delay-300 z-10"></i>
+                        <i data-lucide="sparkles" class="absolute top-6 right-1/4 w-4 h-4 text-blue-300 opacity-60 animate-ping delay-700 z-10"></i>
+                    `;
+                    badgeBgClass = 'bg-white/15 text-blue-300';
+                    titleColorClass = 'text-white';
+                    priceColorClass = 'text-white';
+                    originalPriceColorClass = 'text-white/40';
+                    creditBgClass = 'bg-white/10 border border-white/15';
+                    creditTextColorClass = 'text-blue-300';
+                    creditLabelColorClass = 'text-white/55';
+                    checkIconBgClass = 'bg-blue-400/20';
+                    checkIconColorClass = 'text-blue-300';
+                    featureTextColorClass = 'text-white/75';
+                } else if (isRecommended) {
+                    containerClasses += 'bg-gradient-to-br from-blue-300 via-blue-400 to-blue-600 shadow-xl shadow-blue-200';
+                    innerStyle = `background: linear-gradient(145deg, #dbeafe 0%, #eff6ff 100%);`;
+                    ribbonHtml = `
+                        <div class="absolute -top-3.5 inset-x-0 flex justify-center z-10">
+                            <span class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[10px] font-black px-4 py-1 rounded-full shadow-md uppercase tracking-widest whitespace-nowrap">
+                                Phổ Biến
+                            </span>
+                        </div>
+                    `;
+                    badgeBgClass = pkg.badgeColor;
+                    titleColorClass = 'text-gray-900';
+                    priceColorClass = 'text-blue-600';
+                    originalPriceColorClass = 'text-gray-400';
+                    creditBgClass = 'bg-blue-50 border border-blue-100';
+                    creditTextColorClass = 'text-blue-600';
+                    creditLabelColorClass = 'text-gray-500';
+                    checkIconBgClass = 'bg-green-100';
+                    checkIconColorClass = 'text-green-600';
+                    featureTextColorClass = 'text-gray-600';
+                } else {
+                    containerClasses += 'bg-transparent border border-blue-100 shadow-sm';
+                    innerStyle = `background: linear-gradient(145deg, #f0f7ff 0%, #e8f3ff 100%);`;
+                    badgeBgClass = pkg.badgeColor;
+                    titleColorClass = 'text-gray-900';
+                    priceColorClass = 'text-blue-600';
+                    originalPriceColorClass = 'text-gray-400';
+                    creditBgClass = 'bg-blue-50 border border-blue-100';
+                    creditTextColorClass = 'text-blue-600';
+                    creditLabelColorClass = 'text-gray-500';
+                    checkIconBgClass = 'bg-green-100';
+                    checkIconColorClass = 'text-green-600';
+                    featureTextColorClass = 'text-gray-600';
+                }
+            } else {
+                if (isPremium) {
+                    containerClasses += 'bg-gradient-to-br from-[#fbd38d] via-[#C4603A] to-[#7b341e] shadow-2xl shadow-[#C4603A]/40';
+                    innerStyle = `background-image: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.08) 1.5px, transparent 0), linear-gradient(145deg, #1f0d08 0%, #3d1f12 100%); background-size: 20px 20px, auto;`;
+                    sparklesHtml = `
+                        <i data-lucide="sparkles" class="absolute top-4 right-4 w-6 h-6 text-yellow-300 opacity-90 animate-pulse z-10"></i>
+                        <i data-lucide="sparkles" class="absolute bottom-6 left-6 w-8 h-8 text-yellow-400 opacity-70 animate-pulse delay-150 z-10"></i>
+                        <i data-lucide="sparkles" class="absolute top-1/3 -right-3 w-5 h-5 text-yellow-200 opacity-80 animate-bounce delay-300 z-10"></i>
+                        <i data-lucide="sparkles" class="absolute top-6 left-1/4 w-4 h-4 text-orange-300 opacity-60 animate-ping delay-700 z-10"></i>
+                    `;
+                    badgeBgClass = 'bg-white/15 text-orange-300';
+                    titleColorClass = 'text-white';
+                    priceColorClass = 'text-white';
+                    originalPriceColorClass = 'text-white/40';
+                    creditBgClass = 'bg-white/10 border border-white/15';
+                    creditTextColorClass = 'text-orange-300';
+                    creditLabelColorClass = 'text-white/55';
+                    checkIconBgClass = 'bg-orange-400/20';
+                    checkIconColorClass = 'text-orange-300';
+                    featureTextColorClass = 'text-white/75';
+                } else if (isRecommended) {
+                    containerClasses += 'bg-gradient-to-br from-orange-300 via-orange-400 to-orange-500 shadow-xl shadow-orange-200';
+                    innerStyle = `background: linear-gradient(145deg, #ffedd5 0%, #fff7ed 100%);`;
+                    ribbonHtml = `
+                        <div class="absolute -top-3.5 inset-x-0 flex justify-center z-10">
+                            <span class="bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white text-[10px] font-black px-4 py-1 rounded-full shadow-md uppercase tracking-widest whitespace-nowrap">
+                                Được Đề Xuất
+                            </span>
+                        </div>
+                    `;
+                    badgeBgClass = pkg.badgeColor;
+                    titleColorClass = 'text-gray-900';
+                    priceColorClass = 'text-[#C4603A]';
+                    originalPriceColorClass = 'text-gray-400';
+                    creditBgClass = 'bg-orange-50 border border-orange-100';
+                    creditTextColorClass = 'text-[#C4603A]';
+                    creditLabelColorClass = 'text-gray-500';
+                    checkIconBgClass = 'bg-orange-100';
+                    checkIconColorClass = 'text-orange-600';
+                    featureTextColorClass = 'text-gray-600';
+                } else {
+                    containerClasses += 'bg-transparent border border-orange-100 shadow-sm';
+                    innerStyle = `background: linear-gradient(145deg, #fff7f0 0%, #fff0e6 100%);`;
+                    badgeBgClass = pkg.badgeColor;
+                    titleColorClass = 'text-gray-900';
+                    priceColorClass = 'text-[#C4603A]';
+                    originalPriceColorClass = 'text-gray-400';
+                    creditBgClass = 'bg-orange-50 border border-orange-100';
+                    creditTextColorClass = 'text-[#C4603A]';
+                    creditLabelColorClass = 'text-gray-500';
+                    checkIconBgClass = 'bg-orange-100';
+                    checkIconColorClass = 'text-orange-600';
+                    featureTextColorClass = 'text-gray-600';
+                }
+            }
 
             const featuresHtml = pkg.features.map(f => `
-                <li class="flex items-start space-x-3">
-                    <i data-lucide="check" class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5"></i>
-                    <span class="text-sm text-gray-700">${f}</span>
+                <li class="flex items-start gap-2.5">
+                    <div class="w-[18px] h-[18px] rounded-full flex items-center justify-center flex-shrink-0 mt-px ${checkIconBgClass}">
+                        <i data-lucide="check" class="w-2.5 h-2.5 ${checkIconColorClass}"></i>
+                    </div>
+                    <span class="text-sm leading-snug ${featureTextColorClass}">${f}</span>
                 </li>
             `).join('');
 
             let buttonHtml = '';
-            if (purchaseState === 'in_use') {
-                buttonHtml = `<button disabled class="w-full bg-gray-300 text-gray-600 py-4 rounded-xl font-bold cursor-not-allowed">Đang Sử Dụng</button>`;
-            } else if (purchaseState === 'pending') {
+            if (purchaseState === 'pending') {
+                const po = purchaseStatus.pendingOrdersByPackageId[pkg.paidCreditPackageId];
                 let formattedTime = '';
-                if (purchaseStatus.pendingOrderExpiredAt) {
-                    const utcExpiredAt = purchaseStatus.pendingOrderExpiredAt.endsWith('Z') ? purchaseStatus.pendingOrderExpiredAt : `${purchaseStatus.pendingOrderExpiredAt}Z`;
+                if (po && po.expiredAt) {
+                    const utcExpiredAt = po.expiredAt.endsWith('Z') ? po.expiredAt : `${po.expiredAt}Z`;
                     formattedTime = new Date(utcExpiredAt).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
                 }
                 const btnClass = variant === 'posting' 
-                    ? 'w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 rounded-xl font-bold hover:shadow-lg transition-all'
-                    : 'w-full bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white py-4 rounded-xl font-bold hover:shadow-lg transition-all';
+                    ? 'w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3.5 rounded-xl font-bold hover:shadow-lg transition-all'
+                    : 'w-full bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white py-3.5 rounded-xl font-bold hover:shadow-lg transition-all';
                 buttonHtml = `
                     <div class="flex flex-col items-center">
-                        <button type="button" onclick="window.location.href='${purchaseStatus.pendingOrderCheckoutUrl}'" class="${btnClass}">Tiếp tục thanh toán</button>
+                        <button type="button" onclick="window.location.href='${po.checkoutUrl}'" class="${btnClass}">Tiếp tục thanh toán</button>
                         ${formattedTime ? `<div class="mt-3 text-red-500 text-sm font-semibold">Hết hạn vào ${formattedTime}</div>` : ''}
                     </div>
                 `;
-            } else if (purchaseState === 'locked' || isAnyLoading) {
-                const bgDisabled = variant === 'posting' ? 'bg-blue-300' : 'bg-[#C4603A]/50';
+            } else if (isAnyLoading) {
+                const bgDisabled = isPremium ? 'bg-white/20 text-white/50' : (variant === 'posting' ? 'bg-blue-300 text-white' : 'bg-[#C4603A]/50 text-white');
                 const isThisLoading = loadingPackageId === pkg.paidCreditPackageId;
                 buttonHtml = `
-                    <button disabled class="w-full py-3.5 rounded-xl text-white font-semibold flex items-center justify-center transition-all ${bgDisabled} cursor-not-allowed">
-                        ${isThisLoading ? `<span class="flex items-center space-x-2"><span>Đang Xử Lý...</span></span>` : 'Mua Ngay'}
+                    <button disabled class="w-full py-3.5 rounded-xl font-semibold flex items-center justify-center transition-all ${bgDisabled} cursor-not-allowed">
+                        ${isThisLoading ? `<span class="flex items-center space-x-2"><span>Đang Xử Lý...</span></span>` : pkg.cta}
                     </button>
                 `;
             } else {
-                const btnClass = variant === 'posting' 
-                    ? 'w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-4 rounded-xl font-bold hover:shadow-lg transition-all'
-                    : 'w-full bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white py-4 rounded-xl font-bold hover:shadow-lg transition-all';
-                buttonHtml = `<button type="button" onclick="window.handleSelectPackage(${pkg.paidCreditPackageId})" class="${btnClass}">Mua Ngay</button>`;
+                const btnClass = isPremium
+                  ? (variant === 'posting' ? 'w-full bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/30 py-3.5 rounded-xl font-bold transition-all relative overflow-hidden group' : 'w-full bg-[#C4603A] hover:bg-[#d4724a] text-white shadow-lg shadow-[#C4603A]/30 py-3.5 rounded-xl font-bold transition-all relative overflow-hidden group')
+                  : (variant === 'posting' ? 'w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 py-3.5 rounded-xl font-bold transition-all relative overflow-hidden group' : 'w-full bg-[#C4603A] hover:bg-[#9a4b2d] text-white shadow-md shadow-orange-200 py-3.5 rounded-xl font-bold transition-all relative overflow-hidden group');
+                  
+                buttonHtml = `
+                    <button type="button" onclick="window.handleSelectPackage(${pkg.paidCreditPackageId})" class="${btnClass}">
+                        <span class="relative z-10 flex items-center justify-center gap-2">
+                            ${pkg.cta}
+                            ${isPremium ? `<i data-lucide="sparkles" class="w-4 h-4"></i>` : ''}
+                        </span>
+                    </button>
+                `;
             }
 
             return `
-                <div class="relative bg-white rounded-3xl shadow-lg p-8 transition-all ${isInUse ? `ring-4 ${ringClass} scale-105` : (purchaseState === 'available' ? 'hover:shadow-2xl hover:scale-105' : 'opacity-90')}">
-                    <div class="absolute top-6 right-6">
-                        <span class="${pkg.badgeColor} px-4 py-1.5 rounded-full text-xs font-bold">${pkg.badge}</span>
-                    </div>
-                    ${isInUse ? `
-                        <div class="absolute top-6 left-6">
-                            <span class="${bgBadgeClass} text-white px-4 py-1.5 rounded-full text-xs font-bold flex items-center space-x-1">
-                                <i data-lucide="check" class="w-3 h-3"></i>
-                                <span>Đang Dùng</span>
-                            </span>
-                        </div>
-                    ` : ''}
-                    <div class="mt-8">
-                        <h3 class="text-2xl text-gray-900 mb-4">${pkg.title}</h3>
-                        <div class="mb-6">
-                            <div class="flex items-baseline space-x-2">
-                                <span class="text-4xl font-bold ${priceColor}">${pkg.price.toLocaleString('vi-VN')}đ</span>
+                <div class="${containerClasses}">
+                    <div class="relative h-full rounded-[14px]" style="${innerStyle}">
+                        ${sparklesHtml}
+                        ${ribbonHtml}
+                        <div class="p-7">
+                            <div class="flex items-start justify-between mb-5">
+                                <span class="text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${badgeBgClass}">
+                                    ${pkg.badge}
+                                </span>
+                                ${pkg.discountPercent ? `
+                                    <span class="bg-red-500 text-white text-[10px] font-black px-2.5 py-1 rounded-full">
+                                        -${pkg.discountPercent}%
+                                    </span>
+                                ` : ''}
                             </div>
-                            ${pkg.originalPrice ? `
-                                <div class="flex items-center space-x-2 mt-2">
-                                    <span class="text-gray-500 line-through text-sm">${pkg.originalPrice.toLocaleString('vi-VN')}đ</span>
-                                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold">-${pkg.discountPercent}%</span>
+                            <h3 class="text-xl font-bold mb-3 ${titleColorClass}">
+                                ${pkg.title}
+                            </h3>
+                            <div class="mb-5">
+                                <span class="text-[32px] font-black leading-none ${priceColorClass}">
+                                    ${pkg.price.toLocaleString('vi-VN')}đ
+                                </span>
+                                ${pkg.originalPrice ? `
+                                    <div class="mt-1">
+                                        <span class="text-sm line-through ${originalPriceColorClass}">
+                                            ${pkg.originalPrice.toLocaleString('vi-VN')}đ
+                                        </span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            <div class="rounded-xl p-4 mb-5 text-center ${creditBgClass}">
+                                <div class="text-4xl font-black tabular-nums ${creditTextColorClass}">
+                                    ${pkg.credits}
                                 </div>
-                            ` : ''}
-                        </div>
-                        <div class="${creditBgColor} rounded-xl p-4 mb-6">
-                            <div class="text-center">
-                                <div class="text-3xl font-bold ${priceColor}">${pkg.credits}</div>
-                                <div class="text-sm text-gray-600">Credits ${variant === 'posting' ? 'Đăng Tin' : 'Nổi Bật'}</div>
+                                <div class="text-xs font-medium mt-0.5 ${creditLabelColorClass}">
+                                    Credits ${variant === 'posting' ? 'Đăng Tin' : 'Nổi Bật'}
+                                </div>
                             </div>
+                            <ul class="space-y-2.5 mb-6">
+                                ${featuresHtml}
+                            </ul>
+                            ${buttonHtml}
                         </div>
-                        <ul class="space-y-3 mb-8">
-                            ${featuresHtml}
-                        </ul>
-                        ${buttonHtml}
                     </div>
                 </div>
             `;
