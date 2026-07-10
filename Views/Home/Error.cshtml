@@ -1,0 +1,104 @@
+@{
+    Layout = null;
+    int errorCode = ViewBag.ErrorCode ?? 500;
+    string title = "Không Tìm Thấy Trang";
+    string message = "Trang bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.";
+    string emoji = "🔍";
+    string bgGradient = "from-blue-50 to-blue-100";
+    string iconColor = "text-blue-600";
+
+    if (errorCode == 500)
+    {
+        title = "Lỗi Máy Chủ";
+        message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau.";
+        emoji = "⚠️";
+        bgGradient = "from-red-50 to-red-100";
+        iconColor = "text-red-600";
+    }
+    else if (errorCode == 403)
+    {
+        title = "Truy Cập Bị Từ Chối";
+        message = "Bạn không có quyền truy cập trang này.";
+        emoji = "🚫";
+        bgGradient = "from-yellow-50 to-yellow-100";
+        iconColor = "text-yellow-600";
+    }
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - REVORA</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS (compiled) -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="font-sans antialiased text-gray-900 bg-gray-50">
+    <div class="min-h-screen bg-gradient-to-br @bgGradient flex items-center justify-center px-4 py-20">
+      <div class="max-w-2xl w-full">
+        <!-- Error Card -->
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <!-- Header Section -->
+          <div class="bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] px-8 py-12 text-center">
+            <div class="text-8xl mb-4">@emoji</div>
+            <div class="text-white/90 text-6xl font-bold mb-2">@errorCode</div>
+            <div class="text-white/70 text-sm uppercase tracking-wider">Error Code</div>
+          </div>
+
+          <!-- Content Section -->
+          <div class="px-8 py-12">
+            <div class="flex items-center justify-center mb-6">
+              <div class="p-4 bg-gray-50 rounded-full @iconColor">
+                <i data-lucide="alert-triangle" class="w-12 h-12"></i>
+              </div>
+            </div>
+
+            <h1 class="text-3xl font-bold text-gray-900 text-center mb-4">
+              @title
+            </h1>
+            <p class="text-gray-600 text-center mb-8 text-lg leading-relaxed">
+              @message
+            </p>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <a href="/" class="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] text-white rounded-xl hover:shadow-lg transition-all font-semibold">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span>Về Trang Chủ</span>
+              </a>
+              <button onclick="window.history.back()" class="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                <span>Quay Lại</span>
+              </button>
+              <button onclick="window.location.reload()" class="flex items-center justify-center gap-2 px-6 py-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-semibold">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                <span>Tải Lại</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Footer Section -->
+          <div class="px-8 py-6 bg-gray-50 border-t border-gray-100">
+            <div class="text-center">
+              <p class="text-sm text-gray-600 mb-3">Cần hỗ trợ? Liên hệ với chúng tôi</p>
+              <div class="flex flex-wrap gap-4 justify-center text-sm">
+                <a href="mailto:support@revora.vn" class="text-[#2D5A3D] hover:underline font-medium">
+                  📧 support@revora.vn
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

@@ -65,6 +65,14 @@
 
 
 
+    @if (User.Identity == null || !User.Identity.IsAuthenticated)
+    {
+        <script>
+            // Clear banner session storage when logged out
+            sessionStorage.removeItem('revora_announcement_shown');
+        </script>
+    }
+
     @if (User.Identity != null && User.Identity.IsAuthenticated)
     {
         <script>
@@ -75,6 +83,15 @@
                 hubUrl: '/api-proxy/chathub'
             };
         </script>
+        
+        <!-- Render Announcement Popup ONLY for Users -->
+        @if (ViewContext.RouteData.Values["Controller"]?.ToString() != "Admin")
+        {
+            <partial name="_AnnouncementPopup" />
+            <script src="~/js/announcement-popup.js" asp-append-version="true"></script>
+        }
+
+        <script src="~/js/user-notifications.js" asp-append-version="true"></script>
     }
 
     <!-- Global SignalR -->

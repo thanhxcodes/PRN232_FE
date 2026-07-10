@@ -1,19 +1,134 @@
 @{
-    ViewData["Title"] = "Quản Lý Thông Báo";
+    ViewData["Title"] = "Gửi Thông Báo";
     Layout = "_Layout";
 }
 
 <div class="mb-8">
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-        <div>
-            <h2 class="text-3xl text-gray-900 mb-2">Quản Lý Thông Báo</h2>
-            <p class="text-gray-600">Gửi và quản lý thông báo hệ thống đến người dùng</p>
+    <h2 class="text-3xl text-gray-900 mb-2">Gửi Thông Báo</h2>
+    <p class="text-gray-600">Gửi thông báo quan trọng đến tất cả hoặc nhóm người dùng cụ thể</p>
+</div>
+
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    <!-- Compose Panel -->
+    <div class="xl:col-span-2 space-y-6">
+        <!-- Type Templates -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center space-x-2">
+                <i data-lucide="bell" class="w-5 h-5 text-[#2D5A3D]"></i>
+                <span>Loại thông báo</span>
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="type-templates">
+                <!-- Javascript will render templates here -->
+            </div>
+        </div>
+
+        <!-- Compose Form -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center space-x-2">
+                <i data-lucide="megaphone" class="w-5 h-5 text-[#2D5A3D]"></i>
+                <span>Soạn thông báo</span>
+            </h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tiêu đề thông báo <span class="text-red-500">*</span></label>
+                    <input type="text" id="notif-title" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D] text-sm" placeholder="Nhập tiêu đề thông báo...">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nội dung <span class="text-red-500">*</span></label>
+                    <textarea id="notif-content" rows="4" maxlength="500" class="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D] text-sm resize-none" placeholder="Nhập nội dung thông báo đầy đủ..."></textarea>
+                    <div class="text-right text-xs text-gray-400 mt-1"><span id="char-count">0</span>/500 ký tự</div>
+                </div>
+
+                <div class="flex items-center space-x-3 pt-2">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="schedule-mode" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#2D5A3D]"></div>
+                        <span class="ml-3 text-sm font-medium text-gray-700">Hẹn giờ gửi</span>
+                    </label>
+                    <input type="datetime-local" id="scheduled-at" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#2D5A3D] hidden">
+                </div>
+            </div>
         </div>
     </div>
-    
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-        <i data-lucide="bell" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
-        <h3 class="text-xl font-bold text-gray-900 mb-2">Tính năng đang được phát triển</h3>
-        <p class="text-gray-500">Giao diện MVC cho tính năng quản lý Thông báo đang trong quá trình chuyển đổi.</p>
+
+    <!-- Right sidebar: Target Audience & Summary -->
+    <div class="space-y-6">
+        <!-- Target -->
+        <div class="bg-white rounded-2xl shadow-sm p-6">
+            <h3 class="text-base font-semibold text-gray-800 mb-4 flex items-center space-x-2">
+                <i data-lucide="users" class="w-5 h-5 text-[#2D5A3D]"></i>
+                <span>Đối tượng nhận</span>
+            </h3>
+            <div class="space-y-2" id="target-options">
+                <!-- Javascript will render options here -->
+            </div>
+
+            <!-- Specific users search -->
+            <div id="specific-users-box" class="mt-4 hidden relative">
+                <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                    <input type="text" id="search-users" class="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D] text-sm" placeholder="Tìm tên, @@username...">
+                </div>
+                <div id="search-results" class="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-10 hidden">
+                    <!-- Search results here -->
+                </div>
+                
+                <div id="selected-users" class="mt-3 flex flex-wrap gap-2">
+                    <!-- Selected users tags -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-[#2D5A3D] rounded-2xl shadow-sm p-6 text-white sticky top-24">
+            <h3 class="font-semibold mb-4">Tổng kết gửi</h3>
+            <div class="space-y-3 text-sm mb-6">
+                <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                    <span class="text-white/70">Loại:</span>
+                    <span class="font-medium text-right" id="summary-type">Thông báo</span>
+                </div>
+                <div class="flex justify-between items-center pb-3 border-b border-white/10">
+                    <span class="text-white/70">Đối tượng:</span>
+                    <span class="font-medium text-right" id="summary-target">Tất cả người dùng</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-white/70">Người nhận:</span>
+                    <span class="text-xl font-bold text-[#E5F3EB]" id="summary-count">1.234</span>
+                </div>
+            </div>
+            
+            <button id="btn-send" class="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span id="btn-send-text">Gửi ngay</span>
+            </button>
+
+            <!-- Success Alert -->
+            <div id="success-alert" class="mt-4 bg-green-500/20 text-green-100 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 hidden">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                Đã gửi thông báo thành công!
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- History -->
+<div class="mt-8 bg-white rounded-2xl shadow-sm p-6">
+    <div class="flex justify-between items-center mb-6 cursor-pointer select-none" id="toggle-history">
+        <h3 class="text-base font-semibold text-gray-800 flex items-center space-x-2">
+            <i data-lucide="clock" class="w-5 h-5 text-[#2D5A3D]"></i>
+            <span>Lịch sử thông báo đã gửi</span>
+            <span class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-medium" id="history-count">0</span>
+        </h3>
+        <i data-lucide="chevron-up" class="w-5 h-5 text-gray-400 transition-transform" id="history-icon"></i>
+    </div>
+    
+    <div class="space-y-0" id="history-list">
+        <!-- History items -->
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-notifications.js"></script>
+}

@@ -159,10 +159,25 @@
                 </a>
                 
                 <!-- Bell / Notifications -->
-                <div class="relative">
-                    <button class="text-white/80 hover:text-white transition-colors relative p-1">
+                <div class="relative group pt-2 pb-2" id="nav-notifications-container">
+                    <button class="text-white/80 hover:text-white transition-colors relative p-1 cursor-pointer">
                         <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span id="nav-notif-badge" class="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-[#C4603A] rounded-full text-[11px] flex items-center justify-center text-white font-bold border-2 border-[#2D5A3D] shadow-sm hidden">0</span>
                     </button>
+
+                    <!-- Dropdown Content -->
+                    <div class="absolute right-0 top-full mt-0 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 transform origin-top-right scale-95 group-hover:scale-100">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="font-bold text-gray-900">Thông Báo</h3>
+                            <button id="nav-notif-mark-all" class="text-xs text-[#2D5A3D] font-medium hover:underline hidden">Đánh dấu tất cả đã đọc</button>
+                        </div>
+                        <div id="nav-notif-list" class="max-h-[350px] overflow-y-auto">
+                            <!-- Items will be loaded here -->
+                        </div>
+                        <div class="p-3 border-t border-gray-100 text-center">
+                            <a href="/Notifications" class="text-sm font-medium text-[#2D5A3D] hover:underline">Xem tất cả thông báo</a>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- User avatar menu -->
