@@ -678,5 +678,31 @@ namespace REVORA_MVC_FE.Services
                 return await _httpClient.GetFromJsonAsync<ApiResponse<TransactionPagedResult>>($"Admin/Users/{userId}/transactions?page={page}&pageSize={pageSize}");
             } catch { return null; }
         }
+        public async Task<ApiResponse<List<AdminProductViewModel>>?> GetAdminProductsAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<List<AdminProductViewModel>>>("Admin/Products");
+            }
+            catch { return null; }
+        }
+
+        public async Task<ApiResponse<object>> UpdateProductStatusAsync(long productId, string status, string? note)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"Admin/Products/{productId}/status", new { Status = status, Note = note });
+                if (response.IsSuccessStatusCode)
+                {
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                }
+                var error = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<object> { Success = false, Message = "Lỗi thao tác: " + error };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message };
+            }
+        }
     }
 }

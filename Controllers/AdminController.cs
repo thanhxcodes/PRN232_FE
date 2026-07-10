@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using REVORA_MVC_FE.Models.ViewModels;
 using REVORA_MVC_FE.Services;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace REVORA_MVC_FE.Controllers
@@ -120,9 +121,88 @@ namespace REVORA_MVC_FE.Controllers
             return View();
         }
 
-        public IActionResult Posts()
+        public async Task<IActionResult> Posts(int page = 1, string search = "", string statusFilter = "all", string categoryFilter = "all")
         {
-            return View();
+            ViewBag.Search = search;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.CategoryFilter = categoryFilter;
+
+            var response = await _apiService.GetAdminProductsAsync();
+            if (response != null && response.Success && response.Data != null)
+            {
+                var products = response.Data;
+                
+                // Calculate stats
+                var stats = new AdminProductStatsViewModel
+                {
+                    TotalPosts = products.Count,
+                    ActivePosts = products.Count(p => p.Status == "Public"),
+                    PendingAds = products.Count(p => p.Status == "AppealPending"),
+                    ViolatedPosts = products.Count(p => p.Status == "Violated"),
+                    DeletedPosts = products.Count(p => p.Status == "Deleted" || p.Status == "AdminDeleted")
+                };
+
+                ViewBag.Categories = products.Select(p => p.Category).Where(c => !string.IsNullOrEmpty(c)).Distinct().OrderBy(c => c).ToList();
+
+                // Filter
+                if (!string.IsNullOrEmpty(search))
+                {
+                    search = search.ToLower();
+                    products = products.Where(p => 
+                        (p.Title != null && p.Title.ToLower().Contains(search)) || 
+                        (p.Owner != null && p.Owner.Username != null && p.Owner.Username.ToLower().Contains(search)) || 
+                        (p.Owner != null && p.Owner.Email != null && p.Owner.Email.ToLower().Contains(search))
+                    ).ToList();
+                }
+
+                if (statusFilter != "all")
+                {
+                    products = products.Where(p => p.Status.Equals(statusFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+
+                if (categoryFilter != "all")
+                {
+                    products = products.Where(p => p.Category.Equals(categoryFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+
+                // Pagination
+                int pageSize = 10;
+                var totalCount = products.Count;
+                var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+                
+                // Ensure page is valid
+                if (page < 1) page = 1;
+                if (page > totalPages && totalPages > 0) page = totalPages;
+
+                var pagedItems = products.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+                var result = new AdminProductPagedResult
+                {
+                    Items = pagedItems,
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    CurrentPage = page,
+                    Stats = stats
+                };
+
+                return View(result);
+            }
+            return View(new AdminProductPagedResult());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdatePostStatus(long productId, string status, string note)
+        {
+            var response = await _apiService.UpdateProductStatusAsync(productId, status, note);
+            if (response != null && response.Success)
+            {
+                TempData["SuccessMessage"] = "Cập nhật trạng thái bài đăng thành công";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = response?.Message ?? "Có lỗi xảy ra";
+            }
+            return RedirectToAction("Posts");
         }
 
         public IActionResult ManageProducts()

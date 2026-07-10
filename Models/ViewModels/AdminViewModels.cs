@@ -132,4 +132,47 @@ namespace REVORA_MVC_FE.Models.ViewModels
         public int TotalPages { get; set; }
         public int CurrentPage { get; set; }
     }
+    public class AdminProductOwnerDto
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Avatar { get; set; } = string.Empty;
+    }
+
+    public class AdminProductViewModel
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public List<string> Images { get; set; } = new List<string>();
+        public AdminProductOwnerDto Owner { get; set; } = new AdminProductOwnerDto();
+        public string CreatedAt { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public int Views { get; set; }
+        public int ContactCount { get; set; }
+        public bool IsFeatured { get; set; }
+        public string Condition { get; set; } = string.Empty;
+        public string Size { get; set; } = string.Empty;
+        public string Brand { get; set; } = string.Empty;
+    }
+
+    public class AdminProductPagedResult
+    {
+        public List<AdminProductViewModel> Items { get; set; } = new List<AdminProductViewModel>();
+        public int TotalCount { get; set; }
+        public int TotalPages { get; set; }
+        public int CurrentPage { get; set; }
+        public AdminProductStatsViewModel Stats { get; set; } = new AdminProductStatsViewModel();
+    }
+
+    public class AdminProductStatsViewModel
+    {
+        public int TotalPosts { get; set; }
+        public int ActivePosts { get; set; }
+        public int PendingAds { get; set; }
+        public int ViolatedPosts { get; set; }
+        public int DeletedPosts { get; set; }
+    }
 }
