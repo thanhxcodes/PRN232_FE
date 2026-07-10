@@ -121,6 +121,47 @@ namespace REVORA_MVC_FE.Controllers
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(IFormFile files)
+        {
+            if (files == null || files.Length == 0)
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất 1 file ảnh." });
+
+            var result = await _apiService.UploadImageAsync(files);
+            if (result.Success)
+            {
+                return Json(new { success = true, urls = new[] { result.Data } });
+            }
+            return Json(new { success = false, message = result.Message });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SearchUsers(string query)
+        {
+            var response = await _apiService.SearchUsersAsync(query);
+            if (response != null && response.Success)
+            {
+                // API BE trả về { success = true, data = [...] } nên response.Data sẽ là object chứa data
+                return Json(new { success = true, data = response.Data });
+            }
+            return Json(new { success = false, message = "Không thể tìm kiếm" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendNotifications([FromBody] AdminSendNotificationRequestDto request)
+        {
+            var response = await _apiService.SendNotificationsAsync(request);
+            if (response != null && response.Success)
+            {
+                // Backend trả về count bên trong response.Data? 
+                // Wait, Backend controller uses Ok(new { success = true, count = count, message = ... })
+                // ApiService deserializes this to ApiResponse<object>.
+                // For simplicity, we just return the Data to FE.
+                return Json(new { success = true, data = response.Data });
+            }
+            return Json(new { success = false, message = response?.Message ?? "Lỗi gửi thông báo" });
+        }
+
         public async Task<IActionResult> Posts(int page = 1, string search = "", string statusFilter = "all", string categoryFilter = "all")
         {
             ViewBag.Search = search;

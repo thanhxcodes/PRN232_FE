@@ -5,80 +5,174 @@
     Layout = "_AuthLayout";
 }
 
-<div class="w-full">
+<div class="w-full" id="register-container">
     <div class="mb-8">
         <h2 class="text-3xl font-bold text-gray-900 mb-2 tracking-tight">Tạo tài khoản mới</h2>
-        <p class="text-gray-500 font-medium">Bắt đầu hành trình phong cách cùng REVORA</p>
+        <p class="text-gray-500 font-medium" id="step-subtitle">Bước 1: Xác thực Email</p>
     </div>
 
-    <form asp-action="Register" method="post" class="space-y-5">
-        <div asp-validation-summary="ModelOnly" class="bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 rounded-2xl px-5 py-3.5 flex items-center gap-2.5 shadow-sm mb-6 text-sm font-medium"></div>
+    <!-- Error/Message Alert -->
+    <div id="register-alert" class="hidden bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-700 rounded-2xl px-5 py-3.5 flex items-center gap-2.5 shadow-sm mb-6 text-sm font-medium"></div>
 
-        <div class="space-y-1">
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Họ và tên</label>
-            <div class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <i data-lucide="user" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+    <form id="register-form" class="space-y-5" onsubmit="return false;">
+        
+        <!-- STEP 1: Email Verification -->
+        <div id="step-1-container" class="space-y-5">
+            <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="mail" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                    </div>
+                    <input id="step1-email" type="email" placeholder="email@example.com" required class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
                 </div>
-                <input asp-for="FullName" placeholder="Nhập họ và tên" class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
             </div>
-            <span asp-validation-for="FullName" class="text-red-500 text-xs mt-1 ml-1 font-medium"></span>
-        </div>
 
-        <div class="space-y-1">
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Tên đăng nhập (Username)</label>
-            <div class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <i data-lucide="at-sign" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+            <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Nhập lại Email</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="mail" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                    </div>
+                    <input id="step1-confirm-email" type="email" placeholder="Xác nhận lại email" required class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
                 </div>
-                <input asp-for="Username" placeholder="Nhập tên đăng nhập" class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
             </div>
-            <span asp-validation-for="Username" class="text-red-500 text-xs mt-1 ml-1 font-medium"></span>
-        </div>
 
-        <div class="space-y-1">
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email</label>
-            <div class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <i data-lucide="mail" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+            <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Tỉnh/Thành phố</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="map-pin" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                    </div>
+                    <select id="step1-city" required class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium appearance-none">
+                        <option value="">Chọn Tỉnh/Thành phố</option>
+                        <!-- Options will be populated by JS -->
+                    </select>
                 </div>
-                <input asp-for="Email" type="email" placeholder="Nhập email của bạn" class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
             </div>
-            <span asp-validation-for="Email" class="text-red-500 text-xs mt-1 ml-1 font-medium"></span>
-        </div>
 
-        <div class="space-y-1">
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Mật khẩu</label>
-            <div class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <i data-lucide="lock" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
-                </div>
-                <input asp-for="Password" type="password" placeholder="Tạo mật khẩu (Ít nhất 6 ký tự)" class="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
-                <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
-                    <i data-lucide="eye" class="h-5 w-5"></i>
+            <div class="pt-2">
+                <button type="button" id="btn-verify-email" class="w-full flex justify-center items-center py-3.5 px-4 rounded-xl shadow-sm text-[15px] font-bold text-white bg-[#108A4D] hover:bg-[#0e7a44] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#108A4D]">
+                    <span id="btn-verify-text">Xác thực Email</span> <i data-lucide="arrow-right" class="w-4 h-4 ml-1.5 mt-0.5"></i>
                 </button>
             </div>
-            <span asp-validation-for="Password" class="text-red-500 text-xs mt-1 ml-1 font-medium"></span>
+            
+            <div id="polling-status" class="hidden flex-col items-center justify-center mt-4 p-4 bg-green-50 rounded-xl border border-green-100">
+                <div class="flex items-center gap-3 text-green-700 mb-2">
+                    <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
+                    <span class="font-medium text-sm">Đang chờ xác thực...</span>
+                </div>
+                <p class="text-xs text-green-600 text-center">Vui lòng kiểm tra email của bạn và click vào link xác thực. Không đóng tab này.</p>
+            </div>
         </div>
 
-        <div class="space-y-1">
-            <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Xác nhận mật khẩu</label>
-            <div class="relative group">
-                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <i data-lucide="lock" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+        <!-- STEP 2: Account Info -->
+        <div id="step-2-container" class="hidden space-y-5">
+            <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Họ và tên</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="user" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                    </div>
+                    <input id="step2-fullname" type="text" placeholder="Nhập họ và tên" required class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
                 </div>
-                <input asp-for="ConfirmPassword" type="password" placeholder="Nhập lại mật khẩu" class="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
-                <button type="button" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
-                    <i data-lucide="eye" class="h-5 w-5"></i>
+            </div>
+
+            <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Tên đăng nhập (Username)</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="at-sign" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                    </div>
+                    <input id="step2-username" type="text" placeholder="Nhập tên đăng nhập" required class="block w-full pl-11 pr-4 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Mật khẩu</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="lock" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                    </div>
+                    <input id="step2-password" type="password" placeholder="Tạo mật khẩu (Ít nhất 6 ký tự)" required class="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
+                    <button type="button" onclick="togglePassword('step2-password', this)" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                        <i data-lucide="eye" class="h-5 w-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Xác nhận mật khẩu</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i data-lucide="lock" class="h-5 w-5 text-gray-400 group-focus-within:text-[#2D5A3D] transition-colors"></i>
+                    </div>
+                    <input id="step2-confirm-password" type="password" placeholder="Nhập lại mật khẩu" required class="block w-full pl-11 pr-12 py-3.5 bg-gray-50/50 border-2 border-gray-100 rounded-2xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#2D5A3D] focus:bg-white transition-all text-[15px] font-medium" />
+                    <button type="button" onclick="togglePassword('step2-confirm-password', this)" class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600 transition-colors">
+                        <i data-lucide="eye" class="h-5 w-5"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex items-start">
+                <div class="flex items-center h-5">
+                    <input id="step2-agree" type="checkbox" required class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-[#2D5A3D] accent-[#2D5A3D]">
+                </div>
+                <label for="step2-agree" class="ml-2 text-sm font-medium text-gray-600">
+                    Tôi đồng ý với <a href="#" class="text-[#2D5A3D] hover:underline">Điều khoản dịch vụ</a> và <a href="#" class="text-[#2D5A3D] hover:underline">Chính sách bảo mật</a>.
+                </label>
+            </div>
+
+            <div class="pt-2">
+                <button type="button" id="btn-register-final" class="w-full flex justify-center py-3.5 px-4 rounded-xl shadow-sm text-[15px] font-bold text-white bg-[#108A4D] hover:bg-[#0e7a44] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#108A4D]">
+                    <span id="btn-register-text">Đăng Ký</span> <i data-lucide="arrow-right" class="w-4 h-4 ml-1.5 mt-0.5"></i>
                 </button>
             </div>
-            <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs mt-1 ml-1 font-medium"></span>
         </div>
 
-        <div class="pt-2">
-            <button type="submit" class="w-full flex justify-center py-3.5 px-4 rounded-xl shadow-sm text-[15px] font-bold text-white bg-[#108A4D] hover:bg-[#0e7a44] transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#108A4D]">
-                Đăng Ký <i data-lucide="arrow-right" class="w-4 h-4 ml-1.5 mt-0.5"></i>
-            </button>
+        <div class="relative mt-6 mb-6">
+            <div class="absolute inset-0 flex items-center">
+                <div class="w-full border-t border-gray-200"></div>
+            </div>
+            <div class="relative flex justify-center text-xs">
+                <span class="px-2 bg-white text-gray-400">hoặc</span>
+            </div>
+        </div>
+
+        <div class="flex justify-center w-full">
+            <div id="g_id_onload"
+                 data-client_id="106203078815-vtlle17ljkjcl216kfneki4p6s5aevls.apps.googleusercontent.com"
+                 data-context="signup"
+                 data-ux_mode="popup"
+                 data-callback="handleGoogleLogin"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin w-full"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="outline"
+                 data-text="signup_with"
+                 data-size="large"
+                 data-logo_alignment="center"
+                 style="display: flex; justify-content: center; width: 100%;">
+            </div>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '<i data-lucide="eye-off" class="h-5 w-5"></i>';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+            }
+            lucide.createIcons();
+        }
+    </script>
+    <script src="~/js/register-flow.js" asp-append-version="true"></script>
+}

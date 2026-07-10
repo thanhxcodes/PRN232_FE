@@ -7,6 +7,8 @@
     @await RenderSectionAsync("Styles", required: false)
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Raleway:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body class="bg-[#0a1a10] font-sans antialiased text-gray-900">
     <!-- Thêm Tailwind CDN để đảm bảo các class mới hoạt động luôn mà không cần build lại CSS -->
@@ -100,10 +102,11 @@
                 @RenderBody()
             </div>
         </div>
-
-        <p class="text-center text-white/60 text-xs mt-6 font-medium tracking-wide">
-            © 2026 REVORA. Tất cả quyền được bảo lưu.
-        </p>
+        
+        <!-- Bản quyền -->
+        <div class="text-center mt-8 text-white/50 text-xs fade-in-up" style="animation-delay: 0.3s;">
+            &copy; @DateTime.Now.Year REVORA. Tất cả quyền được bảo lưu.
+        </div>
     </div>
 </div>
 
@@ -145,6 +148,48 @@
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script>
     lucide.createIcons();
+
+    // Google Login Callback
+    async function handleGoogleLogin(response) {
+        if (!response.credential) return;
+        
+        try {
+            Swal.fire({
+                title: 'Đang xử lý...',
+                text: 'Vui lòng đợi trong giây lát.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            const res = await fetch('/Auth/GoogleLogin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: response.credential })
+            });
+            
+            const data = await res.json();
+            
+            if (res.ok && data.success) {
+                // Determine redirect path
+                window.location.href = '/';
+            } else {
+                Swal.fire({
+                    title: 'Lỗi!',
+                    text: data.message || 'Đăng nhập bằng Google thất bại.',
+                    icon: 'error'
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            Swal.fire({
+                title: 'Lỗi kết nối',
+                text: 'Không thể kết nối đến máy chủ.',
+                icon: 'error'
+            });
+        }
+    }
 </script>
 @await RenderSectionAsync("Scripts", required: false)
 </body>

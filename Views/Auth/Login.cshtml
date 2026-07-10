@@ -66,9 +66,28 @@
             </div>
         </div>
 
-        <button type="button" class="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-gray-200 rounded-xl bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-            <img src="https://www.google.com/favicon.ico" alt="Google" class="w-5 h-5" />
-            Đăng nhập với Google
-        </button>
+        <div class="flex justify-center w-full">
+            <div id="g_id_onload"
+                 data-client_id="106203078815-vtlle17ljkjcl216kfneki4p6s5aevls.apps.googleusercontent.com"
+                 data-context="signin"
+                 data-ux_mode="popup"
+                 data-callback="handleGoogleLogin"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin w-full"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="outline"
+                 data-text="signin_with"
+                 data-size="large"
+                 data-logo_alignment="center"
+                 style="display: flex; justify-content: center; width: 100%;">
+            </div>
+        </div>
     </form>
 </div>
+
+<!-- Clear session storage so that banner can show again after logging in -->
+<script>
+    sessionStorage.removeItem('revora_announcement_shown');
+</script>

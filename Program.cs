@@ -31,10 +31,18 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Home/Error/500");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+else
+{
+    // Bắt exception để show UI lỗi ngay cả khi ở dev (theo yêu cầu User)
+    app.UseExceptionHandler("/Home/Error/500");
+}
+
+// Bắt các lỗi HTTP (như 404 Not Found)
+app.UseStatusCodePagesWithReExecute("/Home/Error/{0}");
 
 app.UseHttpsRedirection();
 app.UseRouting();
