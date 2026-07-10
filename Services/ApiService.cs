@@ -704,5 +704,60 @@ namespace REVORA_MVC_FE.Services
                 return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message };
             }
         }
+        public async Task<ApiResponse<object>?> SearchUsersAsync(string query)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<object>>($"Admin/Users/search?query={Uri.EscapeDataString(query)}");
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<object>> SendNotificationsAsync(AdminSendNotificationRequestDto request)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("Admin/send-notifications", request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                    return result ?? new ApiResponse<object> { Success = false, Message = "Lỗi phản hồi" };
+                }
+                var error = await response.Content.ReadAsStringAsync();
+                return new ApiResponse<object> { Success = false, Message = "Lỗi gửi: " + error };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message };
+            }
+        }
+        public async Task<ApiResponse<List<NotificationViewModel>>?> GetUserNotificationsAsync()
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<List<NotificationViewModel>>>("Notifications");
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<object>> MarkNotificationAsReadAsync(Guid id)
+        {
+            try
+            {
+                var response = await _httpClient.PutAsync($"Notifications/{id}/read", null);
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>() ?? new ApiResponse<object> { Success = true };
+                return new ApiResponse<object> { Success = false };
+            } catch { return new ApiResponse<object> { Success = false }; }
+        }
+
+        public async Task<ApiResponse<object>> MarkAllNotificationsAsReadAsync()
+        {
+            try
+            {
+                var response = await _httpClient.PutAsync("Notifications/read-all", null);
+                if (response.IsSuccessStatusCode)
+                    return await response.Content.ReadFromJsonAsync<ApiResponse<object>>() ?? new ApiResponse<object> { Success = true };
+                return new ApiResponse<object> { Success = false };
+            } catch { return new ApiResponse<object> { Success = false }; }
+        }
     }
 }

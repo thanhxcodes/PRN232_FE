@@ -175,4 +175,14 @@ namespace REVORA_MVC_FE.Models.ViewModels
         public int ViolatedPosts { get; set; }
         public int DeletedPosts { get; set; }
     }
+
+    public class AdminSendNotificationRequestDto
+    {
+        public string Type { get; set; } = string.Empty;
+        public string Target { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+        public string Content { get; set; } = string.Empty;
+        public DateTime? ScheduledAt { get; set; }
+        public List<long>? SpecificUserIds { get; set; }
+    }
 }

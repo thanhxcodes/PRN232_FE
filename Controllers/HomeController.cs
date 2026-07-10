@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using REVORA_MVC_FE.Models;
 using REVORA_MVC_FE.Services;
 
@@ -55,9 +56,11 @@ public class HomeController : Controller
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
+    [Route("Home/Error/{statusCode?}")]
+    public IActionResult Error(int? statusCode = null)
     {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        ViewBag.ErrorCode = statusCode ?? 500;
+        return View();
     }
 
     public IActionResult PaymentGuide()
@@ -73,5 +76,42 @@ public class HomeController : Controller
     public IActionResult Feedback()
     {
         return View();
+    }
+
+    [Authorize]
+    [Route("Notifications")]
+    public IActionResult Notifications()
+    {
+        return View();
+    }
+
+    [Authorize]
+    [HttpGet("api/notifications")]
+    public async Task<IActionResult> GetNotificationsApi()
+    {
+        var response = await _apiService.GetUserNotificationsAsync();
+        if (response != null && response.Success)
+            return Json(new { success = true, data = response.Data });
+        return Json(new { success = false, message = "Lỗi lấy thông báo" });
+    }
+
+    [Authorize]
+    [HttpPut("api/notifications/{id}/read")]
+    public async Task<IActionResult> MarkNotificationReadApi(Guid id)
+    {
+        var response = await _apiService.MarkNotificationAsReadAsync(id);
+        if (response != null && response.Success)
+            return Json(new { success = true });
+        return Json(new { success = false });
+    }
+
+    [Authorize]
+    [HttpPut("api/notifications/read-all")]
+    public async Task<IActionResult> MarkAllNotificationsReadApi()
+    {
+        var response = await _apiService.MarkAllNotificationsAsReadAsync();
+        if (response != null && response.Success)
+            return Json(new { success = true });
+        return Json(new { success = false });
     }
 }
