@@ -121,6 +121,20 @@ namespace REVORA_MVC_FE.Controllers
             return View();
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(IFormFile files)
+        {
+            if (files == null || files.Length == 0)
+                return Json(new { success = false, message = "Vui lòng chọn ít nhất 1 file ảnh." });
+
+            var result = await _apiService.UploadImageAsync(files);
+            if (result.Success)
+            {
+                return Json(new { success = true, urls = new[] { result.Data } });
+            }
+            return Json(new { success = false, message = result.Message });
+        }
+
         [HttpGet]
         public async Task<IActionResult> SearchUsers(string query)
         {
