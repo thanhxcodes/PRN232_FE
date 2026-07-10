@@ -129,5 +129,26 @@ namespace REVORA_MVC_FE.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public async Task<IActionResult> GetUserOverview(long userId)
+        {
+            var response = await _apiService.GetUserOverviewAsync(userId);
+            if (response != null && response.Success)
+            {
+                return Json(new { success = true, data = response.Data });
+            }
+            return Json(new { success = false, message = "Không thể tải thông tin tổng quan" });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetUserTransactions(long userId, int page = 1)
+        {
+            var response = await _apiService.GetUserTransactionsAsync(userId, page, 10);
+            if (response != null && response.Success)
+            {
+                return Json(new { success = true, data = response.Data });
+            }
+            return Json(new { success = false, message = "Không thể tải lịch sử giao dịch" });
+        }
     }
 }

@@ -104,4 +104,32 @@ namespace REVORA_MVC_FE.Models.ViewModels
         public int TotalPages { get; set; }
         public int CurrentPage { get; set; }
     }
+    public class AdminUserOverviewDto
+    {
+        public int PostingCredits { get; set; }
+        public int FeaturedCredits { get; set; }
+        public decimal TotalSpent { get; set; }
+        public int ProductsPosted { get; set; }
+        public int TotalTransactions { get; set; }
+        public List<TransactionResponseDto> RecentTransactions { get; set; } = new List<TransactionResponseDto>();
+    }
+
+    public class TransactionResponseDto
+    {
+        public string OrderCode { get; set; } = string.Empty;
+        public string PackageName { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public int Credits { get; set; }
+        public decimal Amount { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+
+    public class TransactionPagedResult
+    {
+        public List<TransactionResponseDto> Items { get; set; } = new List<TransactionResponseDto>();
+        public int TotalCount { get; set; }
+        public int TotalPages { get; set; }
+        public int CurrentPage { get; set; }
+    }
 }

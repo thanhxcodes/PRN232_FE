@@ -648,11 +648,12 @@ namespace REVORA_MVC_FE.Services
             } catch { return null; }
         }
 
-        public async Task<ApiResponse<object>?> ToggleUserStatusAsync(long userId, bool isBanning, string reason)
+        public async Task<ApiResponse<object>> ToggleUserStatusAsync(long userId, bool isBanning, string reason)
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync($"Admin/Users/{userId}/toggle-status", new { IsBanning = isBanning, Reason = reason });
+                var payload = new { IsActive = !isBanning, Reason = reason };
+                var response = await _httpClient.PatchAsJsonAsync($"Admin/Users/{userId}/status", payload);
                 if (response.IsSuccessStatusCode)
                 {
                     return await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
@@ -660,6 +661,22 @@ namespace REVORA_MVC_FE.Services
                 var error = await response.Content.ReadAsStringAsync();
                 return new ApiResponse<object> { Success = false, Message = "Lỗi thao tác: " + error };
             } catch (Exception ex) { return new ApiResponse<object> { Success = false, Message = "Lỗi hệ thống: " + ex.Message }; }
+        }
+
+        public async Task<ApiResponse<AdminUserOverviewDto>?> GetUserOverviewAsync(long userId)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<AdminUserOverviewDto>>($"Admin/Users/{userId}/overview");
+            } catch { return null; }
+        }
+
+        public async Task<ApiResponse<TransactionPagedResult>?> GetUserTransactionsAsync(long userId, int page = 1, int pageSize = 10)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<ApiResponse<TransactionPagedResult>>($"Admin/Users/{userId}/transactions?page={page}&pageSize={pageSize}");
+            } catch { return null; }
         }
     }
 }
