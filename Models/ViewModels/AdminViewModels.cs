@@ -6,13 +6,13 @@ namespace REVORA_MVC_FE.Models.ViewModels
     public class DashboardStatsViewModel
     {
         public decimal CurrentMonthRevenue { get; set; }
-        public double RevenueGrowth { get; set; }
+        public decimal RevenueGrowth { get; set; }
         public int PackagesSold { get; set; }
-        public double PackagesSoldGrowth { get; set; }
+        public decimal PackagesSoldGrowth { get; set; }
         public int TotalUsers { get; set; }
-        public double TotalUsersGrowth { get; set; }
+        public decimal TotalUsersGrowth { get; set; }
         public int ActiveProducts { get; set; }
-        public double ActiveProductsGrowth { get; set; }
+        public decimal ActiveProductsGrowth { get; set; }
         public List<RevenueChartItem> RevenueChart7Days { get; set; } = new List<RevenueChartItem>();
         public List<PackageDistributionItem> PackageDistribution { get; set; } = new List<PackageDistributionItem>();
         public List<RecentActivityItem> RecentActivities { get; set; } = new List<RecentActivityItem>();
@@ -43,7 +43,7 @@ namespace REVORA_MVC_FE.Models.ViewModels
     public class RevenueStatsViewModel
     {
         public decimal TotalRevenue { get; set; }
-        public double RevenueGrowth { get; set; }
+        public decimal RevenueGrowth { get; set; }
         public List<RevenueByPackageItem> RevenueByPackages { get; set; } = new List<RevenueByPackageItem>();
         public List<RevenueChartItem> ChartData { get; set; } = new List<RevenueChartItem>();
         public List<TransactionItem> Transactions { get; set; } = new List<TransactionItem>();

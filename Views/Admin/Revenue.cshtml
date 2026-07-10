@@ -13,11 +13,70 @@
     var featuredRevenue = Model.RevenueByPackages?.FirstOrDefault(p => p.PackageName == "Featured")?.Revenue ?? 0;
 }
 
-<div class="mb-8">
+<div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-start gap-4">
     <div>
         <h2 class="text-[28px] font-bold text-gray-900 mb-1">Quản Lý Doanh Thu</h2>
         <p class="text-gray-500 text-[15px]">Theo dõi và phân tích nguồn thu chi tiết</p>
     </div>
+    
+    <form id="filterForm" method="get" action="/Admin/Revenue" class="flex items-center gap-3">
+        <input type="hidden" name="filterType" id="filterTypeInput" value="@filterType" />
+        
+        <!-- Bộ lọc (Filter) -->
+        <div class="relative group">
+            <button type="button" class="flex items-center gap-2 px-5 py-2 bg-white border border-[#2D5A3D] text-[#2D5A3D] rounded-full font-medium hover:bg-green-50 transition-colors">
+                <i data-lucide="filter" class="w-4 h-4"></i>
+                @(filterType == "year" ? "Theo Năm" : (filterType == "custom" ? "Tùy Chỉnh Khoảng Ngày" : "Theo Tháng"))
+            </button>
+            <div class="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
+                <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+                    <button type="button" onclick="setFilterType('month')" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#2D5A3D] hover:text-white transition-colors border-b border-gray-50 @(filterType == "month" ? "font-bold bg-gray-50" : "font-medium")">Theo Tháng</button>
+                    <button type="button" onclick="setFilterType('year')" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#2D5A3D] hover:text-white transition-colors border-b border-gray-50 @(filterType == "year" ? "font-bold bg-gray-50" : "font-medium")">Theo Năm</button>
+                    <button type="button" onclick="setFilterType('custom')" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-[#2D5A3D] hover:text-white transition-colors @(filterType == "custom" ? "font-bold bg-gray-50" : "font-medium")">Tùy Chỉnh Khoảng Ngày</button>
+                </div>
+            </div>
+        </div>
+        
+        @if (filterType == "custom")
+        {
+            <!-- Khoảng ngày -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-500 font-medium">Từ</span>
+                <input type="date" name="startDate" value="@startDate" onchange="this.form.submit()" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium outline-none hover:border-gray-300 transition-colors text-sm" />
+                <span class="text-sm text-gray-500 font-medium">Đến</span>
+                <input type="date" name="endDate" value="@endDate" onchange="this.form.submit()" class="px-3 py-2 bg-white border border-gray-200 rounded-lg text-gray-700 font-medium outline-none hover:border-gray-300 transition-colors text-sm" />
+            </div>
+        }
+        else
+        {
+            if (filterType == "month")
+            {
+                <!-- Tháng -->
+                <select name="month" onchange="this.form.submit()" class="px-5 py-2 bg-white border border-gray-200 rounded-full text-gray-700 font-medium outline-none hover:border-gray-300 transition-colors appearance-none pr-10 relative cursor-pointer" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 0.65em auto;">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        if (month == i) { <option value="@i" selected>Tháng @i</option> }
+                        else { <option value="@i">Tháng @i</option> }
+                    }
+                </select>
+            }
+            
+            <!-- Năm -->
+            <select name="year" onchange="this.form.submit()" class="px-5 py-2 bg-white border border-gray-200 rounded-full text-gray-700 font-medium outline-none hover:border-gray-300 transition-colors appearance-none pr-10 relative cursor-pointer" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 0.65em auto;">
+                @for (int i = DateTime.Now.Year + 1; i >= DateTime.Now.Year - 5; i--)
+                {
+                    if (year == i) { <option value="@i" selected>Năm @i</option> }
+                    else { <option value="@i">Năm @i</option> }
+                }
+            </select>
+        }
+        
+        <!-- Xuất Excel -->
+        <button type="button" onclick="exportExcel()" class="bg-[#2D5A3D] hover:bg-[#1f3f2a] text-white px-5 py-2 rounded-full font-medium flex items-center gap-2 transition-colors shadow-sm">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            Xuất Excel
+        </button>
+    </form>
 </div>
 
 <!-- Revenue Stats -->
@@ -93,11 +152,11 @@
         <div class="flex flex-col sm:flex-row items-center gap-3">
             <div class="relative w-full sm:w-64">
                 <i data-lucide="search" class="absolute left-3.5 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-                <input type="text" placeholder="Tìm người dùng, mã GD..." class="w-full bg-transparent border border-gray-200 text-gray-900 py-2 pl-9 pr-4 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 text-[13px] shadow-sm" />
+                <input type="text" id="searchInput" oninput="handleSearchAndSort()" placeholder="Tìm người dùng, mã GD..." class="w-full bg-transparent border border-gray-200 text-gray-900 py-2 pl-9 pr-4 rounded-full focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-300 text-[13px] shadow-sm" />
             </div>
             
             <div class="relative w-full sm:w-auto min-w-[160px]">
-                <select class="w-full bg-white border border-gray-700 text-gray-900 text-[13px] rounded-full focus:outline-none focus:ring-1 focus:ring-gray-700 focus:border-gray-700 block px-4 py-2 font-medium appearance-none pr-8 cursor-pointer shadow-sm">
+                <select id="sortSelect" onchange="handleSearchAndSort()" class="w-full bg-white border border-gray-700 text-gray-900 text-[13px] rounded-full focus:outline-none focus:ring-1 focus:ring-gray-700 focus:border-gray-700 block px-4 py-2 font-medium appearance-none pr-8 cursor-pointer shadow-sm">
                     <option value="newest" selected>Mới nhất</option>
                     <option value="highest">Chi tiêu nhiều nhất</option>
                 </select>
@@ -119,7 +178,7 @@
                     <th class="text-left py-5 px-6 text-xs font-bold text-gray-500 uppercase tracking-widest whitespace-nowrap">TRẠNG THÁI</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody id="txTbody" class="divide-y divide-gray-100">
                 @if (Model.Transactions == null || !Model.Transactions.Any())
                 {
                     <tr>
@@ -133,9 +192,11 @@
                 }
                 else
                 {
+                    int index = 0;
                     foreach (var txn in Model.Transactions)
                     {
-                        <tr class="hover:bg-gray-50/80 transition-colors">
+                        var searchStr = $"{txn.Id} {txn.User} {txn.FullName}".ToLower();
+                        <tr class="hover:bg-gray-50/80 transition-colors tx-row" data-index="@index" data-amount="@txn.Amount" data-search="@searchStr">
                             <td class="py-4 px-6 text-sm font-semibold text-gray-900">@txn.Id</td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center space-x-3">
@@ -169,6 +230,7 @@
                                 </span>
                             </td>
                         </tr>
+                        index++;
                     }
                 }
             </tbody>
@@ -181,11 +243,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        function toggleFilters() {
-            var filterType = document.getElementById('filterType').value;
-            document.getElementById('monthFilter').style.display = filterType === 'month' ? 'block' : 'none';
-            document.getElementById('yearFilter').style.display = (filterType === 'year' || filterType === 'month') ? 'block' : 'none';
-            document.getElementById('customFilter').style.display = filterType === 'custom' ? 'flex' : 'none';
+        function setFilterType(type) {
+            document.getElementById('filterTypeInput').value = type;
+            document.getElementById('filterForm').submit();
+        }
+
+        function handleSearchAndSort() {
+            var query = document.getElementById('searchInput').value.toLowerCase();
+            var sortBy = document.getElementById('sortSelect').value;
+            var tbody = document.getElementById('txTbody');
+            if (!tbody) return;
+            
+            var rows = Array.from(tbody.querySelectorAll('tr.tx-row'));
+            
+            // Lọc (Filter)
+            rows.forEach(function(row) {
+                var searchData = row.getAttribute('data-search') || '';
+                if (searchData.indexOf(query) !== -1) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+            
+            // Sắp xếp (Sort)
+            rows.sort(function(a, b) {
+                if (sortBy === 'highest') {
+                    return parseFloat(b.getAttribute('data-amount')) - parseFloat(a.getAttribute('data-amount'));
+                } else {
+                    // newest
+                    return parseInt(a.getAttribute('data-index')) - parseInt(b.getAttribute('data-index'));
+                }
+            });
+            
+            // Cập nhật lại DOM
+            rows.forEach(function(row) {
+                tbody.appendChild(row);
+            });
         }
 
         function exportExcel() {

@@ -1295,6 +1295,9 @@
   .w-44 {
     width: calc(var(--spacing) * 44);
   }
+  .w-48 {
+    width: calc(var(--spacing) * 48);
+  }
   .w-50 {
     width: calc(var(--spacing) * 50);
   }
@@ -4257,6 +4260,13 @@
       }
     }
   }
+  .hover\:bg-\[\#1f3f2a\] {
+    &:hover {
+      @media (hover: hover) {
+        background-color: #1f3f2a;
+      }
+    }
+  }
   .hover\:bg-\[\#2D5A3D\] {
     &:hover {
       @media (hover: hover) {
@@ -5212,6 +5222,16 @@
   .md\:items-center {
     @media (width >= 48rem) {
       align-items: center;
+    }
+  }
+  .md\:items-start {
+    @media (width >= 48rem) {
+      align-items: flex-start;
+    }
+  }
+  .md\:justify-between {
+    @media (width >= 48rem) {
+      justify-content: space-between;
     }
   }
   .md\:gap-6 {
