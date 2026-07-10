@@ -866,8 +866,39 @@ window.manageProducts = (function() {
         }
     }
 
-    function openAppealModal(id) {
-        Swal.fire('Thông báo', 'Chức năng kháng cáo sẽ được cập nhật trong phiên bản tiếp theo.', 'info');
+    async function openAppealModal(id) {
+        const { value: text } = await Swal.fire({
+            title: 'Gửi duyệt lại',
+            input: 'textarea',
+            inputLabel: 'Lý do gửi duyệt lại',
+            inputPlaceholder: 'Vui lòng nhập lý do bạn cho rằng bài viết không vi phạm...',
+            inputAttributes: {
+                'aria-label': 'Lý do gửi duyệt lại'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Gửi',
+            cancelButtonText: 'Hủy',
+            inputValidator: (value) => {
+                if (!value) {
+                    return 'Bạn cần nhập lý do!'
+                }
+            }
+        });
+
+        if (text) {
+            try {
+                Swal.showLoading();
+                const res = await apiCall(`/Products/${id}/appeal`, 'POST', { reason: text });
+                if (res.success) {
+                    Swal.fire('Thành công', 'Đã gửi yêu cầu duyệt lại thành công, vui lòng chờ Quản trị viên duyệt.', 'success');
+                    loadData();
+                } else {
+                    Swal.fire('Lỗi', res.message || 'Có lỗi xảy ra', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Lỗi', 'Lỗi kết nối', 'error');
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', init);

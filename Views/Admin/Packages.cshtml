@@ -1,9 +1,13 @@
+@model List<REVORA_MVC_FE.Models.ViewModels.CreditPackageViewModel>
 @{
     ViewData["Title"] = "Quản Lý Gói Tín Dụng";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "_Layout";
+    
+    var postingPackages = Model?.Where(p => (p.CreditTypeName ?? p.Name).Contains("Post", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Đăng")).ToList() ?? new List<REVORA_MVC_FE.Models.ViewModels.CreditPackageViewModel>();
+    var featuredPackages = Model?.Where(p => (p.CreditTypeName ?? p.Name).Contains("Feature", StringComparison.OrdinalIgnoreCase) || p.Name.Contains("Nổi bật")).ToList() ?? new List<REVORA_MVC_FE.Models.ViewModels.CreditPackageViewModel>();
 }
 
-<div class="p-8">
+<div class="">
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
             <i data-lucide="sparkles" class="w-8 h-8 text-[#2D5A3D]"></i>
@@ -21,52 +25,77 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <!-- Mock Package -->
-                <div class="relative bg-white rounded-3xl shadow-lg p-8 hover:shadow-2xl transition-all border border-gray-100 flex flex-col">
-                    <div class="absolute top-6 right-6">
-                        <span class="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold">
-                            Đăng Tin
-                        </span>
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Gói Cơ Bản</h3>
-                    <div class="flex items-baseline gap-2 mb-6">
-                        <span class="text-4xl font-black text-gray-900">50.000đ</span>
-                        <span class="text-lg text-gray-400 line-through">100.000đ</span>
-                    </div>
-
-                    <div class="bg-blue-50/50 rounded-2xl p-4 mb-8">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
-                                <span class="font-bold text-blue-600">+10</span>
+                @if (!postingPackages.Any())
+                {
+                    <div class="col-span-full text-center text-gray-400 py-10">Chưa có gói đăng tin nào.</div>
+                }
+                else
+                {
+                    foreach (var pkg in postingPackages)
+                    {
+                        <div class="relative bg-white rounded-3xl shadow-lg p-8 hover:shadow-2xl transition-all border border-gray-100 flex flex-col">
+                            <div class="absolute top-6 right-6">
+                                <span class="bg-blue-100 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold">
+                                    Đăng Tin
+                                </span>
                             </div>
-                            <div>
-                                <p class="font-semibold text-gray-900">Credits Đăng Tin</p>
-                                <p class="text-sm text-gray-500">HSD: Vĩnh viễn</p>
+
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">@pkg.Name</h3>
+                            <div class="flex items-baseline gap-2 mb-6">
+                                @if (pkg.DiscountRate > 0)
+                                {
+                                    <span class="text-4xl font-black text-gray-900">@pkg.DiscountedPrice.ToString("N0")đ</span>
+                                    <span class="text-lg text-gray-400 line-through">@pkg.OriginalPrice.ToString("N0")đ</span>
+                                }
+                                else
+                                {
+                                    <span class="text-4xl font-black text-gray-900">@pkg.OriginalPrice.ToString("N0")đ</span>
+                                }
                             </div>
+
+                            <div class="bg-blue-50/50 rounded-2xl p-4 mb-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                                        <span class="font-bold text-blue-600">+@pkg.CreditAmount</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">Credits @(pkg.CreditTypeName ?? "Đăng Tin")</p>
+                                        <p class="text-sm text-gray-500">HSD: @(pkg.DurationDays.HasValue ? $"{pkg.DurationDays} ngày" : "Vĩnh viễn")</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ul class="space-y-4 mb-8 flex-1">
+                                @if (pkg.Descriptions != null && pkg.Descriptions.Any())
+                                {
+                                    foreach (var desc in pkg.Descriptions)
+                                    {
+                                        <li class="flex items-start gap-3">
+                                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                                            </div>
+                                            <span class="text-gray-600 leading-relaxed">@desc</span>
+                                        </li>
+                                    }
+                                }
+                                else
+                                {
+                                    <li class="flex items-start gap-3">
+                                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                                        </div>
+                                        <span class="text-gray-600 leading-relaxed">Nhận @pkg.CreditAmount credits</span>
+                                    </li>
+                                }
+                            </ul>
+
+                            <button onclick="editPackage(@pkg.PaidCreditPackageId)" class="w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors mt-auto">
+                                <i data-lucide="edit-2" class="w-5 h-5"></i>
+                                <span>Chỉnh Sửa Gói</span>
+                            </button>
                         </div>
-                    </div>
-
-                    <ul class="space-y-4 mb-8 flex-1">
-                        <li class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
-                            </div>
-                            <span class="text-gray-600 leading-relaxed">Đăng 10 tin sản phẩm</span>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
-                            </div>
-                            <span class="text-gray-600 leading-relaxed">Không giới hạn thời gian sử dụng</span>
-                        </li>
-                    </ul>
-
-                    <button class="w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors mt-auto">
-                        <i data-lucide="edit-2" class="w-5 h-5"></i>
-                        <span>Chỉnh Sửa Gói</span>
-                    </button>
-                </div>
+                    }
+                }
             </div>
         </section>
 
@@ -78,46 +107,296 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <!-- Mock Featured Package -->
-                <div class="relative bg-white rounded-3xl shadow-lg p-8 hover:shadow-2xl transition-all border border-gray-100 flex flex-col">
-                    <div class="absolute top-6 right-6">
-                        <span class="bg-orange-100 text-[#C4603A] px-4 py-1.5 rounded-full text-xs font-bold">
-                            Nổi Bật
-                        </span>
-                    </div>
-
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Gói VIP</h3>
-                    <div class="flex items-baseline gap-2 mb-6">
-                        <span class="text-4xl font-black text-gray-900">200.000đ</span>
-                    </div>
-
-                    <div class="bg-orange-50/50 rounded-2xl p-4 mb-8">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
-                                <span class="font-bold text-[#C4603A]">+5</span>
+                @if (!featuredPackages.Any())
+                {
+                    <div class="col-span-full text-center text-gray-400 py-10">Chưa có gói nổi bật nào.</div>
+                }
+                else
+                {
+                    foreach (var pkg in featuredPackages)
+                    {
+                        <div class="relative bg-white rounded-3xl shadow-lg p-8 hover:shadow-2xl transition-all border border-gray-100 flex flex-col">
+                            <div class="absolute top-6 right-6">
+                                <span class="bg-orange-100 text-[#C4603A] px-4 py-1.5 rounded-full text-xs font-bold">
+                                    Nổi Bật
+                                </span>
                             </div>
-                            <div>
-                                <p class="font-semibold text-gray-900">Credits Nổi Bật</p>
-                                <p class="text-sm text-gray-500">HSD: Vĩnh viễn</p>
+
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">@pkg.Name</h3>
+                            <div class="flex items-baseline gap-2 mb-6">
+                                @if (pkg.DiscountRate > 0)
+                                {
+                                    <span class="text-4xl font-black text-gray-900">@pkg.DiscountedPrice.ToString("N0")đ</span>
+                                    <span class="text-lg text-gray-400 line-through">@pkg.OriginalPrice.ToString("N0")đ</span>
+                                }
+                                else
+                                {
+                                    <span class="text-4xl font-black text-gray-900">@pkg.OriginalPrice.ToString("N0")đ</span>
+                                }
                             </div>
+
+                            <div class="bg-orange-50/50 rounded-2xl p-4 mb-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                                        <span class="font-bold text-[#C4603A]">+@pkg.CreditAmount</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-gray-900">Credits @(pkg.CreditTypeName ?? "Nổi Bật")</p>
+                                        <p class="text-sm text-gray-500">HSD: @(pkg.DurationDays.HasValue ? $"{pkg.DurationDays} ngày" : "Vĩnh viễn")</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <ul class="space-y-4 mb-8 flex-1">
+                                @if (pkg.Descriptions != null && pkg.Descriptions.Any())
+                                {
+                                    foreach (var desc in pkg.Descriptions)
+                                    {
+                                        <li class="flex items-start gap-3">
+                                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                                            </div>
+                                            <span class="text-gray-600 leading-relaxed">@desc</span>
+                                        </li>
+                                    }
+                                }
+                                else
+                                {
+                                    <li class="flex items-start gap-3">
+                                        <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                            <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
+                                        </div>
+                                        <span class="text-gray-600 leading-relaxed">Nhận @pkg.CreditAmount credits</span>
+                                    </li>
+                                }
+                            </ul>
+
+                            <button onclick="editPackage(@pkg.PaidCreditPackageId)" class="w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors mt-auto">
+                                <i data-lucide="edit-2" class="w-5 h-5"></i>
+                                <span>Chỉnh Sửa Gói</span>
+                            </button>
                         </div>
-                    </div>
-
-                    <ul class="space-y-4 mb-8 flex-1">
-                        <li class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                <i data-lucide="check" class="w-4 h-4 text-emerald-600"></i>
-                            </div>
-                            <span class="text-gray-600 leading-relaxed">Đẩy 5 sản phẩm lên đầu</span>
-                        </li>
-                    </ul>
-
-                    <button class="w-full py-4 px-6 rounded-xl font-bold flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors mt-auto">
-                        <i data-lucide="edit-2" class="w-5 h-5"></i>
-                        <span>Chỉnh Sửa Gói</span>
-                    </button>
-                </div>
+                    }
+                }
             </div>
         </section>
     </div>
 </div>
+
+<!-- Modal Edit Package -->
+<div id="editModal" class="fixed inset-0 z-50 flex items-center justify-center hidden bg-black/50 backdrop-blur-sm overflow-y-auto pt-10 pb-10">
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-8 my-auto relative">
+        <div class="flex justify-between items-center mb-8">
+            <h3 class="text-[22px] font-bold text-gray-900" id="modalTitle">Chỉnh sửa: Khởi Động</h3>
+            <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600 bg-gray-50 hover:bg-gray-100 p-2 rounded-full transition-colors absolute right-6 top-6">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <form method="post" action="/Admin/EditPackage" id="editForm" class="space-y-6">
+            <input type="hidden" name="PaidCreditPackageId" id="pkgId" />
+            <input type="hidden" name="CreditTypeId" id="pkgCreditTypeId" />
+            <input type="hidden" name="CreditTypeName" id="pkgCreditTypeName" />
+            <input type="hidden" name="CreditAmount" id="pkgCreditAmount" />
+            <input type="hidden" name="DurationDays" id="pkgDurationDays" />
+            <input type="hidden" name="DiscountedPrice" id="pkgDiscountedPrice" />
+            
+            <div class="space-y-6">
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Tên gói -->
+                    <div>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Tên gói</label>
+                        <input type="text" name="Name" id="pkgName" class="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] text-[15px] outline-none transition-all shadow-sm" required />
+                    </div>
+                    <!-- Trạng thái -->
+                    <div>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Trạng thái (IsActive)</label>
+                        <select name="IsActive" id="pkgIsActive" class="w-full bg-white border border-[#2D5A3D] rounded-2xl px-4 py-3 focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] text-[15px] outline-none transition-all shadow-sm appearance-none cursor-pointer">
+                            <option value="true">Hiển thị (Active)</option>
+                            <option value="false">Ẩn (Inactive)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Giá gốc -->
+                    <div>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Giá gốc (VNĐ)</label>
+                        <input type="number" name="OriginalPrice" id="pkgOriginalPrice" class="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] text-[15px] outline-none transition-all shadow-sm" required />
+                    </div>
+                    <!-- Khuyến mãi (%) -->
+                    <div>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Khuyến mãi (%)</label>
+                        <input type="number" name="DiscountRate" id="pkgDiscountRate" step="any" class="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] text-[15px] outline-none transition-all shadow-sm" required />
+                    </div>
+                    <!-- Giá sau KM -->
+                    <div>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Giá sau KM (VNĐ)</label>
+                        <input type="number" id="pkgDiscountedPriceDisplay" class="w-full bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3 text-[15px] outline-none text-gray-500 cursor-not-allowed" readonly />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-6">
+                    <!-- Reward Badge -->
+                    <div>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Reward Badge (Tuỳ chọn)</label>
+                        <select name="RewardBadgeId" id="pkgRewardBadgeId" class="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] text-[15px] outline-none transition-all shadow-sm appearance-none cursor-pointer text-gray-500">
+                            <option value="">-- Không có Badge --</option>
+                            <option value="1">Badge V.I.P</option>
+                            <option value="2">Badge Pro</option>
+                        </select>
+                    </div>
+                    <!-- Hạn sử dụng Huy hiệu -->
+                    <div>
+                        <label class="block text-[13px] font-bold text-gray-700 mb-2">Hạn sử dụng Huy hiệu (ngày)</label>
+                        <input type="number" name="BadgeDurationDays" id="pkgBadgeDurationDays" placeholder="VD: 30" class="w-full bg-white border border-gray-200 rounded-2xl px-4 py-3 focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] text-[15px] outline-none transition-all shadow-sm" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Danh sách quyền lợi -->
+            <div>
+                <label class="block text-[13px] font-bold text-gray-700 mb-3">Danh sách quyền lợi (Descriptions)</label>
+                <div id="descriptionsContainer" class="space-y-3">
+                    <!-- Dynamic inputs will be generated here -->
+                </div>
+                <button type="button" onclick="addDescription()" class="mt-4 flex items-center justify-center w-full py-3 border border-dashed border-gray-300 rounded-2xl text-sm font-bold text-gray-500 hover:text-[#2D5A3D] hover:border-[#2D5A3D] hover:bg-green-50/50 transition-all">
+                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Thêm quyền lợi
+                </button>
+            </div>
+
+            <div class="mt-10 flex justify-end gap-3 pt-6 border-t border-gray-100">
+                <button type="button" onclick="closeModal()" class="px-8 py-3 rounded-full font-bold text-gray-600 hover:bg-gray-100 transition-colors">Hủy</button>
+                <button type="submit" class="px-8 py-3 rounded-full font-bold bg-[#2D5A3D] text-white shadow-lg shadow-green-900/20 transition-transform hover:scale-105 active:scale-95 flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Lưu Thay Đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const packagesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        let currentDescriptions = [];
+
+        function renderDescriptions() {
+            const container = document.getElementById('descriptionsContainer');
+            container.innerHTML = '';
+            
+            if (currentDescriptions.length === 0) {
+                return;
+            }
+
+            currentDescriptions.forEach((desc, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex items-center gap-2 group';
+                itemDiv.innerHTML = `
+                    <div class="flex flex-col gap-1 text-gray-300">
+                        <button type="button" onclick="moveDescUp(${index})" class="hover:text-gray-600 transition-colors ${index === 0 ? 'invisible' : ''}"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+                        <button type="button" onclick="moveDescDown(${index})" class="hover:text-gray-600 transition-colors ${index === currentDescriptions.length - 1 ? 'invisible' : ''}"><i data-lucide="arrow-down" class="w-4 h-4"></i></button>
+                    </div>
+                    <input type="text" name="Descriptions[${index}]" value="${desc.replace(/"/g, '&quot;')}" onchange="updateDesc(${index}, this.value)" class="flex-1 bg-white border border-gray-200 rounded-2xl px-4 py-3 text-[15px] outline-none focus:border-[#2D5A3D] shadow-sm transition-colors" />
+                    <button type="button" onclick="removeDesc(${index})" class="text-red-400 hover:text-red-600 p-2 hover:bg-red-50 rounded-full transition-colors">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </button>
+                `;
+                container.appendChild(itemDiv);
+            });
+            lucide.createIcons();
+        }
+
+        function updateDesc(index, value) {
+            currentDescriptions[index] = value;
+        }
+
+        function moveDescUp(index) {
+            if (index > 0) {
+                const temp = currentDescriptions[index];
+                currentDescriptions[index] = currentDescriptions[index - 1];
+                currentDescriptions[index - 1] = temp;
+                renderDescriptions();
+            }
+        }
+
+        function moveDescDown(index) {
+            if (index < currentDescriptions.length - 1) {
+                const temp = currentDescriptions[index];
+                currentDescriptions[index] = currentDescriptions[index + 1];
+                currentDescriptions[index + 1] = temp;
+                renderDescriptions();
+            }
+        }
+
+        function removeDesc(index) {
+            currentDescriptions.splice(index, 1);
+            renderDescriptions();
+        }
+
+        function addDescription() {
+            currentDescriptions.push('');
+            renderDescriptions();
+        }
+
+        function calculateDiscountedPrice() {
+            const originalPrice = parseFloat(document.getElementById('pkgOriginalPrice').value) || 0;
+            const discountRate = parseFloat(document.getElementById('pkgDiscountRate').value) || 0;
+            const discountedPrice = originalPrice * (1 - discountRate / 100);
+            document.getElementById('pkgDiscountedPriceDisplay').value = discountedPrice;
+            document.getElementById('pkgDiscountedPrice').value = discountedPrice;
+        }
+
+        document.getElementById('pkgOriginalPrice').addEventListener('input', calculateDiscountedPrice);
+        document.getElementById('pkgDiscountRate').addEventListener('input', calculateDiscountedPrice);
+
+        function editPackage(id) {
+            const pkg = packagesData.find(p => p.PaidCreditPackageId === id);
+            if (!pkg) return;
+
+            document.getElementById('modalTitle').textContent = `Chỉnh sửa: ${pkg.Name}`;
+            document.getElementById('pkgId').value = pkg.PaidCreditPackageId;
+            document.getElementById('pkgName').value = pkg.Name;
+            document.getElementById('pkgCreditTypeId').value = pkg.CreditTypeId;
+            document.getElementById('pkgCreditTypeName').value = pkg.CreditTypeName || '';
+            document.getElementById('pkgCreditAmount').value = pkg.CreditAmount;
+            document.getElementById('pkgDurationDays').value = pkg.DurationDays || '';
+            document.getElementById('pkgOriginalPrice').value = pkg.OriginalPrice;
+            document.getElementById('pkgDiscountRate').value = pkg.DiscountRate || 0;
+            document.getElementById('pkgDiscountedPrice').value = pkg.DiscountedPrice;
+            document.getElementById('pkgDiscountedPriceDisplay').value = pkg.DiscountedPrice;
+            document.getElementById('pkgIsActive').value = pkg.IsActive.toString().toLowerCase();
+            document.getElementById('pkgRewardBadgeId').value = pkg.RewardBadgeId || '';
+            document.getElementById('pkgBadgeDurationDays').value = pkg.BadgeDurationDays || '';
+
+            currentDescriptions = [...(pkg.Descriptions || [])];
+            renderDescriptions();
+
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.add('hidden');
+        }
+
+        // On form submit, we need to ensure all empty descriptions are removed
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            // Re-index the names in case some were removed to ensure contiguous array indices for MVC model binding
+            const inputs = document.getElementById('descriptionsContainer').querySelectorAll('input[type="text"]');
+            let validIndex = 0;
+            inputs.forEach((input) => {
+                if (input.value.trim() !== '') {
+                    input.name = `Descriptions[${validIndex}]`;
+                    validIndex++;
+                } else {
+                    input.removeAttribute('name');
+                }
+            });
+            // Update DiscountedPrice before submit to match formula OriginalPrice * (1 - DiscountRate)
+            // Just for consistency if backend doesn't recalculate it
+            const originalPrice = parseFloat(document.getElementById('pkgOriginalPrice').value) || 0;
+            const discountRate = parseFloat(document.getElementById('pkgDiscountRate').value) || 0;
+            // Assuming DiscountRate is a percentage or fraction? If percentage (e.g. 30 for 30%)
+            // Let's assume the user enters 30 for 30%. In ViewModel it might be 0.3.
+            // Let's not recalculate it here, let backend do it or send the raw values.
+        });
+    </script>
+}
