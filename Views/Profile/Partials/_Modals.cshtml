@@ -1,0 +1,62 @@
+@{
+    var profile = ViewBag.Profile as REVORA_MVC_FE.Models.UserProfileDto;
+    bool isOwnProfile = ViewBag.IsOwnProfile ?? true;
+}
+
+<!-- Toast Notification Container -->
+<div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+<!-- ===== UNSAVED IMAGE CHANGES BAR (fixed bottom-center) ===== -->
+<div id="image-change-bar"
+     class="hidden fixed bottom-0 left-0 right-0 z-[60] flex justify-center pb-6 pointer-events-none">
+    <div
+        class="animate-slide-up-bar pointer-events-auto flex items-center gap-4 bg-gray-900/95 backdrop-blur-md text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-white/10">
+        <!-- Avatar preview thumbnail -->
+        <div id="bar-avatar-preview"
+             class="w-10 h-10 rounded-full bg-cover bg-center border-2 border-white/30 flex-shrink-0 bg-[#2D5A3D]"
+             style=""></div>
+        <div class="flex flex-col">
+            <span class="text-sm font-semibold leading-tight">Ảnh đại diện đã thay đổi</span>
+            <span class="text-xs text-gray-400">Nhấn Lưu để áp dụng thay đổi</span>
+        </div>
+        <div class="flex items-center gap-2 ml-4">
+            <button type="button" id="bar-cancel-btn"
+                    class="px-4 py-1.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
+                Hủy
+            </button>
+            <button type="button" id="bar-save-btn"
+                    class="flex items-center gap-2 px-5 py-1.5 bg-[#2D5A3D] hover:bg-[#3D7054] text-white rounded-xl text-sm font-bold transition-all shadow-lg">
+                <i data-lucide="save" class="w-4 h-4"></i>
+                Lưu ngay
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== FOLLOW MODAL ===== -->
+<div id="follow-modal" class="fixed inset-0 z-[70] hidden">
+    <div id="follow-modal-backdrop" class="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity opacity-0">
+    </div>
+    <div class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+        <div id="follow-modal-content"
+             class="bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[85vh] pointer-events-auto">
+            <div class="flex items-center justify-between p-6 border-b border-gray-100 relative">
+                <h3 class="text-xl font-bold text-gray-900" id="follow-modal-title">Danh sách</h3>
+                <button id="btn-close-follow-modal"
+                        class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex border-b border-gray-100">
+                <button id="tab-followers"
+                        class="flex-1 py-4 text-sm font-bold text-center border-b-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors">Người
+                    theo dõi</button>
+                    <button id="tab-following"
+                            class="flex-1 py-4 text-sm font-bold text-center border-b-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition-colors">Đang
+                        theo dõi</button>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4" id="follow-list-container">
+                    </div>
+                </div>
+            </div>
+        </div>

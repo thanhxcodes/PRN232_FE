@@ -1,0 +1,15 @@
+@{
+    var profile = ViewBag.Profile as REVORA_MVC_FE.Models.UserProfileDto;
+    bool isOwnProfile = ViewBag.IsOwnProfile ?? true;
+}
+<div id="tab-content-wishlist"
+     class="tab-content absolute inset-0 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div id="wishlist-list" class="flex flex-col gap-4">
+        <!-- Rendered via JS -->
+    </div>
+    <div id="load-more-trigger-wishlist" class="h-10 mt-4 flex items-center justify-center">
+        <i id="load-more-wishlist-spinner" data-lucide="loader-2"
+           class="w-6 h-6 animate-spin text-[#2D5A3D] hidden"></i>
+    </div>
+</div>
+

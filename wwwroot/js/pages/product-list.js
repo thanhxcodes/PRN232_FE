@@ -39,11 +39,13 @@ class ProductListManager {
     toggleFilters() {
         if (!this.UI.filtersSidebar || !this.UI.filterBtnText) return;
         
-        if (this.UI.filtersSidebar.classList.contains('hidden')) {
-            this.UI.filtersSidebar.classList.remove('hidden');
+        // Use style.display to override Tailwind's md:block
+        if (this.UI.filtersSidebar.style.display === 'none' || this.UI.filtersSidebar.classList.contains('hidden')) {
+            this.UI.filtersSidebar.style.display = 'block';
+            this.UI.filtersSidebar.classList.remove('hidden', 'md:block'); // Remove tailwind classes so inline style works predictably
             this.UI.filterBtnText.innerText = 'Ẩn Bộ Lọc';
         } else {
-            this.UI.filtersSidebar.classList.add('hidden');
+            this.UI.filtersSidebar.style.display = 'none';
             this.UI.filterBtnText.innerText = 'Hiện Bộ Lọc';
         }
     }
