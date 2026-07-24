@@ -1,0 +1,61 @@
+@model REVORA_MVC_FE.Models.ViewModels.ProductCreateViewModel
+@{
+    var categories = ViewBag.Categories as List<REVORA_MVC_FE.Models.CategoryDto> ?? new List<REVORA_MVC_FE.Models.CategoryDto>();
+}
+<!-- THÔNG TIN SẢN PHẨM -->
+<div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 relative">
+    <h2 class="text-xl text-gray-900 mb-6 font-semibold">Thông Tin Sản Phẩm</h2>
+    <div class="space-y-6">
+        <div>
+            <label class="block text-sm mb-2 text-gray-700 font-medium">Tên Sản Phẩm *</label>
+            <input asp-for="Title" placeholder="Ví dụ: Áo Khoác Da Vintage" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] transition-colors" />
+            <span asp-validation-for="Title" class="text-red-500 text-sm mt-1 block"></span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm mb-2 text-gray-700 font-medium">Danh Mục *</label>
+                <select asp-for="CategoryId" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] transition-colors bg-white">
+                    <option value="0">Chọn danh mục</option>
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat.CategoryId">@cat.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="CategoryId" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+            <div>
+                <label class="block text-sm mb-2 text-gray-700 font-medium">Tình Trạng *</label>
+                <select asp-for="Condition" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] transition-colors bg-white">
+                    <option value="">Chọn tình trạng</option>
+                    <option value="100%">100%</option>
+                    <option value="80%">80%</option>
+                    <option value="60%">60%</option>
+                    <option value="40%">40%</option>
+                    <option value="20%">20%</option>
+                </select>
+                <span asp-validation-for="Condition" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm mb-2 text-gray-700 font-medium">Giá (VNĐ) *</label>
+                <input type="hidden" asp-for="Price" id="realPrice" />
+                <input type="text" id="displayPrice" placeholder="0" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] transition-colors font-semibold text-gray-900" />
+                <p id="priceText" class="text-sm text-[#C4603A] mt-2 font-medium italic hidden"></p>
+                <span asp-validation-for="Price" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+            <div>
+                <label class="block text-sm mb-2 text-gray-700 font-medium">Thương Hiệu</label>
+                <input asp-for="Brand" placeholder="Ví dụ: Gucci, Chanel" class="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] transition-colors" />
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm mb-2 text-gray-700 font-medium">Mô Tả *</label>
+            <textarea asp-for="Description" rows="5" placeholder="Mô tả chi tiết sản phẩm của bạn..." class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 focus:border-[#2D5A3D] transition-colors resize-none"></textarea>
+            <span asp-validation-for="Description" class="text-red-500 text-sm mt-1 block"></span>
+        </div>
+    </div>
+</div>

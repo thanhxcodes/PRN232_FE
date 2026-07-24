@@ -1,0 +1,78 @@
+<!-- Tab Content: Packages -->
+<div id="tab-packages-content">
+    <!-- Current Credits Dashboard -->
+    <div class="bg-white rounded-3xl shadow-lg p-8 mb-16">
+        <div class="mb-6">
+            <h2 class="text-2xl text-gray-900 mb-2">Credits Hiện Tại</h2>
+            <p id="credit-error-msg" class="text-sm text-amber-600 hidden"></p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Posting Credit Display -->
+            <div id="posting-credit-display" class="relative">
+                <div class="flex items-center justify-center py-4 text-gray-500">Đang tải...</div>
+            </div>
+            <!-- Featured Credit Display -->
+            <div id="featured-credit-display" class="relative">
+                <div class="flex items-center justify-center py-4 text-gray-500">Đang tải...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posting Packages Section -->
+    <div class="mb-16">
+        <div class="flex items-center space-x-3 mb-8">
+            <div class="p-2 bg-blue-100 rounded-xl">
+                <i data-lucide="image" class="w-6 h-6 text-blue-600"></i>
+            </div>
+            <h2 class="text-3xl text-gray-900">Gói Credits Đăng Tin</h2>
+        </div>
+        <div id="posting-package-error" class="hidden mb-4 text-sm text-amber-600"></div>
+        <div id="posting-purchase-block" class="hidden mb-8 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+            <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600"></i>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold text-amber-800">Thông báo</h4>
+                <p id="posting-block-reason" class="text-sm text-amber-700 mt-0.5"></p>
+            </div>
+        </div>
+        <!-- Error checkout -->
+        <div id="checkout-error-msg" class="hidden mb-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <span class="text-red-600 font-bold">!</span>
+            </div>
+            <div>
+                <h4 class="text-sm font-semibold text-red-800">Thanh toán không thành công</h4>
+                <p id="checkout-error-text" class="text-sm text-red-600 mt-0.5"></p>
+            </div>
+        </div>
+
+        <div id="posting-packages-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-3 bg-white rounded-3xl border border-dashed border-gray-300 p-10 text-center text-gray-500">Đang tải danh sách gói credits...</div>
+        </div>
+    </div>
+
+    <!-- Featured Packages Section -->
+    <div class="mb-16">
+        <div class="flex items-center space-x-3 mb-8">
+            <div class="p-2 bg-[#C4603A]/10 rounded-xl">
+                <i data-lucide="sparkles" class="w-6 h-6 text-[#C4603A]"></i>
+            </div>
+            <h2 class="text-3xl text-gray-900">Gói Credits Nổi Bật</h2>
+        </div>
+        <div id="featured-purchase-block" class="hidden mb-8 bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 shadow-sm">
+            <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600"></i>
+            </div>
+            <div>
+                <h4 class="text-sm font-bold text-amber-800">Thông báo</h4>
+                <p id="featured-block-reason" class="text-sm text-amber-700 mt-0.5"></p>
+            </div>
+        </div>
+        <div id="featured-packages-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="md:col-span-3 bg-white rounded-3xl border border-dashed border-gray-300 p-10 text-center text-gray-500">Đang tải danh sách gói credits...</div>
+        </div>
+    </div>
+
+    @await Html.PartialAsync("Partials/_PlansFaq")
+</div>

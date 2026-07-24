@@ -1,0 +1,71 @@
+@model REVORA_MVC_FE.Models.ViewModels.ProductCreateViewModel
+
+<!-- VIDEO SHORTS PREMIUM -->
+<div id="videoContainer" class="bg-white rounded-3xl shadow-sm p-8 border-2 transition-all border-gray-100">
+    <div class="flex items-start justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <div id="videoIconWrapper" class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors bg-gray-100 text-gray-400">
+                <i data-lucide="video" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Tính năng Video Shorts</h2>
+                <p class="text-sm text-gray-500">Người dùng sẽ xem review ngay trên bảng feed</p>
+            </div>
+        </div>
+        <label class="flex items-center gap-3 cursor-pointer group">
+            <span class="text-sm font-medium text-gray-600 group-hover:text-gray-900">Dùng 1 Nổi Bật</span>
+            <input asp-for="EnableVideoUpload" id="enableVideoUpload" class="w-5 h-5 accent-[#2D5A3D] rounded border-gray-300 cursor-pointer" />
+        </label>
+    </div>
+
+    <div id="videoUploadSection" class="hidden">
+        <div id="videoUploadArea" class="border-2 border-dashed border-[#2D5A3D]/30 rounded-2xl p-8 text-center relative bg-white hover:border-[#2D5A3D] transition-colors">
+            <input type="file" asp-for="VideoFile" id="VideoFile" accept="video/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <i data-lucide="upload" class="w-8 h-8 text-[#2D5A3D] mx-auto mb-3"></i>
+            <p class="text-gray-700 font-medium mb-1">Click tải lên Video (Tối đa 1 phút, 30MB)</p>
+            <p class="text-sm text-gray-400">MP4, MOV, AVI</p>
+        </div>
+        <div id="videoPreviewArea" class="hidden relative group rounded-xl overflow-hidden border border-[#2D5A3D]/20 shadow-sm aspect-video bg-black flex items-center justify-center">
+            <video id="videoPreview" controls class="w-full h-full object-contain"></video>
+            <button type="button" id="removeVideoBtn" class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-red-500 p-2 rounded-full hover:bg-red-50 hover:text-red-600 transition-all shadow-md">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <span id="vidUploadError" class="text-red-500 text-sm mt-2 hidden block font-medium">Vui lòng tải lên 1 video hoặc tắt tính năng này.</span>
+    </div>
+</div>
+
+<!-- BANNER BOOST PREMIUM -->
+<div id="bannerContainer" class="bg-white rounded-3xl shadow-sm p-8 border-2 transition-all border-gray-100 mt-6">
+    <div class="flex items-start justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <div id="bannerIconWrapper" class="w-12 h-12 rounded-xl flex items-center justify-center transition-colors bg-gray-100 text-gray-400">
+                <i data-lucide="crown" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Tính năng Banner VIP</h2>
+                <p class="text-sm text-gray-500">Chiếm trọn sự chú ý trong 24 giờ đầu</p>
+            </div>
+        </div>
+        <label class="flex items-center gap-3 cursor-pointer group">
+            <span class="text-sm font-medium text-gray-600 group-hover:text-gray-900">Dùng 1 Nổi Bật</span>
+            <input asp-for="EnableBannerBoost" id="enableBannerBoost" class="w-5 h-5 accent-orange-500 rounded border-gray-300 cursor-pointer" />
+        </label>
+    </div>
+
+    <div id="bannerUploadSection" class="space-y-4 hidden">
+        <div id="bannerUploadArea" class="border-2 border-dashed border-orange-200 rounded-2xl p-8 text-center relative bg-white hover:border-orange-400 transition-colors">
+            <input type="file" asp-for="BannerFile" id="BannerFile" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <i data-lucide="upload" class="w-8 h-8 text-orange-500 mx-auto mb-3"></i>
+            <p class="text-gray-700 font-medium mb-1">Tải ảnh Banner nằm ngang (Tỷ lệ 3:1)</p>
+            <p class="text-sm text-gray-400">Được dùng làm ảnh bìa cỡ lớn trên App</p>
+        </div>
+        <div id="bannerPreviewArea" class="hidden relative group rounded-xl overflow-hidden border border-orange-100 shadow-sm">
+            <img id="bannerPreview" alt="Banner" class="w-full aspect-[3/1] object-cover" />
+            <button type="button" id="removeBannerBtn" class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-red-500 p-2 rounded-full hover:bg-red-50 transition-all shadow-sm">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <span id="banUploadError" class="text-red-500 text-sm mt-2 hidden block font-medium">Vui lòng tải lên 1 ảnh Banner hoặc tắt tính năng này.</span>
+    </div>
+</div>

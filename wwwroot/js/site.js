@@ -148,32 +148,26 @@ function updateAllWishlistButtons() {
         const icon = btn.querySelector('svg, i');
         if (!icon) return;
         
-        const isAbsolute = btn.classList.contains('absolute');
-        
         if (window.globalWishlistIds.includes(productId)) {
             icon.classList.add('fill-current', 'text-red-500');
             icon.classList.remove('text-[#C4603A]', 'text-[#2D5A3D]', 'text-gray-400');
             btn.classList.add('text-red-500');
             btn.classList.remove('text-gray-400');
             
-            if (isAbsolute) {
+            if (btn.classList.contains('group-hover:opacity-100')) {
                 btn.classList.add('bg-red-50');
                 btn.classList.remove('bg-white/90');
-                if (btn.classList.contains('group-hover:opacity-100')) {
-                    btn.classList.replace('opacity-0', 'opacity-100');
-                }
+                btn.classList.replace('opacity-0', 'opacity-100');
             }
         } else {
             icon.classList.remove('fill-current', 'text-red-500');
             btn.classList.remove('text-red-500');
             btn.classList.add('text-gray-400');
             
-            if (isAbsolute) {
+            if (btn.classList.contains('group-hover:opacity-100')) {
                 btn.classList.remove('bg-red-50');
                 btn.classList.add('bg-white/90');
-                if (btn.classList.contains('group-hover:opacity-100')) {
-                    btn.classList.replace('opacity-100', 'opacity-0');
-                }
+                btn.classList.replace('opacity-100', 'opacity-0');
             }
         }
     });

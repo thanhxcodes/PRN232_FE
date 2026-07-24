@@ -1,60 +1,75 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // === State ===
-    let activeTab = 'packages';
-    let creditPackages = [];
-    let userCreditBatches = { posting: [], featured: [] };
-    let creditSummaries = { posting: null, featured: null };
-    let transactions = [];
-    
-    let isCreditLoading = true;
-    let isPackageLoading = true;
-    let isTransactionsLoading = false;
-    let isCheckoutLoading = false;
-    let loadingPackageId = null;
+class PlansManager {
+    constructor() {
+        // === State ===
+        this.state = {
+            activeTab: 'packages',
+            creditPackages: [],
+            creditSummaries: { posting: null, featured: null },
+            userCreditBatches: { posting: [], featured: [] },
+            transactions: [],
+            isCreditLoading: true,
+            isPackageLoading: true,
+            isTransactionsLoading: false,
+            isCheckoutLoading: false,
+            loadingPackageId: null,
+            creditError: null,
+            packageError: null,
+            transactionsError: null
+        };
 
-    let creditError = null;
-    let packageError = null;
-    let transactionsError = null;
+        // === Constants & Meta ===
+        this.postingPackageMeta = {
+            1: { badge: 'Cơ bản', badgeColor: 'bg-blue-100 text-blue-800', cta: 'Mua Ngay', tier: 1 },
+            7: { badge: 'Phổ Biến', badgeColor: 'bg-purple-100 text-purple-800', cta: 'Chọn Gói', tier: 2 },
+            30: { badge: 'Tiết Kiệm Nhất', badgeColor: 'bg-green-100 text-green-800', cta: 'Nhận Gói', tier: 3 },
+        };
 
-    // === Constants & Meta ===
-    const postingPackageMeta = {
-        1: { badge: 'Cơ bản', badgeColor: 'bg-blue-100 text-blue-800', cta: 'Mua Ngay', tier: 1 },
-        7: { badge: 'Phổ Biến', badgeColor: 'bg-purple-100 text-purple-800', cta: 'Chọn Gói', tier: 2 },
-        30: { badge: 'Tiết Kiệm Nhất', badgeColor: 'bg-green-100 text-green-800', cta: 'Nhận Gói', tier: 3 },
-    };
+        this.featuredPackageMeta = {
+            1: { badge: 'Tăng Tốc Nhanh', badgeColor: 'bg-orange-100 text-orange-800', cta: 'Tăng Tốc', tier: 1 },
+            7: { badge: 'Được Đề Xuất', badgeColor: 'bg-pink-100 text-pink-800', cta: 'Nâng Cấp', tier: 2 },
+            30: { badge: 'Tối Ưu Cao Cấp', badgeColor: 'bg-yellow-100 text-yellow-800', cta: 'Mua Ngay', tier: 3 },
+        };
 
-    const featuredPackageMeta = {
-        1: { badge: 'Tăng Tốc Nhanh', badgeColor: 'bg-orange-100 text-orange-800', cta: 'Tăng Tốc', tier: 1 },
-        7: { badge: 'Được Đề Xuất', badgeColor: 'bg-pink-100 text-pink-800', cta: 'Nâng Cấp', tier: 2 },
-        30: { badge: 'Tối Ưu Cao Cấp', badgeColor: 'bg-yellow-100 text-yellow-800', cta: 'Mở Khóa', tier: 3 },
-    };
+        // Binds
+        this.switchTab = this.switchTab.bind(this);
+        this.handleSelectPackage = this.handleSelectPackage.bind(this);
+
+        this.init();
+    }
+
+    init() {
+        if (window.lucide) lucide.createIcons();
+        this.loadCreditPackages().then(() => this.loadCreditBatches());
+    }
 
     // === Helpers ===
-    const formatTransactionDateTime = (isoDate) => {
-        const date = new Date(isoDate);
+    formatTransactionDateTime(dateString) {
+        if (!dateString) return { date: '', time: '' };
+        const d = dateString.endsWith('Z') ? new Date(dateString) : new Date(dateString + 'Z');
+        const optsDate = { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' };
+        const optsTime = { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' };
         return {
-            date: new Intl.DateTimeFormat('vi-VN').format(date),
-            time: new Intl.DateTimeFormat('vi-VN', { hour: '2-digit', minute: '2-digit' }).format(date),
+            date: d.toLocaleDateString('vi-VN', optsDate),
+            time: d.toLocaleTimeString('vi-VN', optsTime)
         };
-    };
+    }
 
-    const mapPaymentStatus = (paymentStatus, createdAt, paidAt) => {
-        const normalized = String(paymentStatus).trim().toLowerCase();
-        if (normalized === '2' || normalized === 'successful' || normalized === 'success') {
-            if (paidAt) {
-                const createdDate = new Date(createdAt);
-                const paidDate = new Date(paidAt);
-                const diffMinutes = (paidDate.getTime() - createdDate.getTime()) / (1000 * 60);
-                if (diffMinutes > 15) return 'late_paid';
+    mapPaymentStatus(statusId, createdAt, paidAt) {
+        const normalized = String(statusId).toLowerCase();
+        if (normalized === '2' || normalized === 'successful' || normalized === 'paid') {
+            if (paidAt && createdAt) {
+                const createdTime = new Date(createdAt.endsWith('Z') ? createdAt : createdAt + 'Z').getTime();
+                const paidTime = new Date(paidAt.endsWith('Z') ? paidAt : paidAt + 'Z').getTime();
+                if (paidTime - createdTime > 15 * 60 * 1000 + 60000) return 'late_paid';
             }
             return 'completed';
         }
         if (normalized === '1' || normalized === 'pending' || normalized === 'processing') return 'pending';
         if (normalized === '5' || normalized === 'cancelled' || normalized === 'canceled') return 'cancelled';
         return 'failed';
-    };
+    }
 
-    const getTransactionStatusClass = (status) => {
+    getTransactionStatusClass(status) {
         switch (status) {
             case 'completed': return 'bg-emerald-50 text-emerald-700';
             case 'late_paid': return 'bg-amber-50 text-amber-700 border border-amber-200';
@@ -63,9 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'failed': return 'bg-red-50 text-red-700';
             default: return 'bg-gray-100 text-gray-700';
         }
-    };
+    }
 
-    const getTransactionStatusIconHTML = (status) => {
+    getTransactionStatusIconHTML(status) {
         switch (status) {
             case 'completed': return `<i data-lucide="check-circle" class="w-3.5 h-3.5 mr-1"></i>`;
             case 'late_paid': return `<i data-lucide="clock" class="w-3.5 h-3.5 mr-1"></i>`;
@@ -74,10 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'failed': return `<i data-lucide="alert-circle" class="w-3.5 h-3.5 mr-1"></i>`;
             default: return '';
         }
-    };
+    }
 
     // === Logic Mapping ===
-    const mapCreditBatches = (batches) => {
+    mapCreditBatches(batches) {
         return batches.map(batch => {
             const expDate = new Date(batch.expiresAt);
             const now = new Date();
@@ -91,9 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 packageName: batch.packageName
             };
         });
-    };
+    }
 
-    const resolveActivePackageId = (batch, packages, creditType) => {
+    resolveActivePackageId(batch, packages, creditType) {
         if (!batch.isPaid || batch.remainingCredits <= 0) return null;
         
         const matchedByPaidId = packages.find(pkg => pkg.paidCreditPackageId === batch.packageId);
@@ -109,9 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (packages.some(pkg => pkg.id === packageId)) return packageId;
         }
         return null;
-    };
+    }
 
-    const computeCreditTypePurchaseStatus = (summary, packages, creditType) => {
+    computeCreditTypePurchaseStatus(summary, packages, creditType) {
         if (!summary) return { pendingOrdersByPackageId: {} };
 
         const pendingOrdersByPackageId = {};
@@ -122,16 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         return { pendingOrdersByPackageId };
-    };
+    }
 
-    const getPackagePurchaseState = (packageIdNum, status) => {
+    getPackagePurchaseState(packageIdNum, status) {
         if (status.pendingOrdersByPackageId && status.pendingOrdersByPackageId[packageIdNum]) {
             return 'pending';
         }
         return 'available';
-    };
+    }
 
-    const postingFeatures = (credits, durationDays, discountRate) => {
+    postingFeatures(credits, durationDays, discountRate) {
         const savingsLine = discountRate > 0 ? `Tiết kiệm ${discountRate}% so với gói ngày` : null;
         const featuresByDuration = {
             1: [`${credits} credits đăng tin cơ bản`, 'Hiển thị sản phẩm trong 30 ngày', 'Liên hệ người mua qua chat/Zalo', 'Khả năng hiển thị tiêu chuẩn'],
@@ -139,9 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
             30: [`${credits} credits đăng tin cơ bản`, ...(savingsLine ? [savingsLine] : []), 'Tất cả tính năng Gói 7 Ngày'],
         };
         return featuresByDuration[durationDays] || [`${credits} credits đăng tin cơ bản`];
-    };
+    }
 
-    const featuredFeatures = (credits, durationDays, discountRate, rewardBadge) => {
+    featuredFeatures(credits, durationDays, discountRate, rewardBadge) {
         const savingsLine = discountRate > 0 ? `Tiết kiệm ${discountRate}% so với gói ngày` : null;
         const rewardBadgeLine = rewardBadge && rewardBadge.name ? `Badge cao cấp "${rewardBadge.name}"` : null;
         const featuresByDuration = {
@@ -150,9 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
             30: [`${credits} credits nổi bật`, ...(savingsLine ? [savingsLine] : []), ...(rewardBadgeLine ? [rewardBadgeLine] : []), 'Tất cả tính năng Gói 1 Ngày'],
         };
         return featuresByDuration[durationDays] || [`${credits} credits nổi bật`];
-    };
+    }
 
-    const mapCreditPackages = (packages) => {
+    mapCreditPackages(packages) {
         const sorted = [...packages].sort((a, b) => {
             if (a.creditTypeName === b.creditTypeName) return a.durationDays - b.durationDays;
             return a.creditTypeName.toLowerCase() === 'posting' ? -1 : 1;
@@ -167,11 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
             discountPercent: pkg.discountRate > 0 ? pkg.discountRate : null,
             credits: pkg.creditAmount,
             duration: pkg.durationDays,
-            badge: postingPackageMeta[pkg.durationDays]?.badge || 'Gói',
-            badgeColor: postingPackageMeta[pkg.durationDays]?.badgeColor || 'bg-gray-100 text-gray-800',
-            features: (pkg.descriptions && pkg.descriptions.length > 0) ? pkg.descriptions : postingFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate),
-            cta: postingPackageMeta[pkg.durationDays]?.cta || 'Mở Khóa',
-            tier: postingPackageMeta[pkg.durationDays]?.tier || pkg.durationDays,
+            badge: this.postingPackageMeta[pkg.durationDays]?.badge || 'Gói',
+            badgeColor: this.postingPackageMeta[pkg.durationDays]?.badgeColor || 'bg-gray-100 text-gray-800',
+            features: (pkg.descriptions && pkg.descriptions.length > 0) ? pkg.descriptions : this.postingFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate),
+            cta: this.postingPackageMeta[pkg.durationDays]?.cta || 'Mua Ngay',
+            tier: this.postingPackageMeta[pkg.durationDays]?.tier || pkg.durationDays,
         }));
 
         const featured = sorted.filter(p => p.creditTypeName.toLowerCase() === 'featured').map(pkg => ({
@@ -183,18 +198,18 @@ document.addEventListener('DOMContentLoaded', () => {
             discountPercent: pkg.discountRate > 0 ? pkg.discountRate : null,
             credits: pkg.creditAmount,
             duration: pkg.durationDays,
-            badge: featuredPackageMeta[pkg.durationDays]?.badge || 'Gói',
-            badgeColor: featuredPackageMeta[pkg.durationDays]?.badgeColor || 'bg-gray-100 text-gray-800',
-            features: (pkg.descriptions && pkg.descriptions.length > 0) ? pkg.descriptions : featuredFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate, pkg.rewardBadge),
-            cta: (pkg.rewardBadge && pkg.rewardBadge.name) ? `Mở Khóa ${pkg.rewardBadge.name}` : (featuredPackageMeta[pkg.durationDays]?.cta || 'Mở Khóa'),
-            tier: featuredPackageMeta[pkg.durationDays]?.tier || pkg.durationDays,
+            badge: this.featuredPackageMeta[pkg.durationDays]?.badge || 'Gói',
+            badgeColor: this.featuredPackageMeta[pkg.durationDays]?.badgeColor || 'bg-gray-100 text-gray-800',
+            features: (pkg.descriptions && pkg.descriptions.length > 0) ? pkg.descriptions : this.featuredFeatures(pkg.creditAmount, pkg.durationDays, pkg.discountRate, pkg.rewardBadge),
+            cta: (pkg.rewardBadge && pkg.rewardBadge.name) ? `Mua Khóa ${pkg.rewardBadge.name}` : (this.featuredPackageMeta[pkg.durationDays]?.cta || 'Mua Ngay'),
+            tier: this.featuredPackageMeta[pkg.durationDays]?.tier || pkg.durationDays,
         }));
 
         return { posting, featured };
-    };
+    }
 
     // === Render Functions ===
-    const renderCreditDisplay = (type, batches, containerId) => {
+    renderCreditDisplay(type, batches, containerId) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
@@ -244,148 +259,96 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `;
         if (window.lucide) lucide.createIcons({ root: container });
-    };
+    }
 
-    const renderPackages = (containerId, packages, variant, purchaseStatus, isAnyLoading) => {
+    renderPackages(containerId, packages, variant, purchaseStatus, isAnyLoading) {
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        if (isPackageLoading) {
-            container.innerHTML = `<div class="md:col-span-3 bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400 text-sm">Đang tải danh sách gói credits...</div>`;
+        if (this.state.isPackageLoading) {
+            container.innerHTML = `<div class="md:col-span-3 bg-white rounded-3xl border border-dashed border-gray-300 p-10 text-center text-gray-500">Đang tải danh sách gói credits...</div>`;
+            return;
+        }
+
+        if (this.state.packageError) {
+            container.innerHTML = `<div class="md:col-span-3 bg-red-50 text-red-600 rounded-3xl p-10 text-center">${this.state.packageError}</div>`;
             return;
         }
 
         if (packages.length === 0) {
-            container.innerHTML = `<div class="md:col-span-3 bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center text-gray-400 text-sm">Chưa có gói đăng tin nào khả dụng.</div>`;
+            container.innerHTML = `<div class="md:col-span-3 bg-gray-50 text-gray-500 rounded-3xl p-10 text-center">Không có gói nào khả dụng</div>`;
             return;
         }
 
         container.innerHTML = packages.map(pkg => {
-            const purchaseState = getPackagePurchaseState(pkg.paidCreditPackageId, purchaseStatus);
+            const purchaseState = this.getPackagePurchaseState(pkg.paidCreditPackageId, purchaseStatus);
             
-            const isRecommended = pkg.tier === 2;
             const isPremium = pkg.tier === 3;
-            
-            let containerClasses = `relative rounded-2xl transition-all duration-300 p-[2px] ${purchaseState === 'available' ? 'hover:-translate-y-1' : 'opacity-90'} `;
-            let innerStyle = '';
-            let sparklesHtml = '';
-            let ribbonHtml = '';
-            
-            let badgeBgClass = '';
-            let titleColorClass = '';
-            let priceColorClass = '';
-            let originalPriceColorClass = '';
-            let creditBgClass = '';
-            let creditTextColorClass = '';
-            let creditLabelColorClass = '';
-            let checkIconBgClass = '';
-            let checkIconColorClass = '';
-            let featureTextColorClass = '';
-            
-            if (variant === 'posting') {
-                if (isPremium) {
-                    containerClasses += 'bg-gradient-to-br from-blue-400 via-blue-800 to-[#0f172a] shadow-2xl shadow-blue-800/40';
-                    innerStyle = `background-image: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.08) 1.5px, transparent 0), linear-gradient(145deg, #0f172a 0%, #1e3a8a 100%); background-size: 20px 20px, auto;`;
-                    sparklesHtml = `
-                        <i data-lucide="sparkles" class="absolute top-4 left-4 w-6 h-6 text-blue-300 opacity-90 animate-pulse z-10"></i>
-                        <i data-lucide="sparkles" class="absolute bottom-6 right-6 w-8 h-8 text-blue-400 opacity-70 animate-pulse delay-150 z-10"></i>
-                        <i data-lucide="sparkles" class="absolute top-1/3 -left-3 w-5 h-5 text-blue-200 opacity-80 animate-bounce delay-300 z-10"></i>
-                        <i data-lucide="sparkles" class="absolute top-6 right-1/4 w-4 h-4 text-blue-300 opacity-60 animate-ping delay-700 z-10"></i>
-                    `;
-                    badgeBgClass = 'bg-white/15 text-blue-300';
-                    titleColorClass = 'text-white';
-                    priceColorClass = 'text-white';
-                    originalPriceColorClass = 'text-white/40';
-                    creditBgClass = 'bg-white/10 border border-white/15';
-                    creditTextColorClass = 'text-blue-300';
-                    creditLabelColorClass = 'text-white/55';
-                    checkIconBgClass = 'bg-blue-400/20';
-                    checkIconColorClass = 'text-blue-300';
-                    featureTextColorClass = 'text-white/75';
-                } else if (isRecommended) {
-                    containerClasses += 'bg-gradient-to-br from-blue-300 via-blue-400 to-blue-600 shadow-xl shadow-blue-200';
-                    innerStyle = `background: linear-gradient(145deg, #dbeafe 0%, #eff6ff 100%);`;
+            let containerClasses = "relative bg-white rounded-2xl border transition-all duration-300";
+            let innerStyle = "";
+            let sparklesHtml = "";
+            let ribbonHtml = "";
+            let titleColorClass = "text-gray-900";
+            let badgeBgClass = pkg.badgeColor;
+            let priceColorClass = "text-gray-900";
+            let originalPriceColorClass = "text-gray-400";
+            let creditBgClass = "bg-gray-50";
+            let creditTextColorClass = "text-gray-900";
+            let creditLabelColorClass = "text-gray-500";
+            let checkIconBgClass = "bg-green-100";
+            let checkIconColorClass = "text-green-600";
+            let featureTextColorClass = "text-gray-600";
+
+            if (isPremium) {
+                containerClasses += " transform hover:-translate-y-2 hover:shadow-2xl z-10 scale-[1.02] md:-mx-2 shadow-xl";
+                if (variant === 'posting') {
+                    innerStyle = "background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%);";
+                    containerClasses += " border-blue-200 ring-2 ring-blue-500 ring-offset-2";
+                    badgeBgClass = "bg-blue-600 text-white shadow-md";
+                    titleColorClass = "text-blue-900";
+                    priceColorClass = "text-blue-600";
+                    originalPriceColorClass = "text-blue-300";
+                    creditBgClass = "bg-blue-600";
+                    creditTextColorClass = "text-white";
+                    creditLabelColorClass = "text-blue-100";
                     ribbonHtml = `
-                        <div class="absolute -top-3.5 inset-x-0 flex justify-center z-10">
-                            <span class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[10px] font-black px-4 py-1 rounded-full shadow-md uppercase tracking-widest whitespace-nowrap">
-                                Phổ Biến
-                            </span>
+                        <div class="absolute -top-4 -right-4 z-20">
+                            <div class="bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider py-1 px-3 rounded-full shadow-lg border border-blue-400 transform rotate-12">
+                                BEST SELLER
+                            </div>
                         </div>
                     `;
-                    badgeBgClass = pkg.badgeColor;
-                    titleColorClass = 'text-gray-900';
-                    priceColorClass = 'text-blue-600';
-                    originalPriceColorClass = 'text-gray-400';
-                    creditBgClass = 'bg-blue-50 border border-blue-100';
-                    creditTextColorClass = 'text-blue-600';
-                    creditLabelColorClass = 'text-gray-500';
-                    checkIconBgClass = 'bg-green-100';
-                    checkIconColorClass = 'text-green-600';
-                    featureTextColorClass = 'text-gray-600';
+                    checkIconBgClass = 'bg-blue-100';
+                    checkIconColorClass = 'text-blue-600';
+                    featureTextColorClass = 'text-blue-900/80';
                 } else {
-                    containerClasses += 'bg-transparent border border-blue-100 shadow-sm';
-                    innerStyle = `background: linear-gradient(145deg, #f0f7ff 0%, #e8f3ff 100%);`;
-                    badgeBgClass = pkg.badgeColor;
-                    titleColorClass = 'text-gray-900';
-                    priceColorClass = 'text-blue-600';
-                    originalPriceColorClass = 'text-gray-400';
-                    creditBgClass = 'bg-blue-50 border border-blue-100';
-                    creditTextColorClass = 'text-blue-600';
-                    creditLabelColorClass = 'text-gray-500';
-                    checkIconBgClass = 'bg-green-100';
-                    checkIconColorClass = 'text-green-600';
-                    featureTextColorClass = 'text-gray-600';
-                }
-            } else {
-                if (isPremium) {
-                    containerClasses += 'bg-gradient-to-br from-[#fbd38d] via-[#C4603A] to-[#7b341e] shadow-2xl shadow-[#C4603A]/40';
-                    innerStyle = `background-image: radial-gradient(circle at 1.5px 1.5px, rgba(255,255,255,0.08) 1.5px, transparent 0), linear-gradient(145deg, #1f0d08 0%, #3d1f12 100%); background-size: 20px 20px, auto;`;
-                    sparklesHtml = `
-                        <i data-lucide="sparkles" class="absolute top-4 right-4 w-6 h-6 text-yellow-300 opacity-90 animate-pulse z-10"></i>
-                        <i data-lucide="sparkles" class="absolute bottom-6 left-6 w-8 h-8 text-yellow-400 opacity-70 animate-pulse delay-150 z-10"></i>
-                        <i data-lucide="sparkles" class="absolute top-1/3 -right-3 w-5 h-5 text-yellow-200 opacity-80 animate-bounce delay-300 z-10"></i>
-                        <i data-lucide="sparkles" class="absolute top-6 left-1/4 w-4 h-4 text-orange-300 opacity-60 animate-ping delay-700 z-10"></i>
-                    `;
-                    badgeBgClass = 'bg-white/15 text-orange-300';
-                    titleColorClass = 'text-white';
-                    priceColorClass = 'text-white';
-                    originalPriceColorClass = 'text-white/40';
-                    creditBgClass = 'bg-white/10 border border-white/15';
-                    creditTextColorClass = 'text-orange-300';
-                    creditLabelColorClass = 'text-white/55';
-                    checkIconBgClass = 'bg-orange-400/20';
-                    checkIconColorClass = 'text-orange-300';
-                    featureTextColorClass = 'text-white/75';
-                } else if (isRecommended) {
-                    containerClasses += 'bg-gradient-to-br from-orange-300 via-orange-400 to-orange-500 shadow-xl shadow-orange-200';
-                    innerStyle = `background: linear-gradient(145deg, #ffedd5 0%, #fff7ed 100%);`;
+                    innerStyle = "background: linear-gradient(180deg, #fff5f0 0%, #ffffff 100%);";
+                    containerClasses += " border-orange-200 ring-2 ring-[#C4603A] ring-offset-2";
+                    badgeBgClass = "bg-[#C4603A] text-white shadow-md";
+                    titleColorClass = "text-[#8a3e20]";
+                    priceColorClass = "text-[#C4603A]";
+                    originalPriceColorClass = "text-[#e8a38a]";
+                    creditBgClass = "bg-[#C4603A]";
+                    creditTextColorClass = "text-white";
+                    creditLabelColorClass = "text-orange-100";
                     ribbonHtml = `
-                        <div class="absolute -top-3.5 inset-x-0 flex justify-center z-10">
-                            <span class="bg-gradient-to-r from-[#C4603A] to-[#d4724a] text-white text-[10px] font-black px-4 py-1 rounded-full shadow-md uppercase tracking-widest whitespace-nowrap">
-                                Được Đề Xuất
-                            </span>
+                        <div class="absolute -top-4 -right-4 z-20">
+                            <div class="bg-[#C4603A] text-white text-[10px] font-black uppercase tracking-wider py-1 px-3 rounded-full shadow-lg border border-orange-400 transform rotate-12">
+                                VIP
+                            </div>
                         </div>
                     `;
-                    badgeBgClass = pkg.badgeColor;
-                    titleColorClass = 'text-gray-900';
-                    priceColorClass = 'text-[#C4603A]';
-                    originalPriceColorClass = 'text-gray-400';
-                    creditBgClass = 'bg-orange-50 border border-orange-100';
-                    creditTextColorClass = 'text-[#C4603A]';
-                    creditLabelColorClass = 'text-gray-500';
                     checkIconBgClass = 'bg-orange-100';
                     checkIconColorClass = 'text-orange-600';
+                    featureTextColorClass = 'text-[#8a3e20]/80';
+                }
+            } else {
+                containerClasses += " hover:shadow-xl hover:-translate-y-1 border-gray-200";
+                if (variant === 'posting') {
+                    checkIconBgClass = 'bg-blue-100';
+                    checkIconColorClass = 'text-blue-600';
                     featureTextColorClass = 'text-gray-600';
                 } else {
-                    containerClasses += 'bg-transparent border border-orange-100 shadow-sm';
-                    innerStyle = `background: linear-gradient(145deg, #fff7f0 0%, #fff0e6 100%);`;
-                    badgeBgClass = pkg.badgeColor;
-                    titleColorClass = 'text-gray-900';
-                    priceColorClass = 'text-[#C4603A]';
-                    originalPriceColorClass = 'text-gray-400';
-                    creditBgClass = 'bg-orange-50 border border-orange-100';
-                    creditTextColorClass = 'text-[#C4603A]';
-                    creditLabelColorClass = 'text-gray-500';
                     checkIconBgClass = 'bg-orange-100';
                     checkIconColorClass = 'text-orange-600';
                     featureTextColorClass = 'text-gray-600';
@@ -420,7 +383,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             } else if (isAnyLoading) {
                 const bgDisabled = isPremium ? 'bg-white/20 text-white/50' : (variant === 'posting' ? 'bg-blue-300 text-white' : 'bg-[#C4603A]/50 text-white');
-                const isThisLoading = loadingPackageId === pkg.paidCreditPackageId;
+                const isThisLoading = this.state.loadingPackageId === pkg.paidCreditPackageId;
                 buttonHtml = `
                     <button disabled class="w-full py-3.5 rounded-xl font-semibold flex items-center justify-center transition-all ${bgDisabled} cursor-not-allowed">
                         ${isThisLoading ? `<span class="flex items-center space-x-2"><span>Đang Xử Lý...</span></span>` : pkg.cta}
@@ -432,7 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   : (variant === 'posting' ? 'w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 py-3.5 rounded-xl font-bold transition-all relative overflow-hidden group' : 'w-full bg-[#C4603A] hover:bg-[#9a4b2d] text-white shadow-md shadow-orange-200 py-3.5 rounded-xl font-bold transition-all relative overflow-hidden group');
                   
                 buttonHtml = `
-                    <button type="button" onclick="window.handleSelectPackage(${pkg.paidCreditPackageId})" class="${btnClass}">
+                    <button type="button" onclick="window.plansManager.handleSelectPackage(${pkg.paidCreditPackageId})" class="${btnClass}">
                         <span class="relative z-10 flex items-center justify-center gap-2">
                             ${pkg.cta}
                             ${isPremium ? `<i data-lucide="sparkles" class="w-4 h-4"></i>` : ''}
@@ -490,23 +453,23 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
         }).join('');
         if (window.lucide) lucide.createIcons({ root: container });
-    };
+    }
 
-    const renderTransactions = () => {
+    renderTransactions() {
         const container = document.getElementById('transactions-container');
         if (!container) return;
 
-        if (isTransactionsLoading) {
+        if (this.state.isTransactionsLoading) {
             container.innerHTML = `<div class="text-center py-16 text-gray-500">Đang tải lịch sử giao dịch...</div>`;
             return;
         }
 
-        if (transactionsError) {
-            document.getElementById('transactions-error').textContent = transactionsError;
+        if (this.state.transactionsError) {
+            document.getElementById('transactions-error').textContent = this.state.transactionsError;
             document.getElementById('transactions-error').classList.remove('hidden');
         }
 
-        if (transactions.length === 0) {
+        if (this.state.transactions.length === 0) {
             container.innerHTML = `
                 <div class="text-center py-16">
                     <i data-lucide="history" class="w-16 h-16 text-gray-300 mx-auto mb-4"></i>
@@ -518,59 +481,44 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        container.innerHTML = transactions.map(tx => {
+        container.innerHTML = this.state.transactions.map(tx => {
             const iconBg = tx.packageType === 'posting' ? 'bg-blue-50' : 'bg-orange-50';
-            const iconColor = tx.packageType === 'posting' ? 'text-blue-600' : 'text-[#C4603A]';
-            const badgeBg = tx.packageType === 'posting' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-[#C4603A]';
-            const amountColor = tx.packageType === 'posting' ? 'text-blue-600' : 'text-[#C4603A]';
-            
-            const transactionAmount = tx.status === 'completed' || tx.status === 'late_paid' ? tx.receivedAmount : tx.expectedAmount;
-
-            let latePaidHtml = '';
-            if (tx.status === 'late_paid') {
-                latePaidHtml = `<p class="text-xs text-amber-700/80 mb-2 mt-0.5 leading-snug">Bạn đã chuyển tiền sau khi mã QR hết hạn. Hệ thống đã linh động ghi nhận và cộng credits thành công.</p>`;
-            }
+            const iconColor = tx.packageType === 'posting' ? 'text-blue-600' : 'text-orange-600';
+            const iconName = tx.packageType === 'posting' ? 'image' : 'sparkles';
+            const statusClass = this.getTransactionStatusClass(tx.status);
+            const statusIconHtml = this.getTransactionStatusIconHTML(tx.status);
+            const displayCredit = (tx.status === 'completed' || tx.status === 'late_paid') ? tx.creditsGranted : tx.credits;
 
             return `
-                <div class="px-8 py-5 hover:bg-gray-50 transition-colors">
-                    <div class="flex items-start justify-between gap-6">
-                        <div class="flex items-start gap-4 min-w-0">
-                            <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}">
-                                <i data-lucide="trending-up" class="w-6 h-6 ${iconColor}"></i>
+                <div class="p-6 sm:px-8 hover:bg-gray-50/80 transition-colors">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-2xl ${iconBg} flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="${iconName}" class="w-6 h-6 ${iconColor}"></i>
                             </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex flex-wrap items-center gap-2 mb-1">
-                                    <h3 class="font-semibold text-gray-900">${tx.packageName}</h3>
-                                    <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${badgeBg}">${tx.creditTypeDisplayName}</span>
-                                    <span class="text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center ${getTransactionStatusClass(tx.status)}">
-                                        ${getTransactionStatusIconHTML(tx.status)}
-                                        ${tx.status === 'late_paid' ? 'Thanh toán trễ' : tx.statusLabel}
-                                    </span>
-                                    ${(tx.creditsGranted && tx.status !== 'late_paid') ? `<span class="text-xs px-2.5 py-1 rounded-full font-semibold bg-emerald-50 text-emerald-700">Đã cộng credits</span>` : ''}
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-base mb-1">
+                                    ${tx.packageName}
+                                </h4>
+                                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500">
+                                    <span class="font-mono text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded text-xs">${tx.orderCode}</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${tx.date}</span>
+                                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5"></i> ${tx.time}</span>
                                 </div>
-                                ${latePaidHtml}
-                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
-                                    <span class="flex items-center gap-1">
-                                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                                        ${tx.date} ${tx.time}
-                                    </span>
-                                    <span>•</span>
-                                    <span>Mã đơn: ${tx.orderCode}</span>
-                                    <span>•</span>
-                                    <span>Mã GD: ${tx.transactionCode}</span>
-                                    <span>•</span>
-                                    <span>${tx.paymentMethod}</span>
-                                </div>
-                                ${tx.paidAt ? `<p class="text-xs text-gray-400 mt-1">Thanh toán lúc: ${formatTransactionDateTime(tx.paidAt).date} ${formatTransactionDateTime(tx.paidAt).time}</p>` : ''}
                             </div>
                         </div>
-                        <div class="text-right flex-shrink-0">
-                            <div class="flex items-center gap-1 justify-end mb-1">
-                                <i data-lucide="trending-down" class="w-4 h-4 text-red-500"></i>
-                                <span class="text-lg font-bold text-red-600">-${transactionAmount.toLocaleString('vi-VN')}đ</span>
+                        
+                        <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 pl-16 sm:pl-0">
+                            <div class="text-right">
+                                <div class="font-bold text-gray-900">${(tx.receivedAmount || tx.expectedAmount).toLocaleString('vi-VN')}đ</div>
+                                <div class="text-sm font-medium ${tx.packageType === 'posting' ? 'text-blue-600' : 'text-[#2D5A3D]'}">
+                                    +${displayCredit} credits
+                                </div>
                             </div>
-                            ${(tx.status === 'completed' && tx.expectedAmount !== tx.receivedAmount) ? `<p class="text-xs text-gray-400 mb-1">Dự kiến: ${tx.expectedAmount.toLocaleString('vi-VN')}đ</p>` : ''}
-                            <div class="text-sm font-semibold ${amountColor}">+${tx.credits} credits</div>
+                            <div class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${statusClass}">
+                                ${statusIconHtml}
+                                ${tx.statusLabel}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -578,90 +526,90 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
         if (window.lucide) lucide.createIcons({ root: container });
 
-        // Update Summary
-        const successfulTransactions = transactions.filter(tx => tx.status === 'completed');
-        const totalSpent = successfulTransactions.reduce((sum, tx) => sum + tx.receivedAmount, 0);
-        const totalCreditsPurchased = successfulTransactions.reduce((sum, tx) => sum + (tx.creditsGranted ? tx.credits : 0), 0);
-
-        document.getElementById('summary-total').textContent = transactions.length;
-        document.getElementById('summary-success').textContent = successfulTransactions.length;
-        document.getElementById('summary-spent').textContent = `${totalSpent.toLocaleString('vi-VN')}đ`;
-        document.getElementById('summary-credits').textContent = `${totalCreditsPurchased} credits`;
+        const totalSuccess = this.state.transactions.filter(t => t.status === 'completed' || t.status === 'late_paid');
+        const sumSpent = totalSuccess.reduce((sum, t) => sum + (t.receivedAmount || t.expectedAmount), 0);
+        const sumCredits = totalSuccess.reduce((sum, t) => sum + (t.creditsGranted || 0), 0);
+        
+        document.getElementById('summary-total').textContent = this.state.transactions.length;
+        document.getElementById('summary-success').textContent = totalSuccess.length;
+        document.getElementById('summary-spent').textContent = sumSpent.toLocaleString('vi-VN') + 'đ';
+        document.getElementById('summary-credits').textContent = sumCredits + ' credits';
         document.getElementById('transactions-summary').classList.remove('hidden');
-    };
+    }
 
-    const updateUI = () => {
-        // Tab display
-        document.getElementById('tab-packages-content').classList.toggle('hidden', activeTab !== 'packages');
-        document.getElementById('tab-history-content').classList.toggle('hidden', activeTab !== 'history');
+    updateUI() {
+        const { activeTab } = this.state;
+        const packagesContent = document.getElementById('tab-packages-content');
+        const historyContent = document.getElementById('tab-history-content');
 
         if (activeTab === 'packages') {
-            document.getElementById('tab-packages-btn').className = 'flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-[#2D5A3D] text-white shadow-lg';
-            document.getElementById('tab-history-btn').className = 'flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-white text-gray-600 hover:bg-gray-50';
-
-            // Credit Errors
-            if (creditError) {
-                document.getElementById('credit-error-msg').textContent = creditError;
-                document.getElementById('credit-error-msg').classList.remove('hidden');
-            } else {
-                document.getElementById('credit-error-msg').classList.add('hidden');
-            }
-
-            renderCreditDisplay('posting', userCreditBatches.posting, 'posting-credit-display');
-            renderCreditDisplay('featured', userCreditBatches.featured, 'featured-credit-display');
-
-            // Package Errors & Blocks
-            if (packageError) {
-                document.getElementById('posting-package-error').textContent = packageError;
-                document.getElementById('posting-package-error').classList.remove('hidden');
-            } else {
-                document.getElementById('posting-package-error').classList.add('hidden');
-            }
-
-            if (creditSummaries.posting && creditSummaries.posting.purchaseBlockReason) {
-                document.getElementById('posting-block-reason').textContent = creditSummaries.posting.purchaseBlockReason;
-                document.getElementById('posting-purchase-block').classList.remove('hidden');
-            } else {
-                document.getElementById('posting-purchase-block').classList.add('hidden');
-            }
-
-            if (creditSummaries.featured && creditSummaries.featured.purchaseBlockReason) {
-                document.getElementById('featured-block-reason').textContent = creditSummaries.featured.purchaseBlockReason;
-                document.getElementById('featured-purchase-block').classList.remove('hidden');
-            } else {
-                document.getElementById('featured-purchase-block').classList.add('hidden');
-            }
-
-            const { posting, featured } = mapCreditPackages(creditPackages);
-            const postingStatus = computeCreditTypePurchaseStatus(creditSummaries.posting, posting, 'posting');
-            const featuredStatus = computeCreditTypePurchaseStatus(creditSummaries.featured, featured, 'featured');
-
-            renderPackages('posting-packages-container', posting, 'posting', postingStatus, isCheckoutLoading);
-            renderPackages('featured-packages-container', featured, 'featured', featuredStatus, isCheckoutLoading);
-
+            packagesContent?.classList.remove('hidden');
+            historyContent?.classList.add('hidden');
+            this.renderPackagesTabUI();
         } else {
+            packagesContent?.classList.add('hidden');
+            historyContent?.classList.remove('hidden');
             document.getElementById('tab-history-btn').className = 'flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-[#2D5A3D] text-white shadow-lg';
             document.getElementById('tab-packages-btn').className = 'flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-white text-gray-600 hover:bg-gray-50';
-            
-            renderTransactions();
+            this.renderTransactions();
         }
 
-        // Overlay Checkout
         const loadingEl = document.getElementById('global-checkout-loading');
-        if (isCheckoutLoading) {
-            loadingEl.classList.remove('hidden');
-            loadingEl.classList.add('flex');
+        if (this.state.isCheckoutLoading) {
+            loadingEl?.classList.remove('hidden');
+            loadingEl?.classList.add('flex');
         } else {
-            loadingEl.classList.add('hidden');
-            loadingEl.classList.remove('flex');
+            loadingEl?.classList.add('hidden');
+            loadingEl?.classList.remove('flex');
         }
-    };
+    }
+
+    renderPackagesTabUI() {
+        const tabPackagesBtn = document.getElementById('tab-packages-btn');
+        const tabHistoryBtn = document.getElementById('tab-history-btn');
+        if (tabPackagesBtn) tabPackagesBtn.className = 'flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-[#2D5A3D] text-white shadow-lg';
+        if (tabHistoryBtn) tabHistoryBtn.className = 'flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all bg-white text-gray-600 hover:bg-gray-50';
+
+        if (this.state.creditError) {
+            const errEl = document.getElementById('credit-error-msg');
+            if (errEl) {
+                errEl.textContent = this.state.creditError;
+                errEl.classList.remove('hidden');
+            }
+        }
+
+        if (!this.state.isCreditLoading) {
+            this.renderCreditDisplay('posting', this.state.userCreditBatches.posting, 'posting-credit-display');
+            this.renderCreditDisplay('featured', this.state.userCreditBatches.featured, 'featured-credit-display');
+        }
+
+        if (this.state.creditSummaries.posting && this.state.creditSummaries.posting.purchaseBlockReason) {
+            document.getElementById('posting-block-reason').textContent = this.state.creditSummaries.posting.purchaseBlockReason;
+            document.getElementById('posting-purchase-block').classList.remove('hidden');
+        } else {
+            document.getElementById('posting-purchase-block')?.classList.add('hidden');
+        }
+
+        if (this.state.creditSummaries.featured && this.state.creditSummaries.featured.purchaseBlockReason) {
+            document.getElementById('featured-block-reason').textContent = this.state.creditSummaries.featured.purchaseBlockReason;
+            document.getElementById('featured-purchase-block').classList.remove('hidden');
+        } else {
+            document.getElementById('featured-purchase-block')?.classList.add('hidden');
+        }
+
+        const { posting, featured } = this.mapCreditPackages(this.state.creditPackages);
+        const postingStatus = this.computeCreditTypePurchaseStatus(this.state.creditSummaries.posting, posting, 'posting');
+        const featuredStatus = this.computeCreditTypePurchaseStatus(this.state.creditSummaries.featured, featured, 'featured');
+
+        this.renderPackages('posting-packages-container', posting, 'posting', postingStatus, this.state.isCheckoutLoading);
+        this.renderPackages('featured-packages-container', featured, 'featured', featuredStatus, this.state.isCheckoutLoading);
+    }
 
     // === API Calls ===
-    const loadCreditBatches = async () => {
-        isCreditLoading = true;
-        creditError = null;
-        updateUI();
+    async loadCreditBatches() {
+        this.state.isCreditLoading = true;
+        this.state.creditError = null;
+        this.updateUI();
 
         try {
             const [postRes, featRes] = await Promise.all([
@@ -672,56 +620,56 @@ document.addEventListener('DOMContentLoaded', () => {
             const postData = await postRes.json();
             const featData = await featRes.json();
 
-            creditSummaries.posting = postData.success ? postData.data : null;
-            creditSummaries.featured = featData.success ? featData.data : null;
+            this.state.creditSummaries.posting = postData.success ? postData.data : null;
+            this.state.creditSummaries.featured = featData.success ? featData.data : null;
 
-            userCreditBatches.posting = creditSummaries.posting ? mapCreditBatches(creditSummaries.posting.batches) : [];
-            userCreditBatches.featured = creditSummaries.featured ? mapCreditBatches(creditSummaries.featured.batches) : [];
+            this.state.userCreditBatches.posting = this.state.creditSummaries.posting ? this.mapCreditBatches(this.state.creditSummaries.posting.batches) : [];
+            this.state.userCreditBatches.featured = this.state.creditSummaries.featured ? this.mapCreditBatches(this.state.creditSummaries.featured.batches) : [];
 
             if (!postData.success || !featData.success) {
-                creditError = 'Không tải được một số credit hiện tại.';
+                this.state.creditError = 'Không tải được một số credit hiện tại.';
             }
         } catch (err) {
-            creditError = 'Lỗi kết nối khi tải credits.';
+            this.state.creditError = 'Lỗi kết nối khi tải credits.';
         } finally {
-            isCreditLoading = false;
-            updateUI();
+            this.state.isCreditLoading = false;
+            this.updateUI();
         }
-    };
+    }
 
-    const loadCreditPackages = async () => {
-        isPackageLoading = true;
-        packageError = null;
-        updateUI();
+    async loadCreditPackages() {
+        this.state.isPackageLoading = true;
+        this.state.packageError = null;
+        this.updateUI();
 
         try {
             const res = await fetch('/Plans/GetActivePackages');
             const data = await res.json();
             if (data.success) {
-                creditPackages = data.data || [];
+                this.state.creditPackages = data.data || [];
             } else {
-                packageError = 'Không tải được danh sách gói credits hiện tại.';
+                this.state.packageError = 'Không tải được danh sách gói credits hiện tại.';
             }
         } catch (err) {
-            packageError = 'Lỗi kết nối khi tải danh sách gói.';
+            this.state.packageError = 'Lỗi kết nối khi tải danh sách gói.';
         } finally {
-            isPackageLoading = false;
-            updateUI();
+            this.state.isPackageLoading = false;
+            this.updateUI();
         }
-    };
+    }
 
-    const loadTransactions = async () => {
-        isTransactionsLoading = true;
-        transactionsError = null;
-        updateUI();
+    async loadTransactions() {
+        this.state.isTransactionsLoading = true;
+        this.state.transactionsError = null;
+        this.updateUI();
 
         try {
             const res = await fetch('/Plans/GetTransactions');
             const data = await res.json();
             if (data.success) {
                 const txs = data.data || [];
-                transactions = [...txs].sort((a, b) => new Date(b.transactionAt) - new Date(a.transactionAt)).map(tx => {
-                    const { date, time } = formatTransactionDateTime(tx.transactionAt);
+                this.state.transactions = [...txs].sort((a, b) => new Date(b.transactionAt) - new Date(a.transactionAt)).map(tx => {
+                    const { date, time } = this.formatTransactionDateTime(tx.transactionAt);
                     return {
                         id: tx.orderId,
                         orderCode: tx.orderCode,
@@ -734,30 +682,30 @@ document.addEventListener('DOMContentLoaded', () => {
                         expectedAmount: tx.expectedAmount,
                         receivedAmount: tx.receivedAmount,
                         paymentMethod: tx.paymentMethod,
-                        status: mapPaymentStatus(tx.paymentStatus, tx.createdAt, tx.paidAt),
+                        status: this.mapPaymentStatus(tx.paymentStatus, tx.createdAt, tx.paidAt),
                         statusLabel: tx.paymentStatusLabel,
                         creditsGranted: tx.creditsGranted,
                         paidAt: tx.paidAt,
                     };
                 });
             } else {
-                transactionsError = 'Không tải được lịch sử giao dịch.';
+                this.state.transactionsError = 'Không tải được lịch sử giao dịch.';
             }
         } catch (err) {
-            transactionsError = 'Lỗi kết nối khi tải lịch sử.';
+            this.state.transactionsError = 'Lỗi kết nối khi tải lịch sử.';
         } finally {
-            isTransactionsLoading = false;
-            updateUI();
+            this.state.isTransactionsLoading = false;
+            this.updateUI();
         }
-    };
+    }
 
-    window.handleSelectPackage = async (packageId) => {
-        if (isCheckoutLoading) return;
-        isCheckoutLoading = true;
-        loadingPackageId = packageId;
+    async handleSelectPackage(packageId) {
+        if (this.state.isCheckoutLoading) return;
+        this.state.isCheckoutLoading = true;
+        this.state.loadingPackageId = packageId;
         
-        document.getElementById('checkout-error-msg').classList.add('hidden');
-        updateUI();
+        document.getElementById('checkout-error-msg')?.classList.add('hidden');
+        this.updateUI();
 
         try {
             const response = await fetch('/Plans/Checkout', {
@@ -773,37 +721,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     window.location.href = data.data.paymentUrl;
                 }, 1500);
             } else {
-                document.getElementById('checkout-error-text').textContent = data.message || 'Có lỗi xảy ra khi tạo thanh toán.';
-                document.getElementById('checkout-error-msg').classList.remove('hidden');
-                isCheckoutLoading = false;
-                loadingPackageId = null;
-                updateUI();
+                const errMsgEl = document.getElementById('checkout-error-text');
+                if (errMsgEl) errMsgEl.textContent = data.message || 'Có lỗi xảy ra khi tạo thanh toán.';
+                document.getElementById('checkout-error-msg')?.classList.remove('hidden');
+                this.state.isCheckoutLoading = false;
+                this.state.loadingPackageId = null;
+                this.updateUI();
             }
         } catch (err) {
-            document.getElementById('checkout-error-text').textContent = 'Không thể kết nối đến máy chủ thanh toán. Vui lòng thử lại sau.';
-            document.getElementById('checkout-error-msg').classList.remove('hidden');
-            isCheckoutLoading = false;
-            loadingPackageId = null;
-            updateUI();
+            const errMsgEl = document.getElementById('checkout-error-text');
+            if (errMsgEl) errMsgEl.textContent = 'Không thể kết nối đến máy chủ thanh toán. Vui lòng thử lại sau.';
+            document.getElementById('checkout-error-msg')?.classList.remove('hidden');
+            this.state.isCheckoutLoading = false;
+            this.state.loadingPackageId = null;
+            this.updateUI();
         }
-    };
+    }
 
-    // === Event Listeners ===
-    document.getElementById('tab-packages-btn').addEventListener('click', () => {
-        if (activeTab === 'packages') return;
-        activeTab = 'packages';
-        updateUI();
-        loadCreditBatches();
-    });
+    // === Event Listeners via Methods ===
+    switchTab(tab) {
+        if (this.state.activeTab === tab) return;
+        this.state.activeTab = tab;
+        this.updateUI();
+        if (tab === 'packages') {
+            this.loadCreditBatches();
+        } else {
+            this.loadTransactions();
+        }
+    }
+}
 
-    document.getElementById('tab-history-btn').addEventListener('click', () => {
-        if (activeTab === 'history') return;
-        activeTab = 'history';
-        updateUI();
-        loadTransactions();
-    });
-
-    // === Init ===
-    lucide.createIcons();
-    loadCreditPackages().then(() => loadCreditBatches());
+document.addEventListener('DOMContentLoaded', () => {
+    window.plansManager = new PlansManager();
 });
