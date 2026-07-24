@@ -1,0 +1,36 @@
+@model dynamic
+
+@{
+    var totalPages = Model.TotalPages;
+    var currentPage = Model.CurrentPage;
+    var productsCount = Model.ProductsCount;
+}
+
+@if (productsCount > 0 && totalPages > 1)
+{
+    <div class="mt-12 flex items-center justify-center gap-2">
+        <button type="button" onclick="productListManager.changePage(@(currentPage - 1))" disabled="@(currentPage == 1)" class="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        
+        <div class="flex gap-1.5">
+            @for(int i = 1; i <= totalPages; i++)
+            {
+                if (i == 1 || i == totalPages || (i >= currentPage - 1 && i <= currentPage + 1))
+                {
+                    <button type="button" onclick="productListManager.changePage(@i)" class="min-w-[40px] h-10 rounded-lg font-medium transition-all @(currentPage == i ? "bg-[#2D5A3D] text-white shadow-md" : "border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300")">
+                        @i
+                    </button>
+                }
+                else if (i == currentPage - 2 || i == currentPage + 2)
+                {
+                    <span class="flex items-center justify-center w-8 text-gray-400">...</span>
+                }
+            }
+        </div>
+
+        <button type="button" onclick="productListManager.changePage(@(currentPage + 1))" disabled="@(currentPage == totalPages)" class="p-2 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+    </div>
+}

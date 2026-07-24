@@ -1,0 +1,39 @@
+<!-- Tab Content: Transaction History -->
+<div id="tab-history-content" class="hidden">
+    <div class="bg-white rounded-3xl shadow-lg overflow-hidden">
+        <!-- Header -->
+        <div class="px-8 py-6 border-b border-gray-100">
+            <h2 class="text-2xl text-gray-900 font-bold flex items-center gap-2">
+                <i data-lucide="history" class="w-6 h-6 text-[#2D5A3D]"></i>
+                Lịch Sử Giao Dịch
+            </h2>
+            <p class="text-gray-600 text-sm mt-1">Danh sách các giao dịch mua gói credits</p>
+            <p id="transactions-error" class="text-sm text-amber-600 mt-2 hidden"></p>
+        </div>
+
+        <!-- Transaction List -->
+        <div id="transactions-container" class="divide-y divide-gray-50">
+            <div class="text-center py-16 text-gray-500">Đang tải lịch sử giao dịch...</div>
+        </div>
+
+        <!-- Summary -->
+        <div id="transactions-summary" class="hidden px-8 py-6 bg-gray-50 border-t border-gray-100">
+            <div class="flex items-center justify-between text-sm">
+                <span class="text-gray-600">Tổng số giao dịch:</span>
+                <span id="summary-total" class="font-bold text-gray-900">0</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mt-2">
+                <span class="text-gray-600">Giao dịch thành công:</span>
+                <span id="summary-success" class="font-bold text-green-700">0</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mt-2">
+                <span class="text-gray-600">Tổng chi tiêu:</span>
+                <span id="summary-spent" class="font-bold text-red-600">0đ</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mt-2">
+                <span class="text-gray-600">Tổng credits đã cộng:</span>
+                <span id="summary-credits" class="font-bold text-[#2D5A3D]">0 credits</span>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,26 @@
+@model dynamic
+
+@{
+    var products = Model.Products as List<REVORA_MVC_FE.Models.ProductResponseDto>;
+}
+
+@if (products.Count > 0)
+{
+    <div id="productContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @foreach(var item in products)
+        {
+            @await Html.PartialAsync("_ProductCard", item)
+        }
+    </div>
+}
+else
+{
+    <div class="text-center bg-white rounded-3xl p-16 shadow-sm border border-gray-100">
+        <div class="text-6xl mb-6 opacity-30">🔍</div>
+        <h3 class="text-xl text-gray-900 mb-2 font-bold">Không tìm thấy sản phẩm</h3>
+        <p class="text-gray-500 mb-8 max-w-md mx-auto">Rất tiếc, không có sản phẩm nào phù hợp với các tiêu chí lọc hiện tại. Thử điều chỉnh lại khoảng giá hoặc xóa bộ lọc.</p>
+        <a href="/Products" class="px-8 py-3 bg-[#2D5A3D] text-white font-medium rounded-full hover:bg-[#234830] transition-colors shadow-md hover:shadow-lg inline-block">
+            Xóa tất cả bộ lọc
+        </a>
+    </div>
+}

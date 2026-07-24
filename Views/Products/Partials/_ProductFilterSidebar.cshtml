@@ -1,0 +1,107 @@
+@model dynamic
+
+@{
+    var categories = Model.Categories as List<REVORA_MVC_FE.Models.CategoryDto>;
+    var selectedCategory = Model.SelectedCategory;
+    var locations = Model.Locations as string[];
+    var selectedLocation = Model.SelectedLocation;
+    var brands = Model.Brands as string[];
+    var selectedBrand = Model.SelectedBrand;
+    var conditions = Model.Conditions as string[];
+    var selectedCondition = Model.SelectedCondition;
+    var minPrice = Model.MinPrice;
+    var maxPrice = Model.MaxPrice;
+}
+
+<aside id="filtersSidebar" class="w-full md:w-72 flex-shrink-0 sticky top-24 order-1 md:order-2 transition-all hidden md:block">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                <i data-lucide="filter" class="w-5 h-5 text-[#2D5A3D]"></i> Lọc Sản Phẩm
+            </h2>
+            <a href="/Products" class="text-sm font-medium text-orange-600 hover:text-orange-700 transition-colors bg-orange-50 px-3 py-1.5 rounded-lg">
+                Đặt lại
+            </a>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Danh Mục -->
+            <div>
+                <label class="block text-sm font-bold text-gray-900 mb-3">Danh Mục</label>
+                <select name="categoryId" onchange="productListManager.resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                    <!option value="0">Tất Cả Danh Mục</!option>
+                    @foreach(var cat in categories) {
+                        <!option value="@cat.CategoryId" @(selectedCategory == cat.CategoryId ? "selected" : "")>@cat.Name</!option>
+                    }
+                </select>
+            </div>
+
+            <!-- Khoảng giá -->
+            <div class="pt-4 border-t border-gray-100">
+                <label class="block text-sm font-bold text-gray-900 mb-4">Khoảng Giá</label>
+                <div class="space-y-3">
+                    @{
+                        var priceRanges = new[] {
+                            new { label = "Tất cả mức giá", min = 0m, max = 1000000000m },
+                            new { label = "Dưới 500.000₫", min = 0m, max = 500000m },
+                            new { label = "500.000₫ - 1.000.000₫", min = 500000m, max = 1000000m },
+                            new { label = "1.000.000₫ - 3.000.000₫", min = 1000000m, max = 3000000m },
+                            new { label = "3.000.000₫ - 5.000.000₫", min = 3000000m, max = 5000000m },
+                            new { label = "5.000.000₫ - 10.000.000₫", min = 5000000m, max = 10000000m },
+                            new { label = "Trên 10.000.000₫", min = 10000000m, max = 1000000000m }
+                        };
+                    }
+                    @for(int i = 0; i < priceRanges.Length; i++)
+                    {
+                        var range = priceRanges[i];
+                        var isChecked = minPrice == range.min && maxPrice == range.max;
+                        <label class="flex items-center gap-3 cursor-pointer group" onclick="productListManager.setPriceRange(@range.min, @range.max)">
+                            @if(isChecked) {
+                                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors border-[#2D5A3D]">
+                                    <div class="w-2.5 h-2.5 rounded-full bg-[#2D5A3D]"></div>
+                                </div>
+                                <span class="text-sm transition-colors text-[#2D5A3D] font-bold">@range.label</span>
+                            } else {
+                                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors border-gray-300 group-hover:border-[#2D5A3D]/50"></div>
+                                <span class="text-sm transition-colors text-gray-600 group-hover:text-gray-900 font-medium">@range.label</span>
+                            }
+                        </label>
+                    }
+                </div>
+            </div>
+
+            <!-- Khu Vực -->
+            <div class="pt-4 border-t border-gray-100">
+                <label class="block text-sm font-bold text-gray-900 mb-3">Khu Vực</label>
+                <select name="city" onchange="productListManager.resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                    <!option value="Tất Cả" @(selectedLocation == "Tất Cả" ? "selected" : "")>Toàn Quốc</!option>
+                    @foreach(var loc in locations) {
+                        <!option value="@loc" @(selectedLocation == loc ? "selected" : "")>@loc</!option>
+                    }
+                </select>
+            </div>
+
+            <!-- Thương Hiệu -->
+            <div class="pt-4 border-t border-gray-100">
+                <label class="block text-sm font-bold text-gray-900 mb-3">Thương Hiệu</label>
+                <select name="brand" onchange="productListManager.resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                    <!option value="Tất Cả" @(selectedBrand == "Tất Cả" ? "selected" : "")>Tất Cả Thương Hiệu</!option>
+                    @foreach(var brand in brands) {
+                        <!option value="@brand" @(selectedBrand == brand ? "selected" : "")>@brand</!option>
+                    }
+                </select>
+            </div>
+
+            <!-- Tình Trạng -->
+            <div class="pt-4 border-t border-gray-100">
+                <label class="block text-sm font-bold text-gray-900 mb-3">Tình Trạng</label>
+                <select name="condition" onchange="productListManager.resetPageAndSubmit()" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2D5A3D]/20 text-sm text-gray-700 cursor-pointer">
+                    <!option value="Tất Cả" @(selectedCondition == "Tất Cả" ? "selected" : "")>Mọi Tình Trạng</!option>
+                    @foreach(var cond in conditions) {
+                        <!option value="@cond" @(selectedCondition == cond ? "selected" : "")>@cond</!option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</aside>

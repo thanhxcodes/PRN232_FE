@@ -1,14 +1,18 @@
 @{
     ViewData["Title"] = "Trang Chủ";
     
-    var categories = new[] {
-        new { name = "Quần Áo", image = "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?w=400" },
-        new { name = "Giày Dép", image = "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400" },
-        new { name = "Túi Xách", image = "https://images.unsplash.com/photo-1705909237050-7a7625b47fac?w=400" },
-        new { name = "Phụ Kiện", image = "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400" },
-        new { name = "Đồng Hồ", image = "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400" },
-        new { name = "Kính Mắt", image = "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400" }
+    // Fallback images for dynamic categories if CategoryDto doesn't have an Image property
+    var categoryImages = new Dictionary<string, string> {
+        { "Quần Áo", "https://images.unsplash.com/photo-1495121605193-b116b5b9c5fe?w=400" },
+        { "Giày Dép", "https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=400" },
+        { "Túi Xách", "https://images.unsplash.com/photo-1705909237050-7a7625b47fac?w=400" },
+        { "Phụ Kiện", "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=400" },
+        { "Đồng Hồ", "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400" },
+        { "Kính Mắt", "https://images.unsplash.com/photo-1577803645773-f96470509666?w=400" }
     };
+
+    var defaultImage = "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=400";
+    var categories = ViewBag.Categories as List<REVORA_MVC_FE.Models.CategoryDto> ?? new List<REVORA_MVC_FE.Models.CategoryDto>();
 }
 
 <div class="min-h-screen bg-[#fafaf7]">
@@ -22,115 +26,70 @@
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
         <div class="bg-white rounded-3xl shadow-lg p-8">
             <div class="grid grid-cols-3 md:grid-cols-6 gap-6">
-                @foreach(var cat in categories)
+                @if (categories.Any())
                 {
-                    <a href="/Products" class="flex flex-col items-center space-y-3 group">
-                        <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all group-hover:scale-105">
-                            <img src="@cat.image" alt="@cat.name" class="w-full h-full object-cover" />
-                        </div>
-                        <span class="text-sm text-gray-700 font-medium group-hover:text-[#2D5A3D] transition-colors">@cat.name</span>
-                    </a>
+                    @foreach (var cat in categories.Take(6))
+                    {
+                        var imageUrl = categoryImages.ContainsKey(cat.Name) ? categoryImages[cat.Name] : defaultImage;
+                        <a href="/Products?categoryId=@cat.CategoryId" class="flex flex-col items-center space-y-3 group">
+                            <div class="w-20 h-20 rounded-2xl overflow-hidden shadow-md group-hover:shadow-xl transition-all group-hover:scale-105 bg-gray-100 flex items-center justify-center">
+                                <img src="@imageUrl" alt="@cat.Name" class="w-full h-full object-cover" />
+                            </div>
+                            <span class="text-sm text-gray-700 font-medium group-hover:text-[#2D5A3D] transition-colors text-center line-clamp-1">@cat.Name</span>
+                        </a>
+                    }
+                }
+                else
+                {
+                    <div class="col-span-full text-center text-gray-500 py-4">Chưa có danh mục nào</div>
                 }
             </div>
         </div>
     </section>
 
-    @if (ViewBag.FeaturedProducts != null && ViewBag.FeaturedProducts.Count > 0)
-    {
-        <!-- Featured Products Section -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-gradient-to-br from-[#2D5A3D] to-[#3D7054] rounded-full">
-                        <i data-lucide="sparkles" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-3xl text-gray-900 font-bold">Sản Phẩm Nổi Bật</h2>
-                        <p class="text-sm text-gray-600">Các sản phẩm được ưu tiên hiển thị</p>
-                    </div>
-                </div>
-                <a href="/Products?sort=featured" class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] text-white rounded-full hover:shadow-lg hover:scale-105 transition-all font-semibold">
-                    <span>Tất Cả Sản Phẩm</span>
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </a>
-            </div>
-            
-            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.FeaturedProducts)
-        </section>
-    }
+    <!-- Featured Products Section -->
+    @await Html.PartialAsync("_ProductSection", new { 
+        Title = "Sản Phẩm Nổi Bật", 
+        Subtitle = "Các sản phẩm được ưu tiên hiển thị", 
+        Icon = "sparkles", 
+        IconGradient = "from-[#2D5A3D] to-[#3D7054]", 
+        BtnClass = "bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] text-white", 
+        SortQuery = "featured", 
+        Products = ViewBag.FeaturedProducts 
+    })
 
-    @if (ViewBag.LovedProducts != null && ViewBag.LovedProducts.Count > 0)
-    {
-        <!-- Best Sellers Section -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-gradient-to-br from-orange-500 to-red-500 rounded-full">
-                        <i data-lucide="trending-up" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-3xl text-gray-900 font-bold">Được Yêu Thích Nhất</h2>
-                        <p class="text-sm text-gray-600">Top sản phẩm được quan tâm nhiều nhất</p>
-                    </div>
-                </div>
-                <a href="/Products?sort=loved" class="flex items-center space-x-2 px-6 py-3 bg-white text-orange-600 rounded-full hover:shadow-lg transition-all font-semibold border-2 border-orange-500">
-                    <span>Tất Cả Sản Phẩm</span>
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </a>
-            </div>
-            
-            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.LovedProducts)
-        </section>
-    }
-
+    <!-- Best Sellers Section -->
+    @await Html.PartialAsync("_ProductSection", new { 
+        Title = "Được Yêu Thích Nhất", 
+        Subtitle = "Top sản phẩm được quan tâm nhiều nhất", 
+        Icon = "trending-up", 
+        IconGradient = "from-orange-500 to-red-500", 
+        BtnClass = "bg-white text-orange-600 border-2 border-orange-500", 
+        SortQuery = "loved", 
+        Products = ViewBag.LovedProducts 
+    })
     
-    @if (ViewBag.MostViewedProducts != null && ViewBag.MostViewedProducts.Count > 0)
-    {
-        <!-- Most Viewed Products Section -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-gradient-to-br from-green-500 to-teal-500 rounded-full">
-                        <i data-lucide="eye" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-3xl text-gray-900 font-bold">Được Xem Nhiều Nhất</h2>
-                        <p class="text-sm text-gray-600">Sản phẩm có lượt xem cao nhất</p>
-                    </div>
-                </div>
-                <a href="/Products?sort=most-viewed" class="flex items-center space-x-2 px-6 py-3 bg-white text-green-600 rounded-full hover:shadow-lg transition-all font-semibold border-2 border-green-500">
-                    <span>Tất Cả Sản Phẩm</span>
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </a>
-            </div>
-            
-            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.MostViewedProducts)
-        </section>
-    }
+    <!-- Most Viewed Products Section -->
+    @await Html.PartialAsync("_ProductSection", new { 
+        Title = "Được Xem Nhiều Nhất", 
+        Subtitle = "Sản phẩm có lượt xem cao nhất", 
+        Icon = "eye", 
+        IconGradient = "from-green-500 to-teal-500", 
+        BtnClass = "bg-white text-green-600 border-2 border-green-500", 
+        SortQuery = "most-viewed", 
+        Products = ViewBag.MostViewedProducts 
+    })
 
-    @if (ViewBag.NewestProducts != null && ViewBag.NewestProducts.Count > 0)
-    {
-        <!-- Newest Products Section -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full">
-                        <i data-lucide="clock" class="w-6 h-6 text-white"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-3xl text-gray-900 font-bold">Mới Nhất</h2>
-                        <p class="text-sm text-gray-600">Sản phẩm vừa được đăng lên</p>
-                    </div>
-                </div>
-                <a href="/Products?sort=newest" class="flex items-center space-x-2 px-6 py-3 bg-white text-blue-600 rounded-full hover:shadow-lg transition-all font-semibold border-2 border-blue-500">
-                    <span>Tất Cả Sản Phẩm</span>
-                    <i data-lucide="chevron-right" class="w-5 h-5"></i>
-                </a>
-            </div>
-            
-            @await Html.PartialAsync("_ProductCarousel", (List<REVORA_MVC_FE.Models.ProductResponseDto>)ViewBag.NewestProducts)
-        </section>
-    }
+    <!-- Newest Products Section -->
+    @await Html.PartialAsync("_ProductSection", new { 
+        Title = "Mới Nhất", 
+        Subtitle = "Sản phẩm vừa được đăng lên", 
+        Icon = "clock", 
+        IconGradient = "from-blue-500 to-purple-500", 
+        BtnClass = "bg-white text-blue-600 border-2 border-blue-500", 
+        SortQuery = "newest", 
+        Products = ViewBag.NewestProducts 
+    })
 
     <!-- Premium CTA Section -->
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
