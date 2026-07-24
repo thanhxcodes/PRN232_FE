@@ -1,0 +1,221 @@
+@{
+    ViewData["Title"] = "Hồ Sơ Cá Nhân";
+    var activeTab = ViewBag.ActiveTab as string ?? "profile";
+    bool isOwnProfile = ViewBag.IsOwnProfile ?? true;
+    var profile = ViewBag.Profile as REVORA_MVC_FE.Models.UserProfileDto;
+    long currentUserId = profile?.Id ?? 0;
+
+    // Format follower/following counts
+    string FormatCount(int count) => count >= 1000 ? (count / 1000.0).ToString("0.#") + "k" : count.ToString();
+    string followersCountStr = FormatCount(profile?.FollowerCount ?? 0);
+    string followingCountStr = FormatCount(profile?.FollowingCount ?? 0);
+    string joinedStr = profile?.CreatedAt != null ? $"Tham gia {profile.CreatedAt.Month}/{profile.CreatedAt.Year}" : "Tham gia -";
+}
+
+<!-- Public View Banner (Facebook "View As" Style) -->
+    <div id="public-view-banner"
+         class="hidden fixed top-16 left-0 right-0 z-40 transition-all duration-300 transform -translate-y-full"
+         style="background-color: #0f172a; color: white; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+        <div
+            style="max-width: 80rem; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="background-color: rgba(255,255,255,0.2); padding: 6px; border-radius: 50%;">
+                    <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">CHẾ ĐỘ KHÁCH</div>
+                    <div style="font-size: 13px; opacity: 0.9;">Bạn đang xem trang cá nhân dưới góc nhìn của một khách
+                        hàng.</div>
+                    </div>
+                </div>
+
+                <button id="btn-exit-public"
+                        style="background-color: white; color: #0f172a; border: none; padding: 8px 20px; border-radius: 9999px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); transition: all 0.2s;">
+                    <i data-lucide="x" style="width: 16px; height: 16px;"></i> Thoát chế độ
+                </button>
+            </div>
+        </div>
+
+        <!-- Banner - Abstract Mesh Gradient -->
+        <div class="h-72 relative overflow-hidden bg-[#2D5A3D]" id="profile-banner-container">
+            <!-- Animated Mesh Gradients -->
+            <div class="absolute top-0 left-0 w-full h-full opacity-60 mix-blend-screen" id="profile-banner-content">
+                <div class="absolute top-[-20%] left-[-10%] w-[50%] h-[150%] bg-gradient-to-br from-[#3D7054] to-[#C4603A]/30 rounded-full blur-[100px] animate-pulse"
+                     style="animation-duration: 8s;"></div>
+                <div class="absolute top-[-10%] right-[-10%] w-[60%] h-[120%] bg-gradient-to-bl from-[#C4603A]/20 to-[#2D5A3D] rounded-full blur-[120px] animate-pulse"
+                     style="animation-duration: 10s; animation-delay: 1s;"></div>
+            </div>
+            <div class="absolute inset-0 bg-black/10"></div>
+            <div class="absolute bottom-4 right-4 z-20 hidden" id="banner-picker-container">
+                <input type="file" id="banner-upload" accept="image/jpeg,image/png,image/gif" class="hidden" />
+                <label for="banner-upload"
+                       class="bg-white/80 backdrop-blur-md px-4 py-2 text-gray-700 rounded-lg flex items-center gap-2 shadow-lg border border-white/40 cursor-pointer hover:bg-white hover:text-[#2D5A3D] transition-colors font-medium text-sm">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Thay ảnh bìa
+                </label>
+            </div>
+        </div>
+
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Profile card - Glassmorphism -->
+            <div class="relative -mt-40 mb-8">
+                <div
+                    class="bg-white/80 backdrop-blur-2xl border border-white/60 rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] p-8 md:p-10">
+                    <div class="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
+                        <!-- Avatar -->
+                        <div class="relative flex-shrink-0 z-10">
+                            <div class="w-32 h-32 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg select-none bg-cover bg-center overflow-hidden bg-[#2D5A3D] relative group/avatar"
+                                 id="profile-avatar"
+                                 style="@(!string.IsNullOrEmpty(profile?.AvatarUrl) ? $"background-image: url('{profile.AvatarUrl}')" : "")">
+                                <span id="profile-initials">@(string.IsNullOrEmpty(profile?.AvatarUrl) ? (profile?.FullName
+                                                                                                                                                                            ?? "U").Substring(0, 1).ToUpper() : "")</span>
+
+                                    <div class="absolute inset-0 bg-black/35 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity hidden cursor-pointer"
+                                         id="avatar-picker-overlay">
+                                        <i data-lucide="camera" class="w-8 h-8 text-white"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Dropdown Menu for Avatar -->
+                                <div class="absolute top-[105%] left-0 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 z-50 min-w-[200px] hidden"
+                                     id="avatar-dropdown">
+                                    <p class="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-wide">Ảnh đại diện</p>
+                                    <div class="mb-4 flex flex-col gap-2">
+                                        <label for="avatar-upload"
+                                               class="flex items-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-sm font-medium text-gray-700 rounded-lg transition-colors border border-gray-200 justify-center cursor-pointer w-full">
+                                            <i data-lucide="camera" class="w-4 h-4"></i> Tải ảnh lên
+                                        </label>
+                                        <input type="file" id="avatar-upload" accept="image/jpeg,image/png,image/gif"
+                                               class="hidden" />
+                                    </div>
+                                    <p class="text-xs text-gray-500 mb-3 font-semibold uppercase tracking-wide">Hoặc chọn màu
+                                    </p>
+                                    <div class="grid grid-cols-4 gap-2" id="avatar-color-grid">
+                                        <!-- Colors injected here via JS -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Info -->
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center flex-wrap gap-3 mb-1">
+                                    <h1 class="text-2xl font-bold text-gray-900" id="profile-name">@(profile?.FullName ?? "")
+                                    </h1>
+                                </div>
+                                <p class="text-gray-400 text-sm mb-3">@@<span id="profile-username">@(profile?.Username ??
+                                                                                                                                                 "")</span></p>
+                                    <div class="flex flex-wrap gap-4 mb-4 text-sm text-gray-600">
+                                        <span class="flex items-center gap-1.5">
+                                            <i data-lucide="map-pin" class="w-4 h-4 text-[#2D5A3D]"></i> <span
+                                            id="profile-city">@(profile?.City ?? "Chưa có thông tin")</span>
+                                        </span>
+                                        <span class="flex items-center gap-1.5">
+                                            <i data-lucide="calendar" class="w-4 h-4 text-[#2D5A3D]"></i> @joinedStr
+                                        </span>
+                                    </div>
+                                    <p class="text-gray-600 text-sm leading-relaxed max-w-2xl line-clamp-2 mb-3" id="profile-bio">
+                                        @(profile?.Bio ?? "Chưa có thông tin tiểu sử.")</p>
+                                    </div>
+
+                                    <!-- Actions -->
+                                    <div class="flex flex-col gap-3 flex-shrink-0 w-full md:w-auto" id="profile-actions">
+                                        @if (isOwnProfile)
+                                        {
+                                            <button id="btn-edit-profile"
+                                                    class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] text-white px-6 py-2.5 rounded-full hover:shadow-lg transition-all text-sm font-semibold">
+                                                <i data-lucide="edit-3" class="w-4 h-4"></i> Sửa Hồ Sơ
+                                            </button>
+                                            <button id="btn-toggle-public"
+                                                    class="flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-600 px-6 py-2.5 rounded-full hover:bg-gray-50 transition-colors text-sm font-medium">
+                                                <i data-lucide="eye" class="w-4 h-4"></i> <span id="text-toggle-public">Góc nhìn khách
+                                                hàng</span>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            if (profile != null && profile.IsFollowing)
+                                            {
+                                                <button id="btn-follow" data-target="@profile.Id"
+                                                        class="flex items-center justify-center gap-2 border-2 border-gray-200 text-gray-600 px-6 py-2.5 rounded-full hover:bg-gray-50 hover:border-red-200 hover:text-red-500 transition-colors text-sm font-medium">
+                                                    <i data-lucide="user-check" class="w-4 h-4"></i> Đang theo dõi
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button id="btn-follow" data-target="@(profile?.Id)"
+                                                        class="flex items-center justify-center gap-2 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] text-white px-6 py-2.5 rounded-full hover:shadow-lg transition-all text-sm font-semibold">
+                                                    <i data-lucide="user-plus" class="w-4 h-4"></i> Theo dõi
+                                                </button>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Stats -->
+                                <div class="grid grid-cols-3 gap-4 md:gap-6 mt-8 pt-8 border-t border-gray-200/50">
+                                    <div class="flex flex-col items-center p-4 rounded-2xl hover:bg-white/50 transition-colors">
+                                        <div class="text-3xl font-black text-[#2D5A3D] drop-shadow-sm" id="stat-selling">0</div>
+                                        <div class="text-sm font-medium text-gray-500 mt-1 uppercase tracking-wider">Đang Bán</div>
+                                    </div>
+                                    <div class="flex flex-col items-center p-4 rounded-2xl hover:bg-[#2D5A3D]/5 hover:scale-105 transition-all cursor-pointer group"
+                                         id="btn-followers">
+                                        <div class="text-3xl font-black text-[#2D5A3D] drop-shadow-sm group-hover:text-[#3D7054] transition-colors"
+                                             id="stat-followers">@followersCountStr</div>
+                                        <div
+                                            class="text-sm font-medium text-gray-500 mt-1 uppercase tracking-wider group-hover:text-[#2D5A3D] transition-colors">
+                                            Follower</div>
+                                        </div>
+                                        <div class="flex flex-col items-center p-4 rounded-2xl hover:bg-[#2D5A3D]/5 hover:scale-105 transition-all cursor-pointer group"
+                                             id="btn-following">
+                                            <div class="text-3xl font-black text-[#2D5A3D] drop-shadow-sm group-hover:text-[#3D7054] transition-colors"
+                                                 id="stat-following">@followingCountStr</div>
+                                            <div
+                                                class="text-sm font-medium text-gray-500 mt-1 uppercase tracking-wider group-hover:text-[#2D5A3D] transition-colors">
+                                                Đã Follow</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tabs - Pill format -->
+                                <div class="mb-8 flex justify-center overflow-x-auto pb-2" style="scrollbar-width: none;">
+                                    <div
+                                        class="bg-white/60 backdrop-blur-md rounded-full shadow-sm p-1.5 inline-flex gap-2 border border-white/40">
+                                        <button data-tab="profile"
+                                                class="profile-tab-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[15px] font-semibold relative text-gray-600 hover:text-gray-900 hover:bg-white/50">
+                                            <div
+                                                class="tab-bg absolute inset-0 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] rounded-full -z-10">
+                                            </div>
+                                            <i data-lucide="user" class="w-4 h-4"></i> <span>Hồ Sơ</span>
+                                        </button>
+                                        <button data-tab="products"
+                                                class="profile-tab-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[15px] font-semibold relative text-gray-600 hover:text-gray-900 hover:bg-white/50">
+                                            <div
+                                                class="tab-bg absolute inset-0 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] rounded-full -z-10">
+                                            </div>
+                                            <i data-lucide="package" class="w-4 h-4"></i> <span>Đang Bán</span>
+                                            <span id="badge-products"
+                                                  class="hidden ml-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 text-xs font-bold">0</span>
+                                        </button>
+                                        @if (isOwnProfile)
+                                        {
+                                            <button data-tab="wishlist"
+                                                    class="profile-tab-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[15px] font-semibold relative text-gray-600 hover:text-gray-900 hover:bg-white/50">
+                                                <div
+                                                    class="tab-bg absolute inset-0 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] rounded-full -z-10">
+                                                </div>
+                                                <i data-lucide="heart" class="w-4 h-4"></i> <span>Yêu Thích</span>
+                                                <span id="badge-wishlist"
+                                                      class="hidden ml-1 px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 text-xs font-bold">0</span>
+                                            </button>
+                                            <button data-tab="security"
+                                                    class="profile-tab-btn flex items-center gap-2.5 px-6 py-2.5 rounded-full text-[15px] font-semibold relative text-gray-600 hover:text-gray-900 hover:bg-white/50">
+                                                <div
+                                                    class="tab-bg absolute inset-0 bg-gradient-to-r from-[#2D5A3D] to-[#3D7054] rounded-full -z-10">
+                                                </div>
+                                                <i data-lucide="lock" class="w-4 h-4"></i> <span>Bảo Mật</span>
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Tab Content Containers -->

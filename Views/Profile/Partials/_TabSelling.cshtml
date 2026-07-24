@@ -1,0 +1,36 @@
+@{
+    var profile = ViewBag.Profile as REVORA_MVC_FE.Models.UserProfileDto;
+    bool isOwnProfile = ViewBag.IsOwnProfile ?? true;
+}
+<div id="tab-content-products"
+     class="tab-content absolute inset-0 opacity-0 pointer-events-none transition-opacity duration-300">
+    @if (isOwnProfile)
+    {
+        <div id="owner-store-banner"
+             class="bg-blue-50/80 backdrop-blur-sm border border-blue-100 rounded-[24px] p-6 mb-6 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+            <div class="w-12 h-12 rounded-full bg-blue-200/50 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="store" class="w-6 h-6 text-blue-600"></i>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-sm font-bold text-blue-900 mb-1">Tin đăng của bạn</h3>
+                <p class="text-xs text-blue-700/80 leading-relaxed">Các sản phẩm đang hiển thị công khai trên
+                    gian hàng. Để chỉnh sửa thông tin, ẩn/hiện hoặc xóa sản phẩm, vui lòng truy cập trang Quản
+                    lý.</p>
+                </div>
+                <a href="/Products/Manage"
+                       class="flex-shrink-0 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                    <span>Quản lý tin đăng</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </div>
+        }
+
+
+        <div id="products-list" class="flex flex-col gap-4">
+            <!-- Rendered via JS -->
+        </div>
+        <div id="load-more-trigger" class="h-10 mt-4 flex items-center justify-center">
+            <i id="load-more-spinner" data-lucide="loader-2" class="w-6 h-6 animate-spin text-[#2D5A3D] hidden"></i>
+        </div>
+    </div>
+
